@@ -47,10 +47,13 @@ class ContactBaseForm(BaseModelForm):
     FIELDS_BY_MODEL_NAME = {
         "Contact": (
             "is_active", "language", "marketing_permission", "phone", "www",
-            "timezone", "prefix", "name", "suffix", "name_ext", "email",
+            "timezone", "name", "name_ext", "email",
             "tax_group",
         ),
-        "PersonContact": ("gender", "birth_date"),
+        "PersonContact": (
+            "gender", "birth_date",
+            "prefix", "first_name", "last_name", "suffix",
+        ),
         "CompanyContact": ("tax_number",)
     }
 

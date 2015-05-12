@@ -17,11 +17,11 @@ from shoop.utils.form_group import FormGroup
 class PersonContactForm(forms.ModelForm):
     class Meta:
         model = PersonContact
-        fields = ("name", "phone", "email", "gender", "marketing_permission")
+        fields = ("first_name", "last_name", "phone", "email", "gender", "marketing_permission")
 
     def __init__(self, *args, **kwargs):
         super(PersonContactForm, self).__init__(*args, **kwargs)
-        for field in ("name", "email"):
+        for field in ("first_name", "last_name", "email"):
             self.fields[field].required = True
 
 
@@ -62,6 +62,7 @@ class CustomerEditView(FormView):
         user.last_name = contact.last_name
         user.save()
 
+        contact.name = user.get_full_name()
         contact.save()
         messages.success(self.request, _("Account information saved successfully."))
         return redirect("shoop:customer_edit")

@@ -49,9 +49,7 @@ def test_anonymous_contact():
     assert a1.phone == ''
     assert a1.www == ''
     assert a1.timezone is None
-    assert a1.prefix == ''
     assert a1.name == ''
-    assert a1.suffix == ''
     assert a1.name_ext == ''
     assert a1.email == ''
     assert str(a1) == ''

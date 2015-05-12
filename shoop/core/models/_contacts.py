@@ -17,7 +17,6 @@ from polymorphic.models import PolymorphicModel
 from timezone_field.fields import TimeZoneField
 
 from shoop.core.fields import InternalIdentifierField, LanguageField
-from shoop.core.utils.name_mixin import NameMixin
 
 from ._base import TranslatableShoopModel
 from ._taxes import CustomerTaxGroup
@@ -38,7 +37,7 @@ class ContactGroup(TranslatableShoopModel):
 
 
 @python_2_unicode_compatible
-class Contact(NameMixin, PolymorphicModel):
+class Contact(PolymorphicModel):
     is_anonymous = False
     is_all_seeing = False
     default_tax_group_getter = None
@@ -69,9 +68,7 @@ class Contact(NameMixin, PolymorphicModel):
     phone = models.CharField(max_length=64, blank=True, verbose_name=_('phone'))
     www = models.URLField(max_length=128, blank=True, verbose_name=_('web address'))
     timezone = TimeZoneField(blank=True, null=True, verbose_name=_('time zone'))
-    prefix = models.CharField(verbose_name=_('name prefix'), max_length=64, blank=True)
     name = models.CharField(max_length=256, verbose_name=_('name'))
-    suffix = models.CharField(verbose_name=_('name suffix'), max_length=64, blank=True)
     name_ext = models.CharField(max_length=256, blank=True, verbose_name=_('name extension'))
     email = models.EmailField(max_length=256, blank=True, verbose_name=_('email'))
 
@@ -80,7 +77,7 @@ class Contact(NameMixin, PolymorphicModel):
     )
 
     def __str__(self):
-        return self.full_name
+        return self.name
 
     class Meta:
         verbose_name = _('contact')
@@ -156,6 +153,10 @@ class PersonContact(Contact):
     )
     gender = EnumField(Gender, default=Gender.UNDISCLOSED, max_length=4, verbose_name=_('gender'))
     birth_date = models.DateField(blank=True, null=True, verbose_name=_('birth date'))
+    first_name = models.CharField(_('first name'), max_length=30, blank=True)
+    last_name = models.CharField(_('last name'), max_length=50, blank=True)
+    prefix = models.CharField(verbose_name=_('name prefix'), max_length=64, blank=True)
+    suffix = models.CharField(verbose_name=_('name suffix'), max_length=64, blank=True)
     # TODO: Figure out how/when/if the name and email fields are updated from users
 
     class Meta:
@@ -169,12 +170,20 @@ class PersonContact(Contact):
                 self.name = user.get_full_name()
             if not self.email:
                 self.email = user.email
+            if not self.first_name and not self.last_name:
+                self.first_name = user.first_name
+                self.last_name = user.last_name
+
         return super(PersonContact, self).save(*args, **kwargs)
 
     @property
     def is_all_seeing(self):
         if self.user_id:
             return self.user.is_superuser
+
+    @property
+    def full_name(self):
+        return (" ".join([self.prefix, self.name, self.suffix])).strip()
 
 
 class AnonymousContact(Contact):
