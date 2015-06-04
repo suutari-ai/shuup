@@ -1,6 +1,12 @@
 Taxes in Shoop
 ==============
 
+Shoop supports flexible taxation of order items by pluggable
+:class:`~shoop.core.taxing.TaxModule` addons. Most important tax related
+models provided by Shoop Core are :class:`~shoop.core.models.Tax`,
+:class:`~shoop.core.models.TaxClass` and
+:class:`~shoop.core.models.CustomerTaxGroup`.  Tax defines properties of the tax, e.g. its rate, name, code
+
 Settings
 --------
 
@@ -94,8 +100,8 @@ TaxModule
   * ...
 
 
-TaxView
-^^^^^^^
+PriceTaxContext
+^^^^^^^^^^^^^^^
 
   * customer_tax_group (FK)
   * location (country, region, postal_code, ...)
