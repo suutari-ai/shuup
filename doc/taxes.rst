@@ -5,7 +5,9 @@ Shoop supports flexible taxation of order items by pluggable
 :class:`~shoop.core.taxing.TaxModule` addons. Most important tax related
 models provided by Shoop Core are :class:`~shoop.core.models.Tax`,
 :class:`~shoop.core.models.TaxClass` and
-:class:`~shoop.core.models.CustomerTaxGroup`.  Tax defines properties of the tax, e.g. its rate, name, code
+:class:`~shoop.core.models.CustomerTaxGroup`.  Tax defines properties of
+the tax, e.g. its rate, code, name and such.  TaxClass is is assigned to
+products and payment & shipping methods and CustomerTaxGroup is assigned to customers, i.e. to :class:`~shoop.core.mofe
 
 Settings
 --------
