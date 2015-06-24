@@ -16,7 +16,7 @@ import setuptools
 
 
 NAME = 'shoop'
-VERSION = '1.0.0.post'
+VERSION = '1.0.0.post0.dev'
 DESCRIPTION = 'E-Commerce Platform'
 AUTHOR = 'Shoop Ltd.'
 AUTHOR_EMAIL = 'shoop@shoop.io'
@@ -100,17 +100,19 @@ def get_version():
     """
     Get version and write it to file.
     """
-    if not VERSION.endswith('.post'):
+    if 'dev' not in VERSION:
         return VERSION
     elif not os.path.exists(os.path.join(TOPDIR, '.git')):
         return VERSION
-    tag_name = 'v' + VERSION.split('.post')[0]
+    tag_name = 'v' + VERSION.split('.post')[0].split('.dev')[0]
     describe_cmd = ['git', 'describe', '--dirty', '--match', tag_name]
     try:
         described = subprocess.check_output(describe_cmd, cwd=TOPDIR)
     except Exception:
         return VERSION
-    return VERSION + described.decode('utf-8')[len(tag_name):].strip()
+    suffix = described.decode('utf-8')[len(tag_name):].strip()
+    cleaned_suffix = suffix[1:].replace('-g', '+g').replace('-dirty', '.dirty')
+    return VERSION + cleaned_suffix
 
 
 def write_version_to_file(version, path=TOPDIR, filename=VERSION_FILE):
