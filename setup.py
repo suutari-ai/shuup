@@ -90,10 +90,11 @@ EXTRAS_REQUIRE = {
 }
 EXTRAS_REQUIRE['everything'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
-VERSION_FILE = os.path.join('shoop', '_version.py')
 LONG_DESCRIPTION_FILE = None
 
 TOPDIR = os.path.abspath(os.path.dirname(__file__))
+
+VERSION_FILE = os.path.join(TOPDIR, 'shoop', '_version.py')
 
 
 def get_version():
@@ -103,6 +104,11 @@ def get_version():
     if 'dev' not in VERSION:
         return VERSION
     elif not os.path.exists(os.path.join(TOPDIR, '.git')):
+        if os.path.exists(VERSION_FILE):
+            with open(VERSION_FILE, 'rt') as fp:
+                verstr = fp.read().strip()
+            if verstr.startswith("__version__ = '" + VERSION):
+                return verstr.split("'", 2)[1]
         return VERSION
     tag_name = 'v' + VERSION.split('.post')[0].split('.dev')[0]
     describe_cmd = ['git', 'describe', '--dirty', '--match', tag_name]
@@ -115,8 +121,8 @@ def get_version():
     return VERSION + cleaned_suffix
 
 
-def write_version_to_file(version, path=TOPDIR, filename=VERSION_FILE):
-    with open(os.path.join(path, filename), 'wt') as fp:
+def write_version_to_file(version):
+    with open(VERSION_FILE, 'wt') as fp:
         fp.write('__version__ = {!r}\n'.format(version))
 
 
