@@ -90,7 +90,7 @@ EXTRAS_REQUIRE = {
 }
 EXTRAS_REQUIRE['everything'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
-VERSION_FILE = os.path.join(NAME, '_version.py')
+VERSION_FILE = os.path.join('shoop', '_version.py')
 LONG_DESCRIPTION_FILE = None
 
 TOPDIR = os.path.abspath(os.path.dirname(__file__))
@@ -116,14 +116,8 @@ def get_version():
 
 
 def write_version_to_file(version, path=TOPDIR, filename=VERSION_FILE):
-    ver_file = os.path.join(path, filename)
-    old_lines = None
-    if os.path.exists(ver_file):
-        with open(ver_file, 'rt') as fp:
-            old_lines = fp.read(100).splitlines()
-    if not old_lines or old_lines[0].startswith('__version__'):
-        with open(ver_file, 'wt') as fp:
-            fp.write('__version__ = {!r}\n'.format(version))
+    with open(os.path.join(path, filename), 'wt') as fp:
+        fp.write('__version__ = {!r}\n'.format(version))
 
 
 def get_long_description(path=TOPDIR, filename=LONG_DESCRIPTION_FILE):
