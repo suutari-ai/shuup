@@ -1,5 +1,20 @@
-recursive-include shoop *.jinja *.html *.txt *.js *.css *.json
-recursive-include shoop_tests *.jinja *.html *.txt
+include README.rst
+include LICENSE
+include VENDOR-LICENSES.md
+include ChangeLog.md
+include build_resources.py nodejs_verify.py
+
+recursive-include shoop \
+    *.jinja *.txt *.js *.css *.json *.less \
+    *.jpg *.ico *.png *.svg \
+    *.woff *.woff2 *.eot *.otf *.ttf
+
+recursive-include shoop_tests \
+    *.jinja *.html *.txt
+
+recursive-include shoop_workbench \
+    *.jinja *.html *.txt
+
 prune shoop/admin/static_src/*/bower_components
 prune shoop/admin/modules/*/bower_components
 prune shoop/*/node_modules
