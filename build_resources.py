@@ -145,7 +145,7 @@ class Builder(object):
             basename = os.path.basename(fullpath)
             return (is_excluded_filename(basename) or fullpath in ignores)
 
-        return hash_path_recursively(dir, ignorer).hexdigest()
+        return hash_path_recursively(dir, ignorer)['checksum'].hexdigest()
 
     def _get_result_files(self, dir):
         result_files = self._result_files.get(dir)
@@ -164,22 +164,30 @@ class Builder(object):
 
 def hash_path_recursively(path, ignorer=None, hasher=hashlib.sha1):
     checksum = hasher()
+    size = 0
     if os.path.isdir(path):
+        tp = 'dir'
         checksum.update(b'DIR:\n')
         for item in os.listdir(path):
             fullpath = os.path.join(path, item)
             if ignorer and ignorer(fullpath):
                 continue
-            digest = hash_path_recursively(fullpath, ignorer, hasher).digest()
+            item_res = hash_path_recursively(fullpath, ignorer, hasher)
+            if item_res['type'] == 'dir' and item_res['size'] == 0:
+                continue  # Ignore empty directories
+            digest = item_res['checksum'].digest()
             line = digest + b' ' + item.encode('utf-8') + b'\n'
             checksum.update(line)
+            size += 1
     else:
+        tp = 'file'
         with open(path, 'rb') as fp:
             data = b'FILE:\n'
             while data:
                 checksum.update(data)
                 data = fp.read(65536)
-    return checksum
+                size += len(data)
+    return {'checksum': checksum, 'size': size, 'type': tp}
 
 
 def remove_all_subdirs(root, subdir_name):
