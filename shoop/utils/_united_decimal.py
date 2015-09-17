@@ -178,7 +178,7 @@ class UnitedDecimal(decimal.Decimal):
 
     def __round__(self, ndigits=0, **kwargs):
         value = super(UnitedDecimal, self).__round__(ndigits, **kwargs)
-        return self.new(value)  # pragma: nocover
+        return self.new(value)
 
     def quantize(self, exp, *args, **kwargs):
         value = super(UnitedDecimal, self).quantize(exp, *args, **kwargs)
