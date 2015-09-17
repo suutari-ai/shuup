@@ -23,8 +23,6 @@ class TaxSummary(list):
         base_amount_by_tax = defaultdict(Decimal)
         for line_tax in line_taxes:
             assert isinstance(line_tax, LineTax)
-            if line_tax.amount == 0:
-                continue
             tax_amount_by_tax[line_tax.tax] += line_tax.amount
             base_amount_by_tax[line_tax.tax] += line_tax.base_amount
 

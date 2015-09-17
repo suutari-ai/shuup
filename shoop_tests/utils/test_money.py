@@ -36,3 +36,31 @@ def test_units_match():
     assert m1.unit_matches_with(m2)
     assert not m1.unit_matches_with(m3)
     assert m3.unit_matches_with(m4)
+
+
+def test_repr():
+    assert repr(Money(42)) == "Money('42')"
+    assert repr(Money('42.123')) == "Money('42.123')"
+    assert repr(Money('42.0')) == "Money('42.0')"
+    assert repr(Money('42.123', 'EUR')) == "Money('42.123', 'EUR')"
+    assert repr(Money('42.123', 'USD')) == "Money('42.123', 'USD')"
+
+
+def test_str():
+    assert str(Money('42.25', 'EUR')) == '42.25 EUR'
+    assert str(Money('100', 'USD')) == '100 USD'
+
+    cur = settings.SHOOP_HOME_CURRENCY
+    assert isinstance(cur, str)
+    assert str(Money(42)) == '42 ' + cur
+    assert str(Money('12.345')) == '12.345 ' + cur
+
+
+def test_money_basics():
+    m1 = Money(1)
+    m2 = Money(2)
+    m3 = Money(3)
+    assert m1 + m2 == m3
+    assert m3 - m1 == m2
+    assert m3.value == 3
+    assert m3 / m2 == m3.value / m2.value

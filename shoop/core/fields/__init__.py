@@ -15,6 +15,10 @@ from django.db import models
 from jsonfield.fields import JSONField
 from shoop.core.fields.tagged_json import TaggedJSONEncoder, tag_registry
 from shoop.utils.i18n import get_current_babel_locale
+from shoop.utils import money_field
+
+
+MoneyField = money_field.MoneyField
 
 IdentifierValidator = RegexValidator("[a-z][a-z_]+")
 
@@ -50,14 +54,6 @@ class InternalIdentifierField(models.CharField):
         kwargs.pop("verbose_name", None)
         kwargs.pop("help_text", None)
         return (name, path, args, kwargs)
-
-
-class MoneyField(models.DecimalField):
-
-    def __init__(self, **kwargs):
-        kwargs.setdefault("decimal_places", 9)
-        kwargs.setdefault("max_digits", 36)
-        super(MoneyField, self).__init__(**kwargs)
 
 
 class QuantityField(models.DecimalField):

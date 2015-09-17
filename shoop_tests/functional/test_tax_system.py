@@ -20,6 +20,7 @@ from shoop.testing.factories import get_tax
 
 class IrvineCaliforniaTaxation(TaxModule):
     identifier = "irvine"
+
     def get_line_taxes(self, source_line):
         taxes = []
         if source_line.source.billing_address.postal_code == "92602":

@@ -11,7 +11,6 @@ from . import numbers
 
 class Money(numbers.UnitedDecimal):
     def __new__(cls, value="0", currency=None, *args, **kwargs):
-        assert currency is None, "currency support is not yet implemented"
         instance = super(Money, cls).__new__(cls, value, *args, **kwargs)
         instance._currency = currency
         return instance
@@ -20,9 +19,21 @@ class Money(numbers.UnitedDecimal):
     def currency(self):
         return (self._currency or settings.SHOOP_HOME_CURRENCY)
 
+    def __repr__(self):
+        cls_name = type(self).__name__
+        if self._currency is None:
+            return "%s('%s')" % (cls_name, self.value)
+        return "%s('%s', %r)" % (cls_name, self.value, self._currency)
+
+    def __str__(self):
+        return "%s %s" % (self.value, self.currency)
+
     def unit_matches_with(self, other):
         return (
             (isinstance(other, Money) and self._currency == other._currency)
             or
-            (self.currency == getattr(other, "currency", None))
+            (hasattr(other, "currency") and self.currency == other.currency)
         )
+
+    def new(self, value):
+        return type(self)(value, currency=self._currency)

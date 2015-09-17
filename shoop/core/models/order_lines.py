@@ -20,6 +20,7 @@ from shoop.core.fields import MoneyField, QuantityField, UnsavedForeignKey
 from shoop.core.pricing import Price, TaxfulPrice, TaxlessPrice
 from shoop.core.taxing import LineTax
 from shoop.core.utils.prices import LinePriceMixin
+from shoop.utils.money import Money
 
 from ._base import ShoopModel
 
@@ -84,8 +85,8 @@ class OrderLine(models.Model, LinePriceMixin):
 
     # The following fields govern calculation of the prices
     quantity = QuantityField(verbose_name=_('quantity'), default=1)
-    _unit_price_amount = MoneyField(verbose_name=_('unit price amount'), default=0)
-    _total_discount_amount = MoneyField(verbose_name=_('total amount of discount'), default=0)
+    _unit_price_amount = MoneyField(verbose_name=_('unit price amount'), default=Money(0))
+    _total_discount_amount = MoneyField(verbose_name=_('total amount of discount'), default=Money(0))
     _prices_include_tax = models.BooleanField(default=True)
 
     objects = OrderLineManager()
@@ -179,10 +180,9 @@ class OrderLineTax(ShoopModel, LineTax):
     order_line = models.ForeignKey(
         OrderLine, related_name='taxes', on_delete=models.PROTECT,
         verbose_name=_('order line'))
-    tax = models.ForeignKey(  # TODO: (TAX) Should we allow NULL? When deciding, see get_tax_summary
+    tax = models.ForeignKey(
         "Tax", related_name="order_line_taxes",
-        on_delete=models.PROTECT, verbose_name=_('tax')
-    )
+        on_delete=models.PROTECT, verbose_name=_('tax'))
     name = models.CharField(max_length=200, verbose_name=_('tax name'))
     amount = MoneyField(verbose_name=_('tax amount'))
     base_amount = MoneyField(

@@ -112,7 +112,7 @@ class OrderSource(object):
     def status(self, status):
         self.status_id = (status.id if status else None)
 
-    def get_lines(self):  # pragma: no cover
+    def get_lines(self):
         return getattr(self, "lines", ())
 
     def get_final_lines(self):
@@ -162,12 +162,11 @@ class OrderSource(object):
 
     def _compute_taxes(self, lines):
         tax_module = taxing.get_tax_module()
-        for line in lines:
-            if not line.parent_line_id:
-                line.taxes = tax_module.get_line_taxes(line)
+        tax_module.add_taxes(self, lines)
 
     def prices_include_tax(self):
         # TODO: (TAX) Get taxfulness default from request or PriceTaxContext or customer or whatever
+        yeah
         return False
 
     @property
@@ -185,26 +184,21 @@ class OrderSource(object):
     def taxless_total_price(self):
         return sum_taxless_totals(self.get_final_lines())
 
-    @property
-    def product_total_price(self):
+    def get_total_price_of_products(self):
         if self.prices_include_tax():
-            return self.taxful_product_total_price
+            return sum_taxful_totals(self._get_product_lines())
         else:
-            return self.taxless_product_total_price
-
-    @property
-    def taxful_product_total_price(self):
-        return sum_taxful_totals(self._get_product_lines())
-
-    @property
-    def taxless_product_total_price(self):
-        return sum_taxless_totals(self._get_product_lines())
+            return sum_taxless_totals(self._get_product_lines())
 
     def _get_product_lines(self):
-        # This does not use get_final_lines because it will be called
-        # when final lines is being computed
+        """
+        Get lines with a product.
+
+        This does not use get_final_lines because it will be called when
+        final lines is being computed (for example to determine shipping
+        discounts based on the total price of all products).
+        """
         product_lines = [l for l in self.get_lines() if l.product]
-        self._compute_taxes(product_lines)
         return product_lines
 
     def get_validation_errors(self):
@@ -236,6 +230,12 @@ def _collect_lines_from_signal(signal_results):
 
 
 class SourceLine(LinePriceMixin):
+    """
+    Line of OrderSource.
+
+    Note: Properties like total_price, taxful_total_price, tax_rate,
+    etc. are inherited from the LinePriceMixin.
+    """
     _FIELDS = [
         "line_id", "parent_line_id", "type",
         "shop", "product", "supplier", "tax_class",
@@ -278,7 +278,16 @@ class SourceLine(LinePriceMixin):
         self.text = kwargs.pop("text", "")
         self.require_verification = kwargs.pop("require_verification", False)
         self.accounting_identifier = kwargs.pop("accounting_identifier", "")
+
         self.taxes = []
+        """
+        Taxes of this line.
+
+        Determined by a TaxModule in :func:`OrderSource._compute_taxes`.
+
+        :type: list[shoop.core.taxing.LineTax]
+        """
+
         self._data = kwargs.copy()
 
         self._state_check()

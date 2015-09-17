@@ -4,8 +4,6 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
-import decimal
-
 from shoop.utils.money import Money
 
 
@@ -26,7 +24,7 @@ class Price(Money):
 
     @property
     def amount(self):
-        return decimal.Decimal(self)
+        return Money(self.value, self.currency)
 
     @classmethod
     def from_value(cls, value, includes_tax):

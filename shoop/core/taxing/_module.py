@@ -4,7 +4,10 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+import abc
+
 from django.http import HttpRequest
+import six
 
 from shoop.apps.provides import load_module
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
@@ -22,7 +25,10 @@ def get_tax_module():
     return load_module("SHOOP_TAX_MODULE", "tax_module")()
 
 
-class TaxModule(object):
+class TaxModule(six.with_metaclass(abc.ABCMeta)):
+    """
+    Module for calculating taxes.
+    """
     identifier = None
     name = None
 
@@ -46,32 +52,19 @@ class TaxModule(object):
     def get_context_from_data(self, **context_data):
         return self.taxing_context_class(**context_data)
 
-    def determine_product_tax(self, context, product):
-        """
-        Determine taxes of product in given price-tax context.
-
-        :type context: shoop.core.contexts.PriceTaxContext
-        :type product: shoop.core.models.Product
-        :rtype: TaxedPrice
-        """
-        # TODO: (TAX) Implement determine_product_tax (here or in subclass)
-        # Default implementation considers everything taxless.
-
-        price = product.get_price(context)
-        return TaxedPrice(
-            TaxfulPrice(price.amount),
-            TaxlessPrice(price.amount)
-        )
-
     # TODO: (TAX) Remove get_method_tax_amount? (Not needed probably)
     # def get_method_tax_amount(self, tax_view, method):
     #     pass
 
-    def get_line_taxes(self, source_line):
+    @abc.abstractmethod
+    def add_taxes(self, source, lines):
         """
-        Get taxes for given source line of an order source.
+        Add taxes to given OrderSource lines.
 
-        :type source_line: shoop.core.order_creator.SourceLine
-        :rtype: Iterable[LineTax]
-        """
-        # TODO: (TAX) Implement get_line_taxes (here or in subclass)
+        Given lines are modified in-place, also new lines may be added
+        (with ``lines.extend`` for example).
+
+        :type source: shoop.core.order_creator.OrderSource
+        :type lines: list[shoop.core.order_creator.SourceLine]
+            """
+        pass

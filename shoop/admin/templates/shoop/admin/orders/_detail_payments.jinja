@@ -14,7 +14,7 @@
                 <td>{{ payment.created_on|datetime }}</td>
                 <td>{{ payment.payment_identifier }}</td>
                 <td>{{ payment.description }}</td>
-                <td class="text-right">{{ payment.amount|home_currency }}</td>
+                <td class="text-right">{{ payment.amount|money }}</td>
             </tr>
         {% endfor %}
         </tbody>

@@ -48,5 +48,10 @@ def format_home_currency(value, locale=None):
     return format_currency(value, currency=settings.SHOOP_HOME_CURRENCY, locale=locale or get_current_babel_locale())
 
 
+def format_money(value, locale=None):
+    loc = locale or get_current_babel_locale()
+    return format_currency(value.value, currency=value.currency, locale=loc)
+
+
 def get_language_name(language_code):
     return get_current_babel_locale().languages.get(language_code, language_code)

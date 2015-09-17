@@ -18,7 +18,11 @@ class LinePriceMixin(object):
 
     The unit_price and total_discount must have compatible types.
 
-    Invariant: total_price = unit_price * quantity - total_discount
+    Invariants (excluding type conversions):
+      * total_price = unit_price * quantity - total_discount
+      * taxful_total_price = taxless_total_price + total_tax_amount
+      * tax_rate = (taxful_total_price / taxless_total_price) - 1
+      * tax_percentage = 100 * tax_rate
     """
     @property
     def total_price(self):
@@ -59,6 +63,13 @@ class LinePriceMixin(object):
         if not taxless_total.amount:
             return decimal.Decimal(0)
         return (taxful_total.amount / taxless_total.amount) - 1
+
+    @property
+    def tax_percentage(self):
+        """
+        :rtype: decimal.Decimal
+        """
+        return self.tax_rate * 100
 
     @property
     def taxful_unit_price(self):

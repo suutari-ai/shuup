@@ -17,13 +17,24 @@ from django.utils.timezone import localtime
 from django_jinja import library
 from jinja2.runtime import Undefined
 
-from shoop.utils.i18n import format_home_currency, get_current_babel_locale
+from shoop.utils.i18n import (
+    format_home_currency,
+    format_money,
+    get_current_babel_locale,
+)
 from shoop.utils.serialization import ExtendedJSONEncoder
 
 
 @library.filter
+def money(value):
+    assert hasattr(value, 'value')
+    assert hasattr(value, 'currency')
+    return format_money(value)
+
+
+@library.filter
 def home_currency(value):
-    return format_home_currency(value, locale=get_current_babel_locale())
+    return format_home_currency(value)
 
 
 @library.filter

@@ -79,6 +79,10 @@ language = 'en'
 # Else, today_fmt is used as the format for a strftime call.
 today_fmt = '%Y-%m-%d'
 
+# Insert both the class’ and the __init__ method’s docstring into the
+# main body of an autoclass directive
+autoclass_content = 'both'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build']
