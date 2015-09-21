@@ -83,11 +83,11 @@ class OrderLine(models.Model, LinePriceMixin):
 
     # The following fields govern calculation of the prices
     quantity = QuantityField(verbose_name=_('quantity'), default=1)
-    unit_price_value = MoneyValueField(verbose_name=_('unit price amount'), default=0)
-    total_discount_value = MoneyValueField(verbose_name=_('total amount of discount'), default=0)
-
     unit_price = PriceProperty('unit_price_value', 'order.currency', 'order.prices_include_tax')
     total_discount = PriceProperty('total_discount_value', 'order.currency', 'order.prices_include_tax')
+
+    unit_price_value = MoneyValueField(verbose_name=_('unit price amount'), default=0)
+    total_discount_value = MoneyValueField(verbose_name=_('total amount of discount'), default=0)
 
     objects = OrderLineManager()
 
@@ -130,7 +130,7 @@ class OrderLineTax(ShoopModel, LineTax):
         "Tax", related_name="order_line_taxes",
         on_delete=models.PROTECT, verbose_name=_('tax'))
     name = models.CharField(max_length=200, verbose_name=_('tax name'))
-    # TODO: (TAX) OrderLineTax: Decorate amount and base_amount so that they'll return Money rather than Decimal
+
     amount = MoneyProperty('amount_value', 'order_line.order.currency')
     base_amount = MoneyProperty('base_amount_value', 'order_line.order.currency')
 
@@ -138,6 +138,7 @@ class OrderLineTax(ShoopModel, LineTax):
     base_amount_value = MoneyValueField(
         verbose_name=_('base amount'),
         help_text=_('Amount that this tax is calculated from'))
+
     ordering = models.IntegerField(default=0, verbose_name=_('ordering'))
 
     class Meta:

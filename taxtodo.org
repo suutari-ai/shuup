@@ -14,7 +14,7 @@
      - [-] Docs for MoneyProperty and PriceProperty
    - [ ] Rename MoneyField to MoneyValueField
    - [ ] Check all MoneyField usages and add MoneyProperty or PriceProperty
-   - [ ] Check all "amount" usages
+   - [-] Check all "amount" usages
    - [ ] Fix callers of model init and objects.create
    - [ ] Fix users of amount/price fields
      - [ ] Order.cache_prices
@@ -38,6 +38,14 @@
    - [ ] Check test coverage
    - [ ] Add and improve tests
 ** STARTED Check type specifiers in docstring for Price/Money params and rtypes
+   - [ ] Check all "type.*amount" lines
+   - [ ] Check all "param.*Decimal.*amount" lines
+   - [ ] Check all "type.*price" lines
+   - [ ] Check all "param.*Decimal.*price" lines
+   - [ ] Check all "type.*money" lines
+   - [ ] Check all "param.*Decimal.*money" lines
+   - [ ] Check all "type.*tax" lines
+   - [ ] Check all "param.*Decimal.*tax" lines
 ** TODO Make tax Admin views work again (and test them through)
 ** TODO Make sure that basket with differing currency/taxness cannot be loaded
 ** STARTED Make sure that all prices are created with Shop.create_price

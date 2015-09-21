@@ -218,12 +218,14 @@ class Order(models.Model):
     extra_data = JSONField(blank=True, null=True)
 
     # Money stuff
-    taxful_total_price_value = MoneyValueField(editable=False, verbose_name=_('grand total'), default=0)
-    taxless_total_price_value = MoneyValueField(editable=False, verbose_name=_('taxless total'), default=0)
     taxful_total_price = TaxfulPriceProperty('taxful_total_price_value', 'currency')
     taxless_total_price = TaxlessPriceProperty('taxless_total_price_value', 'currency')
+
+    taxful_total_price_value = MoneyValueField(editable=False, verbose_name=_('grand total'), default=0)
+    taxless_total_price_value = MoneyValueField(editable=False, verbose_name=_('taxless total'), default=0)
     currency = CurrencyField()
     prices_include_tax = models.BooleanField()  # TODO: (TAX) Document Order.prices_include_tax
+
     display_currency = CurrencyField(blank=True)
     display_currency_rate = models.DecimalField(max_digits=36, decimal_places=9, default=1)
 
@@ -515,7 +517,8 @@ class Order(models.Model):
             all_line_taxes.extend(line_taxes)
             if not line_taxes:
                 untaxed += line.taxless_total_price
-        return taxing.TaxSummary.from_line_taxes(all_line_taxes, untaxed)
+        return taxing.TaxSummary.from_line_taxes(
+            self.currency, all_line_taxes, untaxed)
 
     def get_product_ids_and_quantities(self):
         quantities = defaultdict(lambda: 0)

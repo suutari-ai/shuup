@@ -18,16 +18,28 @@ class Money(numbers.UnitedDecimal):
 
     Money objects with different currencies cannot be compared or
     calculated with and will raise `~shoop.utils.numbers.UnitMixupError`.
+
+    See `__new__`.
     """
     def __new__(cls, value="0", currency=None, *args, **kwargs):
         """
         Create new Money instance with given value and currency.
+
+        If no currency is given explicitly and `value` has a property
+        named `currency`, then that will be used.  Otherwise currency is
+        a required argument and not passing one will raise a TypeError.
 
         :param str|numbers.Number value:
           Value as string or number
         :param str|None currency:
           Currency as ISO-4217 code (3-letter string) or None.
         """
+        if currency is None and hasattr(value, 'currency'):
+            currency = value.currency
+        if not currency:
+            import pdb
+            pdb.set_trace()
+            raise TypeError('%s: currency must be given' % cls.__name__)
         instance = super(Money, cls).__new__(cls, value, *args, **kwargs)
         instance._currency = currency
         return instance

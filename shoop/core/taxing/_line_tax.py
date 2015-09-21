@@ -7,6 +7,10 @@
 
 from __future__ import unicode_literals
 
+import shoop.core.models
+import shoop.utils.money
+import six
+
 
 class LineTax(object):
     """
@@ -20,9 +24,9 @@ class LineTax(object):
     :ivar name: Name of the tax.
     :type name: six.text_type
     :ivar amount: Tax amount.
-    :type amount: decimal.Decimal
+    :type amount: shoop.utils.money.Money
     :ivar base_amount: Amount that this tax is calculated from.
-    :type base_amount: decimal.Decimal
+    :type base_amount: shoop.utils.money.Money
     """
 
     @property
@@ -31,9 +35,18 @@ class LineTax(object):
 
     @classmethod
     def from_tax(cls, tax, base_amount):
+        """
+        Create tax line for given tax and base amount.
+
+        :type cls: type
+        :type tax: shoop.core.models.Tax
+        :type base_amount: shoop.utils.money.Money
+        """
+        assert isinstance(tax, shoop.core.models.Tax)
+        assert isinstance(base_amount, shoop.utils.money.Money)
         return cls(
             tax=tax,
-            name=tax,
+            name=tax.name,
             base_amount=base_amount,
             amount=tax.calculate_amount(base_amount)
         )
@@ -46,9 +59,13 @@ class SourceLineTax(LineTax):
 
         :type tax: shoop.core.models.Tax
         :type name: six.text_type
-        :type amount: decimal.Decimal
-        :type base_amount: decimal.Decimal
+        :type amount: shoop.utils.money.Money
+        :type base_amount: shoop.utils.money.Money
         """
+        assert isinstance(tax, shoop.core.models.Tax)
+        assert isinstance(name, six.text_type)
+        assert isinstance(amount, shoop.utils.money.Money)
+        assert isinstance(base_amount, shoop.utils.money.Money)
         self.tax = tax
         self.name = name
         self.amount = amount

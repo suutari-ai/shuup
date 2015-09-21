@@ -90,7 +90,7 @@ class OrderCreator(object):
                 quantity=(order_line.quantity * child_quantity),
             )
             # Package children are free
-            assert child_order_line.unit_price.amount == 0
+            assert child_order_line.unit_price.value == 0
             child_order_line.source_line = order_line.source_line
             child_order_line.supplier = order_line.supplier
             self._check_orderability(child_order_line)
@@ -153,8 +153,8 @@ class OrderCreator(object):
                 line.taxes.create(
                     tax=line_tax.tax,
                     name=line_tax.tax.name,
-                    amount=line_tax.amount,
-                    base_amount=line_tax.base_amount,
+                    amount_value=line_tax.amount.value,
+                    base_amount_value=line_tax.base_amount.value,
                     ordering=index,
                 )
 

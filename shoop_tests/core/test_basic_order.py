@@ -41,7 +41,7 @@ def create_order(request, creator, customer, product):
     product_order_line = OrderLine(order=order)
     update_order_line_from_product(order_line=product_order_line, product=product, request=request, quantity=5, supplier=supplier)
     product_order_line.unit_price = shop.create_price(100)
-    assert product_order_line.ptotal_price.amount > 0
+    assert product_order_line.total_price.value > 0
     product_order_line.save()
     product_order_line.taxes.add(OrderLineTax.from_tax(get_default_tax(), product_order_line.taxless_total_price))
 

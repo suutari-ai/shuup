@@ -27,7 +27,7 @@ class LinePriceMixin(object):
     @property
     def total_price(self):
         """
-        :rtype: Price
+        :rtype: shoop.core.pricing.Price
         """
         return self.unit_price * self.quantity - self.total_discount
 
@@ -38,9 +38,10 @@ class LinePriceMixin(object):
         """
         total = self.total_price
         if total.includes_tax:
-            return TaxfulPrice(total.amount)
+            return total
         else:
-            return TaxfulPrice(total.amount + self.total_tax_amount)
+            total_and_tax = total.amount + self.total_tax_amount
+            return TaxfulPrice(total_and_tax.value, total.currency)
 
     @property
     def taxless_total_price(self):
@@ -49,9 +50,10 @@ class LinePriceMixin(object):
         """
         total = self.total_price
         if total.includes_tax:
-            return TaxlessPrice(total.amount - self.total_tax_amount)
+            total_without_tax = total.amount - self.total_tax_amount
+            return TaxlessPrice(total_without_tax.value, total.currency)
         else:
-            return TaxlessPrice(total.amount)
+            return total
 
     @property
     def tax_rate(self):
@@ -76,37 +78,44 @@ class LinePriceMixin(object):
         """
         :rtype: TaxfulPrice
         """
-        if self.unit_price.includes_tax:
-            return self.unit_price
+        unit_price = self.unit_price
+        if unit_price.includes_tax:
+            return unit_price
         else:
-            return TaxfulPrice(self.unit_price.amount * (1 + self.tax_rate))
+            value = unit_price.value * (1 + self.tax_rate)
+            return TaxfulPrice(value, unit_price.currency)
 
     @property
     def taxless_unit_price(self):
         """
         :rtype: TaxlessPrice
         """
-        if self.unit_price.includes_tax:
-            return TaxlessPrice(self.unit_price.amount / (1 + self.tax_rate))
+        unit_price = self.unit_price
+        if unit_price.includes_tax:
+            value = unit_price.value / (1 + self.tax_rate)
+            return TaxlessPrice(value, unit_price.currency)
         else:
-            return self.unit_price
+            return unit_price
 
     @property
     def taxful_total_discount(self):
         """
         :rtype: TaxfulPrice
         """
-        if self.total_discount.includes_tax:
-            return self.total_discount
+        total_discount = self.total_discount
+        if total_discount.includes_tax:
+            return total_discount
         else:
-            return TaxfulPrice(self.total_discount.amount * (1 + self.tax_rate))
+            value = total_discount.value * (1 + self.tax_rate)
+            return TaxfulPrice(value, total_discount.currency)
 
     @property
     def taxless_total_discount(self):
         """
         :rtype: TaxlessPrice
         """
-        if self.total_discount.includes_tax:
+        total_discount = self.total_discount
+        if total_discount.includes_tax:
             return TaxlessPrice(self.total_discount.amount / (1 + self.tax_rate))
         else:
-            return self.total_discount
+            return total_discount

@@ -7,14 +7,11 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
-import decimal
-
-from django.conf import settings
 from django.utils.timezone import now
 
 from shoop.core import taxing
 from shoop.core.models import OrderStatus, PaymentMethod, Product, ShippingMethod, Shop, Supplier, TaxClass
-from shoop.core.pricing import Price
+from shoop.core.pricing import Price, TaxfulPrice, TaxlessPrice
 from shoop.core.utils.prices import LinePriceMixin
 from shoop.utils.decorators import non_reentrant
 from shoop.utils.money import Money
@@ -158,6 +155,12 @@ class OrderSource(object):
         tax_module.add_taxes(self, lines)
         self._taxes_calculated = True
 
+    def calculate_taxes_or_raise(self):
+        if not self._taxes_calculated:
+            if not self.calculate_taxes_automatically:
+                raise TaxesNotCalculated('Taxes are not calculated')
+            self.calculate_taxes()
+
     def add_line(self, **kwargs):
         line = SourceLine(source=self, **kwargs)
         self._lines.append(line)
@@ -263,7 +266,7 @@ class OrderSource(object):
             if not self.calculate_taxes_automatically:
                 return None
             self.calculate_taxes()
-        return sum_taxful_totals(self.get_final_lines(), self.zero_price)
+        return sum_taxful_totals(self.get_final_lines(), self.currency)
 
     @property
     def taxless_total_price_if_known(self):
@@ -279,7 +282,7 @@ class OrderSource(object):
             if not self.calculate_taxes_automatically:
                 return None
             self.calculate_taxes()
-        return sum_taxless_totals(self.get_final_lines(), self.zero_price)
+        return sum_taxless_totals(self.get_final_lines(), self.currency)
 
     def get_taxful_total_price(self):
         price = self.taxful_total_price_if_known
@@ -303,9 +306,9 @@ class OrderSource(object):
         """
         product_lines = self._get_product_lines()
         if self.shop.prices_include_tax:
-            return sum_taxful_totals(product_lines, self.zero_price)
+            return sum_taxful_totals(product_lines, self.currency)
         else:
-            return sum_taxless_totals(product_lines, self.zero_price)
+            return sum_taxless_totals(product_lines, self.currency)
 
     def _get_product_lines(self):
         """
@@ -331,12 +334,14 @@ class OrderSource(object):
                 yield error
 
 
-def sum_taxful_totals(lines, initial):
-    return sum((x.taxful_total_price for x in lines), initial)
+def sum_taxful_totals(lines, currency):
+    zero = TaxfulPrice(0, currency)
+    return sum((x.taxful_total_price for x in lines), zero)
 
 
-def sum_taxless_totals(lines, initial):
-    return sum((x.taxless_total_price for x in lines), initial)
+def sum_taxless_totals(lines, currency):
+    zero = TaxlessPrice(0, currency)
+    return sum((x.taxless_total_price for x in lines), zero)
 
 
 def _collect_lines_from_signal(signal_results):
@@ -401,7 +406,7 @@ class SourceLine(LinePriceMixin):
         """
         Taxes of this line.
 
-        Determined by a TaxModule in :func:`OrderSource._compute_taxes`.
+        Determined by a TaxModule in :func:`OrderSource.calculate_taxes`.
 
         :type: list[shoop.core.taxing.LineTax]
         """
@@ -477,6 +482,7 @@ class SourceLine(LinePriceMixin):
         """
         :rtype: shoop.utils.money.Money
         """
+        self.source.calculate_taxes_or_raise()
         zero = self.source.zero_price.amount
         return sum((x.amount for x in self.taxes), zero)
 

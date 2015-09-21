@@ -8,19 +8,29 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 from decimal import Decimal
-
 from django.utils.translation import ugettext as _
 
-from shoop.core.pricing import TaxlessPrice
+from shoop.utils.money import Money
 
 from ._line_tax import LineTax
 
 
 class TaxSummary(list):
     @classmethod
-    def from_line_taxes(cls, line_taxes, untaxed=TaxlessPrice(0)):
-        tax_amount_by_tax = defaultdict(Decimal)
-        base_amount_by_tax = defaultdict(Decimal)
+    def from_line_taxes(cls, currency, line_taxes, untaxed):
+        """
+        Create TaxSummary from LineTaxes.
+
+        :param currency: Currency of money amounts.
+        :param line_taxes:
+           List of line taxes to summarize.
+        :type line_taxes: list[LineTax]
+        :param untaxed:
+          Sum of taxless prices that have no taxes added.
+        :type untaxed: shoop.core.pricing.TaxlessPrice
+        """
+        tax_amount_by_tax = defaultdict(lambda: Money(0, currency))
+        base_amount_by_tax = defaultdict(lambda: Money(0, currency))
         for line_tax in line_taxes:
             assert isinstance(line_tax, LineTax)
             tax_amount_by_tax[line_tax.tax] += line_tax.amount
@@ -34,9 +44,9 @@ class TaxSummary(list):
             lines.append(
                 TaxSummaryLine(
                     tax_id=None, tax_code='', tax_name=_("Untaxed"),
-                    tax_rate=Decimal(0), based_on=Decimal(untaxed),
-                    tax_amount=Decimal(0)))
-        return cls(sorted(lines, key=lambda x: x.tax_rate))
+                    tax_rate=Decimal(0), based_on=untaxed.amount,
+                    tax_amount=Money(0, currency)))
+        return cls(sorted(lines, key=(lambda x: (x.tax_rate or 0))))
 
     def __repr__(self):
         super_repr = super(TaxSummary, self).__repr__()
@@ -51,7 +61,7 @@ class TaxSummaryLine(object):
             tax_rate=tax.rate, based_on=based_on, tax_amount=tax_amount)
 
     def __init__(self, tax_id, tax_code, tax_name, tax_rate,
-                 based_on, tax_amount):
+                 based_on, tax_amount, taxful=None):
         self.tax_id = tax_id
         self.tax_code = tax_code
         self.tax_name = tax_name

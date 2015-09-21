@@ -102,14 +102,15 @@ class BaseMethodModule(object):
         :rtype: bool
         """
         options = self.get_options()
-        waive_limit = options.get("price_waiver_product_minimum")
+        waive_limit_value = options.get("price_waiver_product_minimum")
 
-        if waive_limit and waive_limit > 0:
-            assert isinstance(waive_limit, Decimal)
+        if waive_limit_value and waive_limit_value > 0:
+            assert isinstance(waive_limit_value, Decimal)
+            waive_limit = source.create_price(waive_limit_value)
             product_total = source.get_total_price_of_products()
             if not product_total:
                 return False
-            return (product_total.amount >= waive_limit)
+            return (product_total >= waive_limit)
         return False
 
     def get_effective_price(self, source, **kwargs):
