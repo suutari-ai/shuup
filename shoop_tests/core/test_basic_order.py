@@ -20,24 +20,28 @@ def create_order(request, creator, customer, product):
     billing_address = get_address()
     shipping_address = get_address(name="Shippy Doge")
     shipping_address.save()
+    shop = get_default_shop()
+    assert not shop.prices_include_tax
     order = Order(
         creator=creator,
         customer=customer,
-        shop=get_default_shop(),
+        shop=shop,
         payment_method=get_default_payment_method(),
         shipping_method=get_default_shipping_method(),
         billing_address=billing_address,
         shipping_address=shipping_address,
         order_date=now(),
-        status=get_initial_order_status()
+        status=get_initial_order_status(),
+        currency=shop.currency,
+        prices_include_tax=shop.prices_include_tax,
     )
     order.full_clean()
     order.save()
     supplier = get_default_supplier()
     product_order_line = OrderLine(order=order)
     update_order_line_from_product(order_line=product_order_line, product=product, request=request, quantity=5, supplier=supplier)
-    product_order_line.unit_price = TaxlessPrice(100)
-    assert product_order_line.taxful_total_price.amount > 0
+    product_order_line.unit_price = shop.create_price(100)
+    assert product_order_line.ptotal_price.amount > 0
     product_order_line.save()
     product_order_line.taxes.add(OrderLineTax.from_tax(get_default_tax(), product_order_line.taxless_total_price))
 

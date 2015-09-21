@@ -11,7 +11,9 @@ from django.db import models
 from django.db.models.fields.related import ManyToManyField
 from django.utils.crypto import get_random_string
 
-from shoop.core.fields import MoneyField, TaggedJSONField
+from shoop.core.fields import CurrencyField, MoneyValueField, TaggedJSONField
+from shoop.core.models import Contact, Shop
+from shoop.utils.properties import TaxfulPriceProperty, TaxlessPriceProperty
 
 
 def generate_key():
@@ -21,7 +23,9 @@ def generate_key():
 class StoredBasket(models.Model):
     # A combination of the PK and key is used to retrieve a basket for session situations.
     key = models.CharField(max_length=32, default=generate_key)
-    owner_contact = models.ForeignKey("shoop.Contact", blank=True, null=True)
+
+    shop = models.ForeignKey(Shop)
+    owner_contact = models.ForeignKey(Contact, blank=True, null=True)
     owner_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
 
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, editable=False)
@@ -33,8 +37,11 @@ class StoredBasket(models.Model):
     data = TaggedJSONField()
 
     # For statistics etc., as `data` is opaque:
-    taxless_total = MoneyField(default=0, null=True, blank=True)
-    taxful_total = MoneyField(default=0, null=True, blank=True)
+    taxful_total = TaxfulPriceProperty('taxful_total_value', 'currency')
+    taxless_total = TaxlessPriceProperty('taxless_total_value', 'currency')
+    taxless_total_value = MoneyValueField(default=0, null=True, blank=True)
+    taxful_total_value = MoneyValueField(default=0, null=True, blank=True)
+    currency = CurrencyField()
     product_count = models.IntegerField(default=0)
     products = ManyToManyField("shoop.Product", blank=True)
 

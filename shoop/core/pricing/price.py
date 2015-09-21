@@ -8,6 +8,18 @@ from shoop.utils.money import Money
 
 
 class Price(Money):
+    """
+    Money value with taxful/taxless info.
+
+    Taxful and taxless prices cannot be mixed in comparison or in
+    calculations, i.e. operations like ``x < y`` or ``x + y`` for two
+    Prices ``x`` and ``y`` with ``x.includes_tax != y.includes_tax``
+    will raise an :obj:`~shoop.utils.numbers.UnitMixupError`.
+
+    In addition to `includes_tax` info, Prices are Money and know their
+    `~shoop.utils.numbers.UnitedDecimal.value` and
+    `~shoop.utils.money.Money.currency`.
+    """
     includes_tax = None
 
     def __new__(cls, value="0", *args, **kwargs):
@@ -24,19 +36,39 @@ class Price(Money):
 
     @property
     def amount(self):
+        """
+        Money amount of this price.
+
+        :rtype: Money
+        """
         return Money(self.value, self.currency)
 
     @classmethod
-    def from_value(cls, value, includes_tax):
+    def from_data(cls, value, currency, includes_tax=None):
+        if includes_tax is None:
+            if cls.includes_tax is None:
+                msg = 'Missing includes_tax argument for %s.from_data'
+                raise TypeError(msg % (cls.__name__,))
+            includes_tax = cls.includes_tax
         if includes_tax:
-            return TaxfulPrice(value)
+            return TaxfulPrice(value, currency)
         else:
-            return TaxlessPrice(value)
+            return TaxlessPrice(value, currency)
 
 
 class TaxfulPrice(Price):
+    """
+    Price which includes taxes.
+
+    Check the base class, :obj:`Price`,  for more info.
+    """
     includes_tax = True
 
 
 class TaxlessPrice(Price):
+    """
+    Price which does not include taxes.
+
+    Check the base class, :obj:`Price`,  for more info.
+    """
     includes_tax = False

@@ -60,9 +60,3 @@ def _calculate_taxes(price, taxing_context, tax_class):
     tax_rule = first(taxes)  # TODO: (TAX) Do something better than just using the first tax!
     tax = getattr(tax_rule, "tax", None)
     return stacked_value_added_taxes(price, [tax] if tax else [])
-
-
-def _resolve(obj, path):
-    for name in path.split('.'):
-        obj = getattr(obj, name, None)
-    return obj

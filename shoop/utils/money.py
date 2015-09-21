@@ -10,13 +10,39 @@ from . import numbers
 
 
 class Money(numbers.UnitedDecimal):
+    """
+    Money with value and currency.
+
+    The pure decimal value is available from the base classes
+    `~shoop.utils.numbers.UnitedDecimal.value` property.
+
+    Money objects with different currencies cannot be compared or
+    calculated with and will raise `~shoop.utils.numbers.UnitMixupError`.
+    """
     def __new__(cls, value="0", currency=None, *args, **kwargs):
+        """
+        Create new Money instance with given value and currency.
+
+        :param str|numbers.Number value:
+          Value as string or number
+        :param str|None currency:
+          Currency as ISO-4217 code (3-letter string) or None.
+        """
         instance = super(Money, cls).__new__(cls, value, *args, **kwargs)
         instance._currency = currency
         return instance
 
     @property
     def currency(self):
+        """
+        Currency of this money.
+
+        If this `Money` was created with None currency, will return
+        `settings.SHOOP_HOME_CURRENCY`.
+
+        :return: Currency as ISO-4217 code (3-letter string)
+        :rtype: str
+        """
         return (self._currency or settings.SHOOP_HOME_CURRENCY)
 
     def __repr__(self):
@@ -27,6 +53,10 @@ class Money(numbers.UnitedDecimal):
 
     def __str__(self):
         return "%s %s" % (self.value, self.currency)
+
+    @classmethod
+    def from_data(cls, value, currency):
+        return cls(value, currency)
 
     def unit_matches_with(self, other):
         return (

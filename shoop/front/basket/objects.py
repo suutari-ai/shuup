@@ -89,21 +89,21 @@ class BasketLine(SourceLine):
 
 class BaseBasket(OrderSource):
     def __init__(self, request, basket_name="basket"):
-        super(BaseBasket, self).__init__()
+        super(BaseBasket, self).__init__(request.shop)
         self.basket_name = basket_name
         self.request = request
         self.storage = get_storage()
         self._data = None
         self.dirty = False
         self.customer = getattr(request, "customer", None)
-        self.shop = getattr(request, "shop", None)
         self.__computing_processed_lines = None
 
-    def load(self):
+    def _load(self):
         """
         Get the currently persisted data for this basket.
 
-        This will only access the storage once per request in usual circumstances.
+        This will only access the storage once per request in usual
+        circumstances.
 
         :return: Data dict.
         :rtype: dict
@@ -118,7 +118,8 @@ class BaseBasket(OrderSource):
         Persist any changes made into the basket to storage.
 
         One does not usually need to directly call this;
-        `shoop.front.middleware.ShoopFrontMiddleware` will usually take care of it.
+        :obj:`~shoop.front.middleware.ShoopFrontMiddleware` will usually
+        take care of it.
         """
         self.clean_empty_lines()
         self.storage.save(basket=self, data=self._data)
@@ -154,11 +155,11 @@ class BaseBasket(OrderSource):
 
     @property
     def _data_lines(self):
-        return self.load().setdefault("lines", [])
+        return self._load().setdefault("lines", [])
 
     @_data_lines.setter
     def _data_lines(self, new_lines):
-        self.load()["lines"] = new_lines
+        self._load()["lines"] = new_lines
         self.dirty = True
         self.uncache()
 

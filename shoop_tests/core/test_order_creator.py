@@ -27,11 +27,10 @@ def test_invalid_source_line_updating():
 
 
 def seed_source(user):
-    source = BasketishOrderSource()
+    source = BasketishOrderSource(get_default_shop())
     billing_address = get_address()
     shipping_address = get_address(name="Shippy Doge")
     source.status = get_initial_order_status()
-    source.shop = get_default_shop()
     source.billing_address = billing_address
     source.shipping_address = shipping_address
     source.customer = get_person_contact(user)
@@ -44,19 +43,19 @@ def seed_source(user):
 @pytest.mark.django_db
 def test_order_creator(rf, admin_user):
     source = seed_source(admin_user)
-    source.lines.append(SourceLine(
+    source.add_line(
         type=OrderLineType.PRODUCT,
         product=get_default_product(),
         supplier=get_default_supplier(),
         quantity=1,
         unit_price=TaxlessPrice(10),
-    ))
-    source.lines.append(SourceLine(
+    )
+    source.add_line(
         type=OrderLineType.OTHER,
         quantity=1,
         unit_price=TaxlessPrice(10),
         require_verification=True,
-    ))
+    )
 
     request = apply_request_middleware(rf.get("/"))
 
@@ -72,13 +71,13 @@ def test_order_creator(rf, admin_user):
 @pytest.mark.django_db
 def test_order_creator_supplierless_product_line_conversion_should_fail(rf, admin_user):
     source = seed_source(admin_user)
-    source.lines.append(SourceLine(
+    source.add_line(
         type=OrderLineType.PRODUCT,
         product=get_default_product(),
         supplier=None,
         quantity=1,
         unit_price=TaxlessPrice(10),
-    ))
+    )
 
     request = apply_request_middleware(rf.get("/"))
 
@@ -91,22 +90,22 @@ def test_order_creator_supplierless_product_line_conversion_should_fail(rf, admi
 def test_order_source_parentage(rf, admin_user):
     source = seed_source(admin_user)
     product = get_default_product()
-    source.lines.append(SourceLine(
+    source.add_line(
         type=OrderLineType.PRODUCT,
         product=product,
         supplier=get_default_supplier(),
         quantity=1,
         unit_price=TaxlessPrice(10),
         line_id="parent"
-    ))
-    source.lines.append(SourceLine(
+    )
+    source.add_line(
         type=OrderLineType.OTHER,
         text="Child Line",
         sku="KIDKIDKID",
         quantity=1,
         unit_price=TaxlessPrice(5),
         parent_line_id="parent"
-    ))
+    )
     request = apply_request_middleware(rf.get("/"))
 
     creator = OrderCreator(request)

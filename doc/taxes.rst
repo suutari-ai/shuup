@@ -9,6 +9,17 @@ models provided by Shoop Core are :class:`~shoop.core.models.Tax`,
 the tax, e.g. its rate, code, name and such.  TaxClass is is assigned to
 products and payment & shipping methods and CustomerTaxGroup is assigned to customers, i.e. to :class:`~shoop.core.mofe
 
+Notes: (TODO: (TAX) Write real docs from these notes)
+ - Taxes are not calculated automatically.
+ - Prices can be stored taxful or taxless (i.e. including or excluding
+   taxes). Shop.prices_include_tax determines how prices in that shop
+   are stored. Taxful and taxless prices cannot be mixed.
+ - You should usually use just the plain total_price, unit_price,
+   discount_amount rather than taxless_total_price or taxful_total_price
+   when you can, since using the taxful/taxless prefixed version means
+   that taxes it is possible that has to be calculated, which can be
+   expensive.
+
 Settings
 --------
 

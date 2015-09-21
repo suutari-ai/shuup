@@ -37,6 +37,8 @@ class OrderCreator(object):
         :param source_line: The SourceLine
         """
         order_line = OrderLine(order=order)
+        order_line.currency = source_line.source.currency
+        order_line.prices_include_tax = source_line.source.prices_include_tax
         product = source_line.product
         quantity = Decimal(source_line.quantity)
         if product:
@@ -146,10 +148,8 @@ class OrderCreator(object):
             self.process_saved_order_line(order=order, order_line=order_line)
 
     def add_line_taxes(self, lines):
-        index = 0
         for line in lines:
-            for line_tax in line.source_line.taxes:
-                index += 1
+            for (index, line_tax) in enumerate(line.source_line.taxes, 1):
                 line.taxes.create(
                     tax=line_tax.tax,
                     name=line_tax.tax.name,
@@ -159,6 +159,10 @@ class OrderCreator(object):
                 )
 
     def get_source_order_lines(self, source, order):
+        """
+        :type source: shoop.core.order_creator.OrderSource
+        :type order: shoop.core.models.Order
+        """
         lines = []
         source.update_from_order(order)
         # Since we just updated `order_provision`, we need to uncache
@@ -182,6 +186,8 @@ class OrderCreator(object):
         #     shipping_address=order_provision.shipping_address
         # )
 
+        order_source.calculate_taxes()  # Make sure taxes are calculated
+
         if order_source.billing_address and not order_source.billing_address.pk:
             order_source.billing_address.save()
 
@@ -190,6 +196,8 @@ class OrderCreator(object):
 
         order = Order(
             shop=order_source.shop,
+            currency=order_source.currency,
+            prices_include_tax=order_source.prices_include_tax,
             shipping_method=order_source.shipping_method,
             payment_method=order_source.payment_method,
             customer_comment=order_source.customer_comment,

@@ -25,7 +25,7 @@ class UnitedDecimal(decimal.Decimal):
     @property
     def value(self):
         """
-        Value of this decimal (i.e. without the unit).
+        Value of this decimal without the unit.
 
         :rtype: decimal.Decimal
         """
@@ -190,6 +190,16 @@ class UnitedDecimal(decimal.Decimal):
 
 
 class UnitMixupError(TypeError):
+    """
+    Invoked operation for UnitedDecimal and object with non-matching unit.
+
+    The objects involved are stored in instance variables `obj1` and
+    `obj2`.  Former is instance of :class:`UnitedDecimal` or its
+    subclass and the other could be any object.
+
+    :ivar UnitedDecimal obj1: Involved object 1
+    :ivar Any obj2: Involved object 2
+    """
     def __init__(self, obj1, obj2, msg='Unit mixup'):
         self.obj1 = obj1
         self.obj2 = obj2

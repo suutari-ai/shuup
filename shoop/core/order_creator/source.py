@@ -14,11 +14,21 @@ from django.utils.timezone import now
 
 from shoop.core import taxing
 from shoop.core.models import OrderStatus, PaymentMethod, Product, ShippingMethod, Shop, Supplier, TaxClass
-from shoop.core.pricing import Price, TaxfulPrice, TaxlessPrice
+from shoop.core.pricing import Price
 from shoop.core.utils.prices import LinePriceMixin
 from shoop.utils.decorators import non_reentrant
+from shoop.utils.money import Money
 
 from .signals import post_compute_source_lines
+
+
+class TaxesNotCalculated(TypeError):
+    """
+    Requested tax calculated price but taxes are not calculated.
+
+    Raised when requesting a price with taxful/taxless mismatching with
+    shop.prices_include_tax and taxes are not yet calculated.
+    """
 
 
 class OrderSource(object):
@@ -32,11 +42,16 @@ class OrderSource(object):
     The core API of `OrderCreator` reads an `OrderSource`.
 
     No objects held here need be saved, but they may be.
+
+    :type shop: shoop.core.models.Shop
     """
 
-    def __init__(self):
-        self.shop = None
-        self.display_currency = settings.SHOOP_HOME_CURRENCY
+    def __init__(self, shop):
+        assert isinstance(shop, Shop)
+        self.shop = shop
+        self.currency = shop.currency
+        self.prices_include_tax = shop.prices_include_tax
+        self.display_currency = shop.currency
         self.display_currency_rate = 1
         self.shipping_address = None
         self.billing_address = None
@@ -54,6 +69,24 @@ class OrderSource(object):
         self.shipping_data = {}
         self.extra_data = {}
 
+        self._lines = []
+
+        self.zero_price = shop.create_price(0)
+        self.create_price = self.zero_price.new
+
+        # TODO: (TAX) How to set calculate_taxes_automatically? From a setting?
+        self.calculate_taxes_automatically = False
+        """
+        Calculate taxes automatically when lines are added or processed.
+
+        Set to False to minimize costs and latency, since it is possible
+        that the current TaxModule implemements tax calculations with an
+        integration to a remote system which charges per transaction.
+        """
+
+        self._taxes_calculated = False
+        self._processed_lines_cache = None
+
     def update(self, **values):
         for key, value in values.items():
             if not hasattr(self, key):
@@ -66,6 +99,8 @@ class OrderSource(object):
     def update_from_order(self, order):
         return self.update(
             shop=order.shop,
+            currency=order.currency,
+            prices_include_tax=order.prices_include_tax,
             shipping_address=order.shipping_address,
             billing_address=order.billing_address,
             customer=order.customer,
@@ -112,11 +147,49 @@ class OrderSource(object):
     def status(self, status):
         self.status_id = (status.id if status else None)
 
+    def calculate_taxes(self):
+        lines = self.get_final_lines()
+        if self._taxes_calculated:
+            return
+        self._calculate_taxes(lines)
+
+    def _calculate_taxes(self, lines):
+        tax_module = taxing.get_tax_module()
+        tax_module.add_taxes(self, lines)
+        self._taxes_calculated = True
+
+    def add_line(self, **kwargs):
+        line = SourceLine(source=self, **kwargs)
+        self._lines.append(line)
+        self.uncache()
+        if self.calculate_taxes_automatically:
+            self.calculate_taxes()
+        return line
+
     def get_lines(self):
-        return getattr(self, "lines", ())
+        """
+        Get unprocessed lines in this OrderSource.
+
+        See also `get_final_lines`.
+        """
+        return self._lines
 
     def get_final_lines(self):
-        lines = getattr(self, "_processed_lines_cache", None)
+        """
+        Get lines with processed lines added.
+
+        This usually includes the all lines which are also returned by
+        `get_lines` and in addition, lines from shipping and payment
+        methods, but these lines can be extended, deleted or replaced by
+        a subclass and/or with the `post_compute_source_lines` signal.
+
+        .. note::
+
+           Taxes for the returned lines might not be calculated (that
+           depends on `self.calculate_taxes_automatically` property).
+        """
+
+        lines = self._processed_lines_cache
         if lines is None:
             lines = self.__compute_lines()
             self._processed_lines_cache = lines
@@ -130,6 +203,7 @@ class OrderSource(object):
         (re)accessing lines with :obj:`get_final_lines`.
         """
         self._processed_lines_cache = None
+        self._taxes_calculated = False
 
     @non_reentrant
     def __compute_lines(self):
@@ -146,7 +220,8 @@ class OrderSource(object):
             post_compute_source_lines.send(
                 sender=type(self), source=self, lines=lines)))
 
-        self._compute_taxes(lines)
+        if self.calculate_taxes_automatically:
+            self._calculate_taxes(lines)
 
         return lines
 
@@ -160,35 +235,77 @@ class OrderSource(object):
             for line in self.shipping_method.get_source_lines(self):
                 yield line
 
-    def _compute_taxes(self, lines):
-        tax_module = taxing.get_tax_module()
-        tax_module.add_taxes(self, lines)
-
-    def prices_include_tax(self):
-        # TODO: (TAX) Get taxfulness default from request or PriceTaxContext or customer or whatever
-        yeah
-        return False
-
     @property
     def total_price(self):
-        if self.prices_include_tax():
+        """
+        Taxful or taxless total price.
+
+        Taxfulness depends on self.shop.prices_include_tax.
+
+        :rtype: Price
+        """
+        if self.shop.prices_include_tax:
             return self.taxful_total_price
         else:
             return self.taxless_total_price
 
     @property
-    def taxful_total_price(self):
-        return sum_taxful_totals(self.get_final_lines())
+    def taxful_total_price_if_known(self):
+        """
+        Taxful total price or None if not known.
+
+        Returns None, if prices are stored taxless and taxes are not
+        calculated yet and `calculate_taxes_automatically` is False.
+
+        :rtype: Price|None
+        """
+        if not self._taxes_calculated and not self.prices_include_tax:
+            if not self.calculate_taxes_automatically:
+                return None
+            self.calculate_taxes()
+        return sum_taxful_totals(self.get_final_lines(), self.zero_price)
 
     @property
-    def taxless_total_price(self):
-        return sum_taxless_totals(self.get_final_lines())
+    def taxless_total_price_if_known(self):
+        """
+        Taxless total price or None if not known.
+
+        Returns None, if prices are stored taxful and taxes are not
+        calculated yet and `calculate_taxes_automatically` is False.
+
+        :rtype: Price|None
+        """
+        if not self._taxes_calculated and self.prices_include_tax:
+            if not self.calculate_taxes_automatically:
+                return None
+            self.calculate_taxes()
+        return sum_taxless_totals(self.get_final_lines(), self.zero_price)
+
+    def get_taxful_total_price(self):
+        price = self.taxful_total_price_if_known
+        if not price:
+            raise TaxesNotCalculated("Taxes not known for taxful_total_price")
+        return price
+
+    def get_taxless_total_price(self):
+        price = self.taxless_total_price_if_known
+        if price is None:
+            raise TaxesNotCalculated("Taxes not known for taxless_total_price")
+        return price
 
     def get_total_price_of_products(self):
-        if self.prices_include_tax():
-            return sum_taxful_totals(self._get_product_lines())
+        """
+        Taxful or taxless total price of products.
+
+        Taxfulness depends on self.shop.prices_include_tax.
+
+        :rtype: Price
+        """
+        product_lines = self._get_product_lines()
+        if self.shop.prices_include_tax:
+            return sum_taxful_totals(product_lines, self.zero_price)
         else:
-            return sum_taxless_totals(self._get_product_lines())
+            return sum_taxless_totals(product_lines, self.zero_price)
 
     def _get_product_lines(self):
         """
@@ -214,12 +331,12 @@ class OrderSource(object):
                 yield error
 
 
-def sum_taxful_totals(lines):
-    return sum((x.taxful_total_price for x in lines), TaxfulPrice(0))
+def sum_taxful_totals(lines, initial):
+    return sum((x.taxful_total_price for x in lines), initial)
 
 
-def sum_taxless_totals(lines):
-    return sum((x.taxless_total_price for x in lines), TaxlessPrice(0))
+def sum_taxless_totals(lines, initial):
+    return sum((x.taxless_total_price for x in lines), initial)
 
 
 def _collect_lines_from_signal(signal_results):
@@ -254,7 +371,7 @@ class SourceLine(LinePriceMixin):
     }
     _PRICE_FIELDS = set(["unit_price", "total_discount"])
 
-    def __init__(self, source=None, **kwargs):
+    def __init__(self, source, **kwargs):
         """
         Initialize SourceLine with given source and data.
 
@@ -262,18 +379,19 @@ class SourceLine(LinePriceMixin):
         :type source: OrderSource
         :param kwargs: Data for the `SourceLine`.
         """
+        assert isinstance(source, OrderSource)
         self.source = source
         self.line_id = kwargs.pop("line_id", None)
         self.parent_line_id = kwargs.pop("parent_line_id", None)
         self.type = kwargs.pop("type", None)
         self.shop = kwargs.pop("shop", None)
         self.product = kwargs.pop("product", None)
-        self.tax_class = kwargs.get("tax_class", None)
+        self.tax_class = kwargs.pop("tax_class", None)
         self.supplier = kwargs.pop("supplier", None)
         self.quantity = kwargs.pop("quantity", 0)
-        self.unit_price = kwargs.pop("unit_price", self._create_price(0))
-        self.total_discount = (kwargs.get("total_discount", None) or
-                               0 * self.unit_price)
+        self.unit_price = kwargs.pop("unit_price", source.zero_price)
+        self.total_discount = (kwargs.pop("total_discount", None) or
+                               source.zero_price)
         self.sku = kwargs.pop("sku", "")
         self.text = kwargs.pop("text", "")
         self.require_verification = kwargs.pop("require_verification", False)
@@ -293,8 +411,8 @@ class SourceLine(LinePriceMixin):
         self._state_check()
 
     def _state_check(self):
-        if self.unit_price.includes_tax != self.total_discount.includes_tax:
-            raise TypeError('Unit price %r tax mismatch with discount %r' % (
+        if not self.unit_price.unit_matches_with(self.total_discount):
+            raise TypeError('Unit price %r unit mismatch with discount %r' % (
                 self.unit_price, self.total_discount))
 
         assert self.shop is None or isinstance(self.shop, Shop)
@@ -316,7 +434,7 @@ class SourceLine(LinePriceMixin):
         :type data: dict
         :rtype: cls
         """
-        return cls(source, **cls._deserialize_data(data))
+        return cls(source, **cls._deserialize_data(source, data))
 
     def to_dict(self):
         data = self._data.copy()
@@ -357,15 +475,10 @@ class SourceLine(LinePriceMixin):
     @property
     def total_tax_amount(self):
         """
-        :rtype: decimal.Decimal
+        :rtype: shoop.utils.money.Money
         """
-        return sum((x.amount for x in self.taxes), decimal.Decimal(0))
-
-    def _create_price(self, amount):
-        if self.source and self.source.prices_include_tax():
-            return TaxfulPrice(amount)
-        else:
-            return TaxlessPrice(amount)
+        zero = self.source.zero_price.amount
+        return sum((x.amount for x in self.taxes), zero)
 
     def _serialize_field(self, key):
         value = getattr(self, key)
@@ -374,16 +487,19 @@ class SourceLine(LinePriceMixin):
                 return []
             assert isinstance(value, self._OBJECT_FIELDS[key])
             return [(key + "_id", value.id)]
-        elif key in self._PRICE_FIELDS:
-            assert isinstance(value, Price)
-            return [
-                (key + "_amount", value.amount),
-                (key + "_includes_tax", value.includes_tax),
-            ]
+        elif isinstance(value, Price):
+            if key not in self._PRICE_FIELDS:
+                raise TypeError('Non-price field "%s" has %r' % (key, value))
+            if not value.unit_matches_with(self.source.zero_price):
+                raise TypeError(
+                    'Price %r (in field "%s") not compatible with %r' % (
+                        value, key, self.source.zero_price))
+            return [(key, value.value)]
+        assert not isinstance(value, Money)
         return [(key, value)]
 
     @classmethod
-    def _deserialize_data(cls, data):
+    def _deserialize_data(cls, source, data):
         result = data.copy()
         for (name, model) in cls._OBJECT_FIELDS.items():
             id = result.pop(name + "_id", None)
@@ -391,9 +507,8 @@ class SourceLine(LinePriceMixin):
                 result[name] = model.objects.get(id=id)
 
         for name in cls._PRICE_FIELDS:
-            amount = result.pop(name + "_amount", None)
-            includes_tax = result.pop(name + "_includes_tax", None)
-            if amount is not None:
-                result[name] = Price.from_value(amount, includes_tax)
+            value = result.get(name)
+            if value is not None:
+                result[name] = source.create_price(value)
 
         return result

@@ -12,13 +12,21 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from shoop.admin.base import AdminModule, MenuEntry, SearchResult, Notification
 from shoop.admin.utils.urls import admin_url, get_model_url, derive_model_url
-from shoop.core.models import Order, OrderStatusRole
+from shoop.core.models import Order, OrderStatusRole, Shop
 import six
 
 
 class OrderModule(AdminModule):
     name = _("Orders")
     breadcrumbs_menu_entry = MenuEntry(name, url="shoop_admin:order.list")
+
+    def __init__(self, currency=None, *args, **kwargs):
+        if currency is None:
+            first_shop = Shop.objects.first()
+            if first_shop:
+                currency = first_shop.currency
+        self.currency = currency
+        super(OrderModule, self).__init__(*args, **kwargs)
 
     def get_urls(self):
         return [
@@ -80,11 +88,14 @@ class OrderModule(AdminModule):
 
     def get_dashboard_blocks(self, request):
         import shoop.admin.modules.orders.dashboard as dashboard
-        yield dashboard.get_sales_of_the_day_block(request)
-        yield dashboard.get_lifetime_sales_block(request)
-        yield dashboard.get_avg_purchase_size_block(request)
-        yield dashboard.get_open_orders_block(request)
-        yield dashboard.get_order_value_chart_dashboard_block(request)
+        currency = self.currency
+        if not currency:
+            return
+        yield dashboard.get_sales_of_the_day_block(currency, request)
+        yield dashboard.get_lifetime_sales_block(currency, request)
+        yield dashboard.get_avg_purchase_size_block(currency, request)
+        yield dashboard.get_open_orders_block(currency, request)
+        yield dashboard.get_order_value_chart_dashboard_block(currency, request)
 
     def get_notifications(self, request):
         old_open_orders = Order.objects.filter(

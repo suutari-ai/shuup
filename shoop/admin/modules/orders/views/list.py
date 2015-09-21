@@ -46,7 +46,7 @@ class OrderListView(PicotableListView):
         return format_datetime(localtime(instance.order_date), locale=get_current_babel_locale())
 
     def format_taxful_total_price(self, instance, *args, **kwargs):
-        return escape(format_home_currency(instance.taxful_total_price))
+        return escape(format_home_currency(instance.taxful_total_price))  # TODO: (TAX) check this
 
     def get_object_abstract(self, instance, item):
         return [

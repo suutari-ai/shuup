@@ -18,8 +18,6 @@ from shoop.utils.i18n import get_current_babel_locale
 from shoop.utils import money_field
 
 
-MoneyField = money_field.MoneyField
-
 IdentifierValidator = RegexValidator("[a-z][a-z_]+")
 
 
@@ -54,6 +52,19 @@ class InternalIdentifierField(models.CharField):
         kwargs.pop("verbose_name", None)
         kwargs.pop("help_text", None)
         return (name, path, args, kwargs)
+
+
+class CurrencyField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("max_length", 4)
+        super(CurrencyField, self).__init__(self, *args, **kwargs)
+
+
+class MoneyValueField(models.DecimalField):
+    def __init__(self, **kwargs):
+        kwargs.setdefault("decimal_places", 9)
+        kwargs.setdefault("max_digits", 36)
+        super(MoneyValueField, self).__init__(**kwargs)
 
 
 class QuantityField(models.DecimalField):

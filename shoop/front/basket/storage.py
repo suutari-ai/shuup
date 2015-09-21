@@ -26,6 +26,7 @@ class BasketStorage(six.with_metaclass(abc.ABCMeta)):
         Load the given basket's data dictionary from the storage.
 
         :type basket: shoop.front.basket.objects.BaseBasket
+        :rtype: dict
         """
         return {}
 
@@ -35,6 +36,7 @@ class BasketStorage(six.with_metaclass(abc.ABCMeta)):
         Save the given data dictionary into the storage for the given basket.
 
         :type basket: shoop.front.basket.objects.BaseBasket
+        :type data: dict
         """
         pass
 
@@ -82,11 +84,11 @@ class DatabaseBasketStorage(BasketStorage):
     def save(self, basket, data):
         request = basket.request
         stored_basket = self._get_stored_basket(basket)
+        stored_basket.shop = basket.shop
         stored_basket.data = data
-        # TODO: (TAX) the `basket.*_price` getters probably raise some sort of exception
-        #       if a given price can't be calculated?
-        stored_basket.taxless_total = basket.taxless_total_price
-        stored_basket.taxful_total = basket.taxful_total_price
+        stored_basket.currency = basket.shop.currency
+        stored_basket.taxless_total = basket.taxless_total_price_if_known
+        stored_basket.taxful_total = basket.taxful_total_price_if_known
         stored_basket.product_count = basket.product_count
         user = getattr(request, "user", AnonymousUser())
         customer = getattr(request, "customer", AnonymousContact())

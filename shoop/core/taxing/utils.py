@@ -26,7 +26,7 @@ def stacked_value_added_taxes(price, taxes):
     :rtype: TaxedPrice
     """
     if not taxes:
-        return TaxedPrice(TaxfulPrice(price), TaxlessPrice(price))
+        return TaxedPrice(TaxfulPrice(price), TaxlessPrice(price), [])
 
     taxful = None
 
@@ -34,7 +34,8 @@ def stacked_value_added_taxes(price, taxes):
         taxful = price
         rate_sum = sum(tax.rate for tax in taxes if tax.rate)
         amount_sum = sum(tax.amount for tax in taxes if tax.amount)
-        taxless = TaxlessPrice((taxful.amount - amount_sum) / (1 + rate_sum))
+        taxless_amount = (taxful.amount - amount_sum) / (1 + rate_sum)
+        taxless = TaxlessPrice(taxless_amount.value, taxless_amount.currency)
     else:
         taxless = price
 
@@ -49,6 +50,7 @@ def stacked_value_added_taxes(price, taxes):
     ]
 
     if taxful is None:
-        taxful = TaxfulPrice(taxless.amount + sum(lt.amount for lt in line_taxes))
+        taxful_amount = taxless.amount + sum(lt.amount for lt in line_taxes)
+        taxful = TaxfulPrice(taxful_amount.value, taxful_amount.currency)
 
     return TaxedPrice(taxful, taxless, line_taxes)
