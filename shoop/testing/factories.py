@@ -252,7 +252,7 @@ def get_tax(code, name, rate=None, amount=None):
             code=code,
             name=name,
             rate=Decimal(rate) if rate is not None else None,
-            amount=Decimal(amount) if amount is not None else None
+            amount_value=Decimal(amount) if amount is not None else None
         )
         assert tax.pk
         assert str(tax) == name
@@ -395,6 +395,9 @@ def get_completed_order_status():
 
 
 def create_product(sku, shop=None, supplier=None, default_price=None):
+    if default_price is not None:
+        default_price = shop.create_price(default_price)
+
     product = Product(
         type=get_default_product_type(),
         tax_class=get_default_tax_class(),
@@ -445,7 +448,7 @@ def create_order_with_product(product, supplier, quantity, taxless_unit_price, t
                                        order_line=product_order_line,
                                        product=product, quantity=quantity,
                                        supplier=supplier)
-        product_order_line.unit_price = TaxlessPrice(taxless_unit_price)
+        product_order_line.unit_price = order.shop.create_price(taxless_unit_price)
         product_order_line.save()
         product_order_line.taxes.add(
             OrderLineTax.from_tax(get_test_tax(tax_rate), product_order_line.taxless_total_price)

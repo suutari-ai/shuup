@@ -50,7 +50,7 @@ class SimplePricingModule(PricingModule):
             shop_product = product.get_shop_instance(shop)
             product_id = product.pk
 
-        default_price = (shop_product.default_price or 0)
+        default_price = (shop_product.default_price_value or 0)
 
         if context.customer_group_ids:
             filter = Q(

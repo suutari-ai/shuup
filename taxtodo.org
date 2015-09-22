@@ -9,50 +9,55 @@
 ** DONE Implement CurrencyField
 ** STARTED Add Money/Price properties to models
   - [-] Create MoneyProperty and PriceProperty classes
-     - [X] Implement MoneyProperty and PriceProperty
-     - [X] Unit tests for MoneyProperty and PriceProperty
-     - [-] Docs for MoneyProperty and PriceProperty
-   - [ ] Rename MoneyField to MoneyValueField
-   - [ ] Check all MoneyField usages and add MoneyProperty or PriceProperty
-   - [-] Check all "amount" usages
-   - [ ] Fix callers of model init and objects.create
-   - [ ] Fix users of amount/price fields
-     - [ ] Order.cache_prices
-     - [ ] OrderCreator.add_line_taxes
-     - [ ] OrderLine.total_tax_amount
-     - [ ] Method.module_data
+    - [X] Implement MoneyProperty and PriceProperty
+    - [X] Unit tests for MoneyProperty and PriceProperty
+    - [-] Docs for MoneyProperty and PriceProperty
+  - [-] Rename MoneyField to MoneyValueField
+    - [ ] Check all MoneyField usages and add MoneyProperty or PriceProperty
+    - [X] Check all "amount" usages
+    - [ ] Fix callers of model init and objects.create
+    - [ ] Fix users of amount/price fields
+      - [ ] Order.cache_prices
+      - [ ] OrderCreator.add_line_taxes
+      - [ ] OrderLine.total_tax_amount
+      - [ ] Method.module_data
+    - [ ] Check all MoneyField usages after merging master (and convert
+      to MoneyValueField and add properties)
+    - [ ] Check all "amount" usages after merging master
 ** STARTED Check usages of module_data of Methods for prices
 ** STARTED Check when taxes are determined and amend that
 ** STARTED OrderSource tuning
-   - [-] Docstrings
-   - [-] Make calculate_taxes explicit
-   - [-] Implement auto-calculate taxes
-     - [X] Add flag to OrderSource and use it
-     - [ ] Add getter to TaxModule?
-   - [-] Get rid of OrderSource.uncache
-     - [-] Check all callers of uncache
-     - [-] Implement automatic uncaching
-       - [-] Refactor OrderSource.lines to OrderSource.add_line
-       - [ ] What else is needed?
-   - [ ] Improve price de/serialization
-   - [ ] Check test coverage
-   - [ ] Add and improve tests
+  - [ ] Docstrings
+  - [-] Make calculate_taxes explicit
+  - [-] Implement auto-calculate taxes
+    - [X] Add flag to OrderSource and use it
+    - [ ] Add getter to TaxModule?
+  - [-] Get rid of OrderSource.uncache
+    - [-] Check all callers of uncache
+    - [-] Implement automatic uncaching
+      - [-] Refactor OrderSource.lines to OrderSource.add_line
+      - [ ] What else is needed?
+  - [ ] Improve price de/serialization
+  - [ ] Check test coverage
+  - [ ] Add and improve tests
 ** STARTED Check type specifiers in docstring for Price/Money params and rtypes
-   - [ ] Check all "type.*amount" lines
-   - [ ] Check all "param.*Decimal.*amount" lines
-   - [ ] Check all "type.*price" lines
-   - [ ] Check all "param.*Decimal.*price" lines
-   - [ ] Check all "type.*money" lines
-   - [ ] Check all "param.*Decimal.*money" lines
-   - [ ] Check all "type.*tax" lines
-   - [ ] Check all "param.*Decimal.*tax" lines
+  - [ ] Check all "type.*amount" lines
+  - [ ] Check all "param.*Decimal.*amount" lines
+  - [ ] Check all "type.*price" lines
+  - [ ] Check all "param.*Decimal.*price" lines
+  - [ ] Check all "type.*money" lines
+  - [ ] Check all "param.*Decimal.*money" lines
+  - [ ] Check all "type.*tax" lines
+  - [ ] Check all "param.*Decimal.*tax" lines
+  - [ ] Check these again after merging master
 ** TODO Make tax Admin views work again (and test them through)
 ** TODO Make sure that basket with differing currency/taxness cannot be loaded
 ** STARTED Make sure that all prices are created with Shop.create_price
 ** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
 ** STARTED Jinja filters for Price & Money
-   - [-] Implement the filters
-   - [ ] Use the new filters (instead of home_currency)
+  - [-] Implement the filters
+  - [ ] Use the new filters (instead of home_currency)
+  - [ ] Replace home_currencys after merging master
 ** STARTED Write general tax system documentation
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)

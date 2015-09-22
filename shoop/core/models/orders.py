@@ -34,6 +34,7 @@ from shoop.core.models.suppliers import Supplier
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 from shoop.core.utils.reference import get_order_identifier, get_reference_number
 from shoop.utils.analog import LogEntryKind, define_log_model
+from shoop.utils.money import Money
 from shoop.utils.numbers import bankers_round
 from shoop.utils.properties import TaxfulPriceProperty, TaxlessPriceProperty
 
@@ -295,8 +296,14 @@ class Order(models.Model):
         if not self.label:
             self.label = settings.SHOOP_DEFAULT_ORDER_LABEL
 
+        if not self.currency:
+            self.currency = self.shop.currency
+
+        if not self.prices_include_tax:
+            self.prices_include_tax = self.shop.prices_include_tax
+
         if not self.display_currency:
-            self.display_currency = settings.SHOOP_HOME_CURRENCY
+            self.display_currency = self.currency
             self.display_currency_rate = 1
 
         if self.shipping_method_id and not self.shipping_method_name:
@@ -366,8 +373,8 @@ class Order(models.Model):
         return (self.payment_status == PaymentStatus.FULLY_PAID)
 
     def get_total_paid_amount(self):
-        amounts = self.payments.values_list('amount', flat=True)
-        return sum(amounts, Decimal(0))
+        amounts = self.payments.values_list('amount_value', flat=True)
+        return Money(sum(amounts, Decimal(0)), self.currency)
 
     def create_payment(self, amount, payment_identifier=None, description=''):
         """
@@ -388,10 +395,13 @@ class Order(models.Model):
 
         Returns the created Payment object.
         """
+        assert isinstance(amount, Money)
+        assert amount.currency == self.currency
+
         payments = self.payments.order_by('created_on')
 
         total_paid_amount = self.get_total_paid_amount()
-        if total_paid_amount >= self.taxful_total_price:
+        if total_paid_amount >= self.taxful_total_price.amount:
             raise NoPaymentToCreateException(
                 "Order %s has already been fully paid (%s >= %s)." %
                 (
@@ -405,11 +415,11 @@ class Order(models.Model):
 
         payment = self.payments.create(
             payment_identifier=payment_identifier,
-            amount=amount,
+            amount_value=amount.value,
             description=description,
         )
 
-        if self.get_total_paid_amount() >= self.taxful_total_price:
+        if self.get_total_paid_amount() >= self.taxful_total_price.amount:
             self._set_paid()  # also calls save
 
         return payment

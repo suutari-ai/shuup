@@ -40,8 +40,7 @@ class LinePriceMixin(object):
         if total.includes_tax:
             return total
         else:
-            total_and_tax = total.amount + self.total_tax_amount
-            return TaxfulPrice(total_and_tax.value, total.currency)
+            return TaxfulPrice(total.amount + self.total_tax_amount)
 
     @property
     def taxless_total_price(self):
@@ -50,8 +49,7 @@ class LinePriceMixin(object):
         """
         total = self.total_price
         if total.includes_tax:
-            total_without_tax = total.amount - self.total_tax_amount
-            return TaxlessPrice(total_without_tax.value, total.currency)
+            return TaxlessPrice(total.amount - self.total_tax_amount)
         else:
             return total
 
@@ -82,8 +80,7 @@ class LinePriceMixin(object):
         if unit_price.includes_tax:
             return unit_price
         else:
-            value = unit_price.value * (1 + self.tax_rate)
-            return TaxfulPrice(value, unit_price.currency)
+            return TaxfulPrice(unit_price.amount * (1 + self.tax_rate))
 
     @property
     def taxless_unit_price(self):
@@ -92,8 +89,7 @@ class LinePriceMixin(object):
         """
         unit_price = self.unit_price
         if unit_price.includes_tax:
-            value = unit_price.value / (1 + self.tax_rate)
-            return TaxlessPrice(value, unit_price.currency)
+            return TaxlessPrice(unit_price.amount / (1 + self.tax_rate))
         else:
             return unit_price
 
@@ -106,8 +102,7 @@ class LinePriceMixin(object):
         if total_discount.includes_tax:
             return total_discount
         else:
-            value = total_discount.value * (1 + self.tax_rate)
-            return TaxfulPrice(value, total_discount.currency)
+            return TaxfulPrice(total_discount.amount * (1 + self.tax_rate))
 
     @property
     def taxless_total_discount(self):

@@ -18,7 +18,7 @@ from shoop.core.fields import MoneyValueField, QuantityField, UnsavedForeignKey
 from shoop.core.taxing import LineTax
 from shoop.core.utils.prices import LinePriceMixin
 from shoop.utils.money import Money
-from shoop.utils.properties import MoneyProperty, PriceProperty
+from shoop.utils.properties import MoneyProperty, MoneyPropped, PriceProperty
 
 from ._base import ShoopModel
 
@@ -122,7 +122,7 @@ class OrderLine(models.Model, LinePriceMixin):
 
 
 @python_2_unicode_compatible
-class OrderLineTax(ShoopModel, LineTax):
+class OrderLineTax(MoneyPropped, ShoopModel, LineTax):
     order_line = models.ForeignKey(
         OrderLine, related_name='taxes', on_delete=models.PROTECT,
         verbose_name=_('order line'))

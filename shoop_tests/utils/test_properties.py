@@ -10,6 +10,7 @@ import pytest
 
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 from shoop.utils.properties import (
+    MoneyPropped,
     MoneyProperty, PriceProperty, TaxfulPriceProperty, TaxlessPriceProperty,
     resolve,
 )
@@ -130,3 +131,43 @@ def test_taxless_and_taxful_price_properties():
 
     with pytest.raises(UnitMixupError):
         foo.taxless_price = TaxlessPrice(220, 'EUR')
+
+
+class Base(object):
+    def __init__(self, **kwargs):
+        for (k, v) in kwargs.items():
+            setattr(self, k, v)
+
+
+class Foo(Base):
+    pass
+
+
+class FooItem(MoneyPropped, Base):
+    price = PriceProperty('value', 'foo.currency', 'foo.includes_tax')
+
+
+def test_money_propped_basic():
+    foo = Foo(currency='EUR', includes_tax=True)
+    item = FooItem(foo=foo, price=TaxfulPrice(42, 'EUR'))
+    assert item.price == TaxfulPrice(42, 'EUR')
+    assert item.value == 42
+    assert item.foo.currency == 'EUR'
+
+
+def test_money_propped_type_checking_currency():
+    foo = Foo(currency='EUR', includes_tax=True)
+    with pytest.raises(TypeError):
+        FooItem(foo=foo, price=TaxfulPrice(42, 'USD'))
+
+
+def test_money_propped_type_checking_taxness():
+    foo = Foo(currency='EUR', includes_tax=True)
+    with pytest.raises(TypeError):
+        FooItem(foo=foo, price=TaxlessPrice(42, 'EUR'))
+
+
+def test_money_propped_type_checking_decimal():
+    foo = Foo(currency='EUR', includes_tax=True)
+    with pytest.raises(TypeError):
+        FooItem(foo=foo, price=42)

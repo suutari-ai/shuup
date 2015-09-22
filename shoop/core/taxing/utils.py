@@ -34,8 +34,7 @@ def stacked_value_added_taxes(price, taxes):
         taxful = price
         rate_sum = sum(tax.rate for tax in taxes if tax.rate)
         amount_sum = sum(tax.amount for tax in taxes if tax.amount)
-        taxless_amount = (taxful.amount - amount_sum) / (1 + rate_sum)
-        taxless = TaxlessPrice(taxless_amount.value, taxless_amount.currency)
+        taxless = TaxlessPrice((taxful.amount - amount_sum) / (1 + rate_sum))
     else:
         taxless = price
 
@@ -50,7 +49,7 @@ def stacked_value_added_taxes(price, taxes):
     ]
 
     if taxful is None:
-        taxful_amount = taxless.amount + sum(lt.amount for lt in line_taxes)
-        taxful = TaxfulPrice(taxful_amount.value, taxful_amount.currency)
+        total_tax_amount = sum(x.amount for x in line_taxes)
+        taxful = TaxfulPrice(taxless.amount + total_tax_amount)
 
     return TaxedPrice(taxful, taxless, line_taxes)

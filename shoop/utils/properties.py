@@ -51,7 +51,10 @@ class MoneyProperty(object):
         else:
             attr_to_set = value_full_path
             obj = instance
-        setattr(obj, attr_to_set, getattr(value, part_name))
+        if value is not None:
+            setattr(obj, attr_to_set, getattr(value, part_name))
+        else:
+            setattr(obj, attr_to_set, None)
 
 
 class PriceProperty(MoneyProperty):
@@ -71,6 +74,57 @@ class TaxfulPriceProperty(MoneyProperty):
 
 class TaxlessPriceProperty(MoneyProperty):
     value_class = TaxlessPrice
+
+
+class MoneyPropped(object):
+    """
+    Mixin for transforming MoneyProperty init parameters.
+
+    Add this mixin as (first) base for the class that has
+    `MoneyProperty` properties and this will make its `__init__`
+    tranform passed kwargs to the fields specified in the
+    `MoneyProperty`.
+    """
+    def __init__(self, *args, **kwargs):
+        transformed = _tranform_init_kwargs(type(self), kwargs)
+        super(MoneyPropped, self).__init__(*args, **kwargs)
+        _check_transformed_types(self, transformed)
+
+
+def _tranform_init_kwargs(cls, kwargs):
+    transformed = []
+    for field in list(kwargs.keys()):
+        prop = getattr(cls, field, None)
+        if isinstance(prop, MoneyProperty):
+            value = kwargs.pop(field)
+            _tranform_single_init_kwarg(prop, field, value, kwargs)
+            transformed.append((field, value))
+    return transformed
+
+
+def _tranform_single_init_kwarg(prop, field, value, kwargs):
+    if value is not None and not isinstance(orig_value, prop.value_class):
+        raise TypeError('Expecting type %s for field "%s" (got %r)' %
+                        (prop.value_class.__name__, field, orig_value))
+    for (attr, path) in prop._fields.items():
+        if '.' in path:
+            continue  # Only set "local" fields
+        if path in kwargs:
+            f = (field, path)
+            raise TypeError('Fields %s and %s conflict' % f)
+        if orig_value is None:
+            kwargs[path] = None
+        else:
+            kwargs[path] = getattr(orig_value, attr)
+    return orig_value
+
+
+def _check_transformed_types(self, transformed):
+    for (field, orig_value) in transformed:
+        new_value = getattr(self, field)
+        if new_value != orig_value:
+            msg = 'Cannot set %s to %r (try %r)'
+            raise TypeError(msg % (field, orig_value, new_value))
 
 
 def resolve(obj, path):

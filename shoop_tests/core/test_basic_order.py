@@ -10,7 +10,6 @@ from django.utils.timezone import now
 import pytest
 from shoop.core.models import Order, OrderLine, OrderLineType, get_person_contact
 from shoop.core.models.order_lines import OrderLineTax
-from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 from shoop.core.shortcuts import update_order_line_from_product
 from shoop.testing.factories import get_address, get_default_payment_method, get_default_shipping_method, \
     get_default_supplier, get_default_product, get_default_shop, get_initial_order_status, get_default_tax
@@ -46,10 +45,10 @@ def create_order(request, creator, customer, product):
     product_order_line.taxes.add(OrderLineTax.from_tax(get_default_tax(), product_order_line.taxless_total_price))
 
     discount_order_line = OrderLine(order=order, quantity=1, type=OrderLineType.OTHER)
-    discount_order_line.total_discount = TaxfulPrice(30)
-    assert discount_order_line.taxful_total_discount.amount == 30
-    assert discount_order_line.taxful_total_price.amount == -30
-    assert discount_order_line.taxful_unit_price.amount == 0
+    discount_order_line.total_discount = shop.create_price(30)
+    assert discount_order_line.total_discount.value == 30
+    assert discount_order_line.total_price.value == -30
+    assert discount_order_line.unit_price.value == 0
     discount_order_line.save()
 
     order.cache_prices()
@@ -57,7 +56,7 @@ def create_order(request, creator, customer, product):
     order.save()
     base_amount = 5 * 100
     tax_value = get_default_tax().calculate_amount(base_amount)
-    assert order.taxful_total_price == base_amount + tax_value - 30, "Math works"
+    assert order.taxful_total_price.value == base_amount + tax_value - 30, "Math works"
 
     shipment = order.create_shipment_of_all_products(supplier=supplier)
     assert shipment.total_products == 5, "All products were shipped"

@@ -11,14 +11,16 @@ import pytest
 
 
 def test_init():
-    TaxfulPrice(42)
-    TaxlessPrice(42)
-    assert TaxfulPrice().value == 0
-    assert TaxlessPrice().value == 0
+    TaxfulPrice(42, 'EUR')
+    TaxlessPrice(42, 'EUR')
+    assert TaxfulPrice(currency='EUR').value == 0
+    assert TaxlessPrice(currency='EUR').value == 0
     with pytest.raises(TypeError):
         Price()
     with pytest.raises(TypeError):
         Price(10)
+    with pytest.raises(TypeError):
+        Price(10, 'EUR')
 
 
 def test_init_with_currency():
@@ -32,12 +34,12 @@ def test_init_with_currency():
 
 def test_tax_mixup():
     with pytest.raises(TypeError):
-        TaxfulPrice(42) - TaxlessPrice(2)
+        TaxfulPrice(42, 'EUR') - TaxlessPrice(2, 'EUR')
 
 
 def test_new():
-    assert TaxfulPrice().new(42) == TaxfulPrice(42)
-    assert TaxlessPrice().new(-10) == TaxlessPrice(-10)
+    assert TaxfulPrice(currency='EUR').new(42) == TaxfulPrice(42, 'EUR')
+    assert TaxlessPrice(currency='EUR').new(-10) == TaxlessPrice(-10, 'EUR')
     assert TaxfulPrice(10, 'GBP').new(5) == TaxfulPrice(5, 'GBP')
 
 

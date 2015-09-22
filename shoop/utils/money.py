@@ -37,8 +37,6 @@ class Money(numbers.UnitedDecimal):
         if currency is None and hasattr(value, 'currency'):
             currency = value.currency
         if not currency:
-            import pdb
-            pdb.set_trace()
             raise TypeError('%s: currency must be given' % cls.__name__)
         instance = super(Money, cls).__new__(cls, value, *args, **kwargs)
         instance._currency = currency
