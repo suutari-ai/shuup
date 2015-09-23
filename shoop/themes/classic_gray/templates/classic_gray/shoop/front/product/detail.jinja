@@ -61,12 +61,12 @@
                     <div class="price-line">
                         <h4 class="visible-xs">{% trans %}Price{% endtrans %}</h4>
                         <span class="lead">
-                            <small class="text-muted original-price"><s>{{ priceinfo.base_price|floatformat(2)|home_currency }}</s></small>
-                            <strong>{{ priceinfo.price|floatformat(2)|home_currency }}</strong><small> / {{ product.sales_unit.short_name }}</small>
+                            <small class="text-muted original-price"><s>{{ priceinfo.base_price|money }}</s></small>
+                            <strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small>
                         </span>
                     </div>
                 {% else %}
-                    <div class="price-line"><span class="lead"><strong>{{ priceinfo.price|floatformat(2)|home_currency }}</strong><small> / {{ product.sales_unit.short_name }}</small></span></div>
+                    <div class="price-line"><span class="lead"><strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small></span></div>
                 {% endif %}
             </div>
             <hr>

@@ -57,10 +57,9 @@ class ShopProduct(MoneyPropped, models.Model):
         "ProductMedia", null=True, blank=True, related_name="primary_image_for_shop_products", on_delete=models.SET_NULL
     )
 
-    # the default price of this product in the shop, taxfulness is determined in
-    # `Shop.prices_include_tax`
-    default_price_value = MoneyValueField(verbose_name=_("Default price"), null=True, blank=True)
+    # the default price of this product in the shop
     default_price = PriceProperty('default_price_value', 'shop.currency', 'shop.prices_include_tax')
+    default_price_value = MoneyValueField(verbose_name=_("Default price"), null=True, blank=True)
 
     class Meta:
         unique_together = (("shop", "product",),)

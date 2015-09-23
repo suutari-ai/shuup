@@ -21,9 +21,9 @@
             {% if shop %}<p class="shop">{{ shop }}</p>{% endif %}
             {# TODO: (TAX) Check following line (gets taxful price of product)  #}
             <div class="price">
-                {{ price_info.price|home_currency }}
+                {{ price_info.price|money }}
                 {% if price_info.is_discounted %}
-                    <span class="original">{{price_info.base_price|home_currency}}</span>
+                    <span class="original">{{price_info.base_price|money}}</span>
                 {% endif %}
             </div>
             <div class="actions clearfix">

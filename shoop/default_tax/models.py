@@ -34,7 +34,8 @@ PRIORITY_HELP = _(
 class TaxRule(models.Model):
     enabled = models.BooleanField(default=True, verbose_name=_('enabled'), db_index=True)
     tax_classes = models.ManyToManyField("shoop.TaxClass")
-    customer_tax_groups = models.ManyToManyField("shoop.CustomerTaxGroup")
+    customer_tax_groups = models.ManyToManyField(
+        "shoop.CustomerTaxGroup", null=True, blank=True)
     country_codes_pattern = models.CharField(max_length=300, blank=True)
     region_codes_pattern = models.CharField(max_length=500, blank=True)
     postal_codes_pattern = models.CharField(max_length=500, blank=True)

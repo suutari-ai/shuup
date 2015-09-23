@@ -61,7 +61,9 @@ def get_subtitle(count):
 def get_sales_of_the_day_block(currency, request):
     orders = get_orders_by_currency(currency)
     # Sales of the day
-    todays_order_data = orders.complete().since(0).aggregate(count=Count("id"), sum=Sum("taxful_total_price"))
+    todays_order_data = (
+        orders.complete().since(0)
+        .aggregate(count=Count("id"), sum=Sum("taxful_total_price_value")))
 
     return DashboardMoneyBlock(
         id="todays_order_sum",
@@ -80,7 +82,7 @@ def get_lifetime_sales_block(currency, request):
     # Lifetime sales
     lifetime_sales_data = orders.complete().aggregate(
         count=Count("id"),
-        sum=Sum("taxful_total_price")
+        sum=Sum("taxful_total_price_value")
     )
 
     return DashboardMoneyBlock(
@@ -99,11 +101,13 @@ def get_avg_purchase_size_block(currency, request):
 
     lifetime_sales_data = orders.complete().aggregate(
         count=Count("id"),
-        sum=Sum("taxful_total_price")
+        sum=Sum("taxful_total_price_value")
     )
 
     # Average size of purchase with amount of orders it is calculated from
-    average_purchase_size = Order.objects.all().aggregate(count=Count("id"), sum=Avg("taxful_total_price"))
+    average_purchase_size = (
+        Order.objects.all()
+        .aggregate(count=Count("id"), sum=Avg("taxful_total_price_value")))
     return DashboardMoneyBlock(
         id="average_purchase_sum",
         color="blue",
