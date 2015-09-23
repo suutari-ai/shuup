@@ -20,6 +20,10 @@ from shoop.core.fields import CurrencyField, InternalIdentifierField
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 
 
+def _get_default_currency():
+    return settings.SHOOP_HOME_CURRENCY
+
+
 class ShopStatus(Enum):
     DISABLED = 0
     ENABLED = 1
@@ -32,7 +36,7 @@ class Shop(TranslatableModel):
     status = EnumIntegerField(ShopStatus, default=ShopStatus.DISABLED)
     owner = models.ForeignKey("Contact", blank=True, null=True)
     options = JSONField(blank=True, null=True)
-    currency = CurrencyField(default=(lambda: settings.SHOOP_HOME_CURRENCY))
+    currency = CurrencyField(default=_get_default_currency)
     prices_include_tax = models.BooleanField(default=False)
     logo = FilerImageField(verbose_name=_('logo'), blank=True, null=True)
 

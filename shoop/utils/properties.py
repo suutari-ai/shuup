@@ -32,7 +32,8 @@ class MoneyProperty(object):
         return self.value_class.from_data(**data)
 
     def __set__(self, instance, value):
-        self._check_unit(instance, value)
+        if value is not None:
+            self._check_unit(instance, value)
         self._set_part(instance, 'value', value)
 
     def _check_unit(self, instance, value):
@@ -103,20 +104,19 @@ def _tranform_init_kwargs(cls, kwargs):
 
 
 def _tranform_single_init_kwarg(prop, field, value, kwargs):
-    if value is not None and not isinstance(orig_value, prop.value_class):
+    if value is not None and not isinstance(value, prop.value_class):
         raise TypeError('Expecting type %s for field "%s" (got %r)' %
-                        (prop.value_class.__name__, field, orig_value))
+                        (prop.value_class.__name__, field, value))
     for (attr, path) in prop._fields.items():
         if '.' in path:
             continue  # Only set "local" fields
         if path in kwargs:
             f = (field, path)
             raise TypeError('Fields %s and %s conflict' % f)
-        if orig_value is None:
+        if value is None:
             kwargs[path] = None
         else:
-            kwargs[path] = getattr(orig_value, attr)
-    return orig_value
+            kwargs[path] = getattr(value, attr)
 
 
 def _check_transformed_types(self, transformed):

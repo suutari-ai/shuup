@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from shoop.core import taxing
 from shoop.core.models import OrderStatus, PaymentMethod, Product, ShippingMethod, Shop, Supplier, TaxClass
 from shoop.core.pricing import Price, TaxfulPrice, TaxlessPrice
+from shoop.core.taxing import TaxableItem
 from shoop.core.utils.prices import LinePriceMixin
 from shoop.utils.decorators import non_reentrant
 from shoop.utils.money import Money
@@ -144,23 +145,6 @@ class OrderSource(object):
     def status(self, status):
         self.status_id = (status.id if status else None)
 
-    def calculate_taxes(self):
-        lines = self.get_final_lines()
-        if self._taxes_calculated:
-            return
-        self._calculate_taxes(lines)
-
-    def _calculate_taxes(self, lines):
-        tax_module = taxing.get_tax_module()
-        tax_module.add_taxes(self, lines)
-        self._taxes_calculated = True
-
-    def calculate_taxes_or_raise(self):
-        if not self._taxes_calculated:
-            if not self.calculate_taxes_automatically:
-                raise TaxesNotCalculated('Taxes are not calculated')
-            self.calculate_taxes()
-
     def add_line(self, **kwargs):
         line = SourceLine(source=self, **kwargs)
         self._lines.append(line)
@@ -177,7 +161,7 @@ class OrderSource(object):
         """
         return self._lines
 
-    def get_final_lines(self):
+    def get_final_lines(self, with_taxes=False):
         """
         Get lines with processed lines added.
 
@@ -188,15 +172,33 @@ class OrderSource(object):
 
         .. note::
 
-           Taxes for the returned lines might not be calculated (that
-           depends on `self.calculate_taxes_automatically` property).
+           By default, taxes for the returned lines are not calculated
+           when `self.calculate_taxes_automatically` is false.  Pass in
+           ``True`` to `with_taxes` argument or use `calculate_taxes`
+           method to force tax calculation.
         """
 
         lines = self._processed_lines_cache
         if lines is None:
             lines = self.__compute_lines()
             self._processed_lines_cache = lines
+        if with_taxes and not self._taxes_calculated:
+            self._calculate_taxes(lines)
         return lines
+
+    def calculate_taxes(self):
+        self.get_final_lines(with_taxes=True)
+
+    def _calculate_taxes(self, lines):
+        tax_module = taxing.get_tax_module()
+        tax_module.add_taxes(self, lines)
+        self._taxes_calculated = True
+
+    def calculate_taxes_or_raise(self):
+        if not self._taxes_calculated:
+            if not self.calculate_taxes_automatically:
+                raise TaxesNotCalculated('Taxes are not calculated')
+            self.calculate_taxes()
 
     def uncache(self):
         """
@@ -248,9 +250,9 @@ class OrderSource(object):
         :rtype: Price
         """
         if self.shop.prices_include_tax:
-            return self.taxful_total_price
+            return self.taxful_total_price_if_known
         else:
-            return self.taxless_total_price
+            return self.taxless_total_price_if_known
 
     @property
     def taxful_total_price_if_known(self):
@@ -351,7 +353,7 @@ def _collect_lines_from_signal(signal_results):
                 yield line
 
 
-class SourceLine(LinePriceMixin):
+class SourceLine(LinePriceMixin, TaxableItem):
     """
     Line of OrderSource.
 
@@ -424,12 +426,6 @@ class SourceLine(LinePriceMixin):
         assert self.product is None or isinstance(self.product, Product)
         assert self.supplier is None or isinstance(self.supplier, Supplier)
 
-        if self.product and self.tax_class and (
-                self.product.tax_class != self.tax_class):
-            raise ValueError(
-                "Conflicting product and line tax classes: %r vs %r" % (
-                    self.product.tax_class, self.tax_class))
-
     @classmethod
     def from_dict(cls, source, data):
         """
@@ -474,8 +470,17 @@ class SourceLine(LinePriceMixin):
             return getattr(self, key, default)
         return self._data.get(key, default)
 
-    def get_tax_class(self):
-        return self.product.tax_class if self.product else self.tax_class
+    @property
+    def tax_class(self):
+        return self.product.tax_class if self.product else self._tax_class
+
+    @tax_class.setter
+    def tax_class(self, value):
+        if self.product and value and value != self.product.tax_class:
+            raise ValueError(
+                "Conflicting product and line tax classes: %r vs %r" % (
+                    self.product.tax_class, value))
+        self._tax_class = value
 
     @property
     def total_tax_amount(self):

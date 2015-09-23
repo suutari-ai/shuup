@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from shoop.core import taxing
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
-from shoop.core.taxing._context import TaxingContext
 from shoop.core.taxing.utils import stacked_value_added_taxes
 from shoop.default_tax.models import TaxRule
 from shoop.utils.iterables import first
@@ -18,31 +17,8 @@ class DefaultTaxModule(taxing.TaxModule):
     identifier = "default_tax"
     name = _("Default Taxation")
 
-    def add_taxes(self, source, lines):
-        super(DefaultTaxModule, self).add_taxes(source, lines)
-        tax_group = (source.customer.tax_group if source.customer else None)
-        taxing_context = TaxingContext(
-            customer_tax_group=tax_group,
-            location=source.billing_address,
-        )
-        for line in lines:
-            assert line.source == source
-            if not line.parent_line_id:
-                line.taxes = self._get_line_taxes(taxing_context, line)
-
-    def _get_line_taxes(self, taxing_context, source_line):
-        """
-        Get taxes for given source line of an order source.
-
-        :type taxing_context: TaxingContext
-        :type source_line: shoop.core.order_creator.SourceLine
-        :rtype: Iterable[LineTax]
-        """
-        return _calculate_taxes(
-            source_line.total_price,
-            taxing_context=taxing_context,
-            tax_class=source_line.get_tax_class(),
-        ).taxes
+    def get_taxed_price_for(self, context, item, price):
+        return _calculate_taxes(price, context, item.tax_class)
 
 
 def _calculate_taxes(price, taxing_context, tax_class):

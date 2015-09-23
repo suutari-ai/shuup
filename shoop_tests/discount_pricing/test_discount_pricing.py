@@ -72,7 +72,6 @@ def test_price_infos_are_discounted(rf):
     first_price_info = price_infos[product_one.pk]
     second_price_info = price_infos[product_two.pk]
 
-
     assert first_price_info.price == price(100)
     assert first_price_info.base_price == price(150)
     assert first_price_info.is_discounted

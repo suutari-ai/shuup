@@ -33,6 +33,7 @@
     - [X] Add flag to OrderSource and use it
     - [ ] Add getter to TaxModule?
   - [-] Get rid of OrderSource.uncache
+        - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
     - [-] Check all callers of uncache
     - [-] Implement automatic uncaching
       - [-] Refactor OrderSource.lines to OrderSource.add_line

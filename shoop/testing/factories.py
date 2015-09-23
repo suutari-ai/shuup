@@ -36,12 +36,12 @@ from shoop.core.models import (
     ProductMediaKind, ProductType, SalesUnit, ShippingMethod, Shop, ShopProduct, ShopStatus, StockBehavior, Supplier,
     SupplierType, Tax, TaxClass
 )
-from shoop.core.order_creator import OrderCreator, OrderSource, SourceLine
-from shoop.core.pricing import TaxlessPrice
+from shoop.core.order_creator import OrderCreator, OrderSource
 from shoop.core.shortcuts import update_order_line_from_product
 from shoop.default_tax.models import TaxRule
 from shoop.testing.text_data import random_title
 from shoop.utils.filer import filer_image_from_data
+from shoop.utils.money import Money
 from shoop_tests.utils import apply_request_middleware
 
 from .image_generator import generate_image
@@ -246,13 +246,15 @@ def get_default_product_type():
 
 
 def get_tax(code, name, rate=None, amount=None):
+    assert amount is None or isinstance(amount, Money)
     tax = Tax.objects.filter(code=code).first()
     if not tax:
         tax = Tax.objects.create(
             code=code,
             name=name,
             rate=Decimal(rate) if rate is not None else None,
-            amount_value=Decimal(amount) if amount is not None else None
+            amount_value=getattr(amount, 'value', None),
+            currency=getattr(amount, 'currency', None),
         )
         assert tax.pk
         assert str(tax) == name
@@ -450,9 +452,11 @@ def create_order_with_product(product, supplier, quantity, taxless_unit_price, t
                                        supplier=supplier)
         product_order_line.unit_price = order.shop.create_price(taxless_unit_price)
         product_order_line.save()
-        product_order_line.taxes.add(
-            OrderLineTax.from_tax(get_test_tax(tax_rate), product_order_line.taxless_total_price)
-        )
+        product_order_line.taxes.add(OrderLineTax.from_tax(
+            get_test_tax(tax_rate),
+            product_order_line.taxless_total_price.amount,
+            order_line=product_order_line,
+        ))
     assert order.get_product_ids_and_quantities()[product.pk] == (quantity * n_lines), "Things got added"
     return order
 

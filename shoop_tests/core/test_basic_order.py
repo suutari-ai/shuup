@@ -42,7 +42,12 @@ def create_order(request, creator, customer, product):
     product_order_line.unit_price = shop.create_price(100)
     assert product_order_line.total_price.value > 0
     product_order_line.save()
-    product_order_line.taxes.add(OrderLineTax.from_tax(get_default_tax(), product_order_line.taxless_total_price))
+
+    product_order_line.taxes.add(OrderLineTax.from_tax(
+        tax=get_default_tax(),
+        base_amount=product_order_line.taxless_total_price.amount,
+        order_line=product_order_line,
+    ))
 
     discount_order_line = OrderLine(order=order, quantity=1, type=OrderLineType.OTHER)
     discount_order_line.total_discount = shop.create_price(30)

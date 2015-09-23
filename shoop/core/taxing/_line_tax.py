@@ -34,7 +34,7 @@ class LineTax(object):
         return (self.amount / self.base_amount)
 
     @classmethod
-    def from_tax(cls, tax, base_amount):
+    def from_tax(cls, tax, base_amount, **kwargs):
         """
         Create tax line for given tax and base amount.
 
@@ -42,13 +42,12 @@ class LineTax(object):
         :type tax: shoop.core.models.Tax
         :type base_amount: shoop.utils.money.Money
         """
-        assert isinstance(tax, shoop.core.models.Tax)
-        assert isinstance(base_amount, shoop.utils.money.Money)
         return cls(
             tax=tax,
             name=tax.name,
             base_amount=base_amount,
-            amount=tax.calculate_amount(base_amount)
+            amount=tax.calculate_amount(base_amount),
+            **kwargs
         )
 
 

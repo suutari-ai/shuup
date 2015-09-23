@@ -70,7 +70,8 @@ def test_line_discount():
     ol.total_discount = order.shop.create_price(50)
     ol.unit_price = order.shop.create_price(40)
     ol.save()
-    ol.taxes.add(OrderLineTax.from_tax(get_default_tax(), ol.taxless_total_price))
+    ol.taxes.add(OrderLineTax.from_tax(
+        get_default_tax(), ol.taxless_total_price.amount, order_line=ol))
     assert ol.taxless_total_discount == order.shop.create_price(50)
     assert ol.taxful_total_discount == TaxfulPrice(75, currency)
     assert ol.taxless_total_price == order.shop.create_price(150)
@@ -93,7 +94,8 @@ def test_line_discount_more():
     assert ol.taxless_unit_price == TaxlessPrice(30, currency)
     assert ol.taxless_total_discount == TaxlessPrice(50, currency)
     assert ol.taxless_total_price == TaxlessPrice(5 * 30 - 50, currency)
-    ol.taxes.add(OrderLineTax.from_tax(get_default_tax(), ol.taxless_total_price))
+    ol.taxes.add(OrderLineTax.from_tax(
+        get_default_tax(), ol.taxless_total_price.amount, order_line=ol))
     assert ol.taxless_total_discount == TaxlessPrice(50, currency)
     assert ol.taxful_total_discount == TaxfulPrice(75, currency)
     assert ol.taxless_total_price == TaxlessPrice(100, currency)

@@ -24,7 +24,7 @@ class TaxedPrice(object):
         self.taxless = taxless
         self.taxes = taxes
         assert not taxes or (
-            taxful.amount == (taxless.amount + sum(x.amount for x in taxes))
+            taxful.amount == (taxless.amount + sum((x.amount for x in taxes), taxful.new(0).amount))
         )
 
     @property

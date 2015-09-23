@@ -11,23 +11,23 @@ from shoop.utils.money import Money
 from shoop.utils.virtual_fields import VirtualMoneyField
 
 
-class TestModel(models.Model):
-    value = MoneyValueField()
-    currency = CurrencyField()
-    amount = VirtualMoneyField('value', 'currency')
+# class TestModel(models.Model):
+#     value = MoneyValueField()
+#     currency = CurrencyField()
+#     amount = VirtualMoneyField('value', 'currency')
 
 
-def test_simple_init():
-    TestModel()
+# def test_simple_init():
+#     TestModel()
 
 
-def test_init_with_basic_params():
-    TestModel(value=3, currency='EUR')
+# def test_init_with_basic_params():
+#     TestModel(value=3, currency='EUR')
 
 
-def test_init_with_amount_param():
-    m = TestModel(amount=Money(42, 'EUR'))
-    assert m.amount == Money(42, 'EUR')
-    assert m.value == 42
-    m.amount = Money(42, 'USD')
-    assert m.currency == 'EUR'
+# def test_init_with_amount_param():
+#     m = TestModel(amount=Money(42, 'EUR'))
+#     assert m.amount == Money(42, 'EUR')
+#     assert m.value == 42
+#     m.amount = Money(42, 'USD')
+#     assert m.currency == 'EUR'

@@ -53,7 +53,7 @@ def test_basket(rf, storage):
         if is_database:
             stats = StoredBasket.objects.all().aggregate(
                 n=Sum("product_count"),
-                s=Sum("taxless_total"),
+                s=Sum("taxless_total_value"),
             )
             assert stats["n"] == sum(quantities)
             assert stats["s"] == sum(quantities) * 50
