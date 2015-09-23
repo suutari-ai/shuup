@@ -16,4 +16,11 @@ $(function() {
             $(this).closest(".title").toggleClass("open");
         }
     });
-}());
+    $(".content-block").each(function() {
+        if ($(this).find(".has-error").length) {
+            $(this).find(".block-title").addClass("mobile-error-indicator");
+        }
+    });
+    // Activate first sidebar-list-item with errors
+    $("a.sidebar-list-item.errors").first().trigger("click");
+});

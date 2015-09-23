@@ -43,6 +43,7 @@ $(function() {
 
     $(".language-dependent-content").each(function() {
         const $ctr = $(this);
+        var firstTabWithErrorsOpened = false;
         $ctr.find(".nav-tabs li").each(function() {
             const $tab = $(this);
             const lang = $tab.data("lang");
@@ -55,7 +56,12 @@ $(function() {
             }
             const tabHasErrors = ($tabPane.find(".has-error").length > 0);
             if(tabHasErrors) {
-                $tab.find("a").append($(" <div class=error-indicator><i class=\"fa fa-exclamation-circle\"></i></div>"));
+                const $tabLink = $tab.find("a");
+                $tabLink.append($(" <div class=error-indicator><i class=\"fa fa-exclamation-circle\"></i></div>"));
+                if (!firstTabWithErrorsOpened) {
+                    $tabLink.tab("show");
+                    firstTabWithErrorsOpened = true;
+                }
             }
         });
     });
