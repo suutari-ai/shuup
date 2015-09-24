@@ -38,11 +38,13 @@ class Shop(TranslatableModel):
     options = JSONField(blank=True, null=True)
     currency = CurrencyField(default=_get_default_currency)
     prices_include_tax = models.BooleanField(default=False)
-    logo = FilerImageField(verbose_name=_('logo'), blank=True, null=True)
+    logo = FilerImageField(verbose_name=_("logo"), blank=True, null=True)
+    maintenance_mode = models.BooleanField(verbose_name=_("maintenance mode"), default=False)
 
     translations = TranslatedFields(
         name=models.CharField(max_length=64),
-        public_name=models.CharField(max_length=64)
+        public_name=models.CharField(max_length=64),
+        maintenance_message=models.CharField(max_length=300, blank=True)
     )
 
     def __str__(self):

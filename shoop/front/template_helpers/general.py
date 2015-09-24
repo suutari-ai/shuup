@@ -5,6 +5,7 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
+from django.core.paginator import Paginator
 from django.utils.translation import get_language
 from jinja2.utils import contextfunction
 from mptt.templatetags.mptt_tags import cache_tree_children
@@ -90,3 +91,28 @@ def get_root_categories(context):
             customer=request.customer, shop=request.shop, language=language))
     cache_translations_for_tree(roots, languages=[language])
     return roots
+
+
+@contextfunction
+def get_pagination_variables(context, objects, limit):
+    """
+    Get pagination variables for template
+
+    :param context: template context
+    :param objects: objects paginated
+    :param limit: per page limit
+    :return: variables to render object-list with pagination
+    """
+    variables = {"objects": objects}
+
+    variables["paginator"] = paginator = Paginator(objects, limit)
+    variables["is_paginated"] = (paginator.num_pages > 1)
+    try:
+        current_page = int(context["request"].GET.get("page") or 0)
+    except ValueError:
+        current_page = 1
+    page = paginator.page(min((current_page or 1), paginator.num_pages))
+    variables["page"] = page
+    variables["objects"] = page.object_list
+
+    return variables
