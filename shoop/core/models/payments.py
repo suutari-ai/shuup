@@ -22,16 +22,12 @@ class Payment(models.Model):
     gateway_id = models.CharField(max_length=32)  # TODO: do we need this?
     payment_identifier = models.CharField(max_length=96, unique=True)
 
-    amount = MoneyProperty('amount_value', 'currency')
+    amount = MoneyProperty('amount_value', 'order.currency')
     foreign_amount = MoneyProperty('foreign_amount_value', 'foreign_currency')
 
-    amount = MoneyProperty('amount_value', 'currency')
-    foreign_amount = MoneyProperty('foreign_amount_value', 'foreign_currency')
-
-    currency = CurrencyField()
     amount_value = MoneyValueField()
-    foreign_currency = CurrencyField(default=None, blank=True, null=True)
     foreign_amount_value = MoneyValueField(default=None, blank=True, null=True)
+    foreign_currency = CurrencyField(default=None, blank=True, null=True)
 
     description = models.CharField(max_length=256, blank=True)
 
