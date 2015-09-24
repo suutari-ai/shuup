@@ -85,10 +85,7 @@ class DatabaseBasketStorage(BasketStorage):
     def save(self, basket, data):
         request = basket.request
         stored_basket = self._get_stored_basket(basket)
-        stored_basket.shop = basket.shop
         stored_basket.data = data
-        stored_basket.currency = basket.currency
-        stored_basket.prices_include_tax = basket.prices_include_tax
 
         try:
             stored_basket.taxless_total = basket.taxless_total_price
@@ -120,8 +117,10 @@ class DatabaseBasketStorage(BasketStorage):
                 "StoredBasket=%s with Shop=%s, Dest. Basket Shop=%s)" % (
                     stored_basket.id, stored_basket.shop.id, basket.shop.id))
             raise ValueError(msg)
-        if not _price_units_match(stored_basket, stored_basket.shop):
-            raise TypeError("Basket %s: Price unit mismatch" % basket.id)
+        price_unit_diff = _price_units_diff(stored_basket, basket.shop)
+        if price_unit_diff:
+            msg = "Basket %s: Price unit mismatch with Shop (%s)"
+            raise TypeError(msg % (stored_basket.id, price_unit_diff))
         return stored_basket.data or {}
 
     def delete(self, basket):
@@ -148,14 +147,22 @@ class DatabaseBasketStorage(BasketStorage):
         if not stored_basket:
             if basket_get_kwargs:
                 request.session.pop(self._get_session_key(basket), None)
-            stored_basket = StoredBasket()
+            stored_basket = StoredBasket(
+                shop=basket.shop,
+                currency=basket.currency,
+                prices_include_tax=basket.prices_include_tax,
+            )
         return stored_basket
 
 
-def _price_units_match(x, y):
-    return (
-        (x.currency == y.currency) and
-        (x.prices_include_tax == y.prices_include_tax))
+def _price_units_diff(x, y):
+    diff = []
+    if x.currency != y.currency:
+        diff.append('currency: %r vs %r' % (x.currency, y.currency))
+    if x.prices_include_tax != y.prices_include_tax:
+        diff.append('includes_tax: %r vs %r' % (
+            x.prices_include_tax, y.prices_include_tax))
+    return ', '.join(diff)
 
 
 def get_storage():

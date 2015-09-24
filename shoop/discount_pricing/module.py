@@ -61,8 +61,8 @@ class DiscountPricingModule(PricingModule):
         result = (
             DiscountedProductPrice.objects
             .filter(product=product_id, shop=shop)
-            .order_by("price")[:1]
-            .values_list("price", flat=True)
+            .order_by("price_value")[:1]
+            .values_list("price_value", flat=True)
         )
 
         price = (min(result[0], default_price) if result else default_price)

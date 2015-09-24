@@ -53,10 +53,10 @@ def test_price_infos_are_discounted(rf):
     product_one = create_product("Product_1", request.shop, default_price=150)
     product_two = create_product("Product_2", request.shop, default_price=250)
 
-    spp = DiscountedProductPrice(product=product_one, shop=request.shop, price=100)
+    spp = DiscountedProductPrice(product=product_one, shop=request.shop, price_value=100)
     spp.save()
 
-    spp = DiscountedProductPrice(product=product_two, shop=request.shop, price=200)
+    spp = DiscountedProductPrice(product=product_two, shop=request.shop, price_value=200)
     spp.save()
 
     product_ids = [product_one.pk, product_two.pk]
@@ -88,7 +88,7 @@ def test_price_is_discounted(rf):
 
     product = create_product("random-1", shop=shop, default_price=100)
 
-    DiscountedProductPrice.objects.create(product=product, shop=shop, price=50)
+    DiscountedProductPrice.objects.create(product=product, shop=shop, price_value=50)
 
     request = rf.get("/")
     request.shop = shop
@@ -109,7 +109,7 @@ def test_shop_specific_cheapest_price_1(rf):
     product = create_product("Just-A-Product", request.shop, default_price=200)
 
     # DiscountedProductPrice.objects.create(product=product, shop=None, price=200)
-    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price=250)
+    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price_value=250)
 
     # Cheaper price is valid even if shop-specific discount exists
     assert product.get_price(request, quantity=1) == price(200)
@@ -121,7 +121,7 @@ def test_shop_specific_cheapest_price_2(rf):
 
     product = create_product("Just-A-Product-Too", request.shop, default_price=199)
 
-    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price=250)
+    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price_value=250)
 
     # Cheaper price is valid even if the other way around applies
     assert product.get_price(request, quantity=1) == price(199)
@@ -135,7 +135,7 @@ def test_set_taxful_price_works(rf):
     product = create_product("Anuva-Product", request.shop, default_price=300)
 
     # create ssp with higher price
-    spp = DiscountedProductPrice(product=product, shop=request.shop, price=250)
+    spp = DiscountedProductPrice(product=product, shop=request.shop, price_value=250)
     spp.save()
 
     dpm = DiscountPricingModule()
@@ -155,7 +155,7 @@ def test_set_taxful_price_works_with_product_id(rf):
     product = create_product("Anuva-Product", request.shop, default_price=300)
 
     # create ssp with higher price
-    spp = DiscountedProductPrice(product=product, shop=request.shop, price=250)
+    spp = DiscountedProductPrice(product=product, shop=request.shop, price_value=250)
     spp.save()
 
     dpm = DiscountPricingModule()
@@ -175,7 +175,7 @@ def test_zero_default_price(rf):
     # create a product with zero price
     product = create_product("random-1", shop=request.shop, default_price=0)
 
-    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price=50)
+    DiscountedProductPrice.objects.create(product=product, shop=request.shop, price_value=50)
 
     dpm = DiscountPricingModule()
     pricing_context = dpm.get_context_from_request(request)

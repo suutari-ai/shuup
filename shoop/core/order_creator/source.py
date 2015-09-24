@@ -33,22 +33,17 @@ class PriceSumProperty(object):
     def __init__(self, field, line_getter="get_final_lines"):
         self.field = field
         self.line_getter = line_getter
+        self.params = {}
+        if 'taxful' in self.field:
+            self.price_kwargs['includes_tax'] = True
+        elif 'taxless' in self.field:
+            self.price_kwargs['includes_tax'] = False
 
     def __get__(self, instance, type=None):
         if instance is None:
             return self
-
-        if 'taxful' in self.field:
-            price_cls = TaxfulPrice
-        elif 'taxless' in self.field:
-            price_cls = TaxlessPrice
-        elif instance.prices_include_tax:
-            price_cls = TaxfulPrice
-        else:
-            price_cls = TaxlessPrice
-
-        zero = price_cls(0, instance.currency)
-
+        taxful = self.params.get('includes_tax', instance.prices_include_tax)
+        zero = (TaxfulPrice if taxful else TaxlessPrice)(0, instance.currency)
         lines = getattr(instance, self.line_getter)()
         return sum((getattr(x, self.field) for x in lines), zero)
 

@@ -38,7 +38,7 @@ class SimplePricingForm(forms.Form):
             ((shop_id or 0, group_id or 0), price)
             for (shop_id, group_id, price)
             in SimpleProductPrice.objects.filter(product=self.product)
-            .values_list("shop_id", "group_id", "price")
+            .values_list("shop_id", "group_id", "price_value")
         )
 
         for group in self.groups:
