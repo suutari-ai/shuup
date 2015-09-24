@@ -58,10 +58,9 @@ class MethodsForm(forms.Form):
 
     def limit_method_fields(self):
         basket = self.basket  # type: shoop.front.basket.objects.BaseBasket
-        shop = self.shop
         for field_name, methods in (
-                ("shipping_method", basket.get_available_shipping_methods(shop)),
-                ("payment_method", basket.get_available_payment_methods(shop)),
+                ("shipping_method", basket.get_available_shipping_methods()),
+                ("payment_method", basket.get_available_payment_methods()),
         ):
             field = self.fields[field_name]
             field.basket = self.basket

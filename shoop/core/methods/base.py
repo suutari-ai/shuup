@@ -107,7 +107,7 @@ class BaseMethodModule(object):
         if waive_limit_value and waive_limit_value > 0:
             assert isinstance(waive_limit_value, Decimal)
             waive_limit = source.create_price(waive_limit_value)
-            product_total = source.get_total_price_of_products()
+            product_total = source.total_price_of_products
             if not product_total:
                 return False
             return (product_total >= waive_limit)

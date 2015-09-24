@@ -29,6 +29,30 @@ class TaxesNotCalculated(TypeError):
     """
 
 
+class PriceSumProperty(object):
+    def __init__(self, field, line_getter="get_final_lines"):
+        self.field = field
+        self.line_getter = line_getter
+
+    def __get__(self, instance, type=None):
+        if instance is None:
+            return self
+
+        if 'taxful' in self.field:
+            price_cls = TaxfulPrice
+        elif 'taxless' in self.field:
+            price_cls = TaxlessPrice
+        elif instance.prices_include_tax:
+            price_cls = TaxfulPrice
+        else:
+            price_cls = TaxlessPrice
+
+        zero = price_cls(0, instance.currency)
+
+        lines = getattr(instance, self.line_getter)()
+        return sum((getattr(x, self.field) for x in lines), zero)
+
+
 class OrderSource(object):
     """
     A "provisional order" object.
@@ -117,6 +141,14 @@ class OrderSource(object):
             shipping_data=order.shipping_data,
             extra_data=order.extra_data,
         )
+
+    total_price = PriceSumProperty("total_price")
+    taxful_total_price = PriceSumProperty("taxful_total_price")
+    taxless_total_price = PriceSumProperty("taxless_total_price")
+    total_discount = PriceSumProperty("total_discount")
+    taxful_total_discount = PriceSumProperty("taxful_total_discount")
+    taxless_total_discount = PriceSumProperty("taxless_total_discount")
+    total_price_of_products = PriceSumProperty("total_price", "_get_product_lines")
 
     @property
     def shipping_method(self):
@@ -240,78 +272,6 @@ class OrderSource(object):
             for line in self.shipping_method.get_source_lines(self):
                 yield line
 
-    @property
-    def total_price(self):
-        """
-        Taxful or taxless total price.
-
-        Taxfulness depends on self.shop.prices_include_tax.
-
-        :rtype: Price
-        """
-        if self.shop.prices_include_tax:
-            return self.taxful_total_price_if_known
-        else:
-            return self.taxless_total_price_if_known
-
-    @property
-    def taxful_total_price_if_known(self):
-        """
-        Taxful total price or None if not known.
-
-        Returns None, if prices are stored taxless and taxes are not
-        calculated yet and `calculate_taxes_automatically` is False.
-
-        :rtype: Price|None
-        """
-        if not self._taxes_calculated and not self.prices_include_tax:
-            if not self.calculate_taxes_automatically:
-                return None
-            self.calculate_taxes()
-        return sum_taxful_totals(self.get_final_lines(), self.currency)
-
-    @property
-    def taxless_total_price_if_known(self):
-        """
-        Taxless total price or None if not known.
-
-        Returns None, if prices are stored taxful and taxes are not
-        calculated yet and `calculate_taxes_automatically` is False.
-
-        :rtype: Price|None
-        """
-        if not self._taxes_calculated and self.prices_include_tax:
-            if not self.calculate_taxes_automatically:
-                return None
-            self.calculate_taxes()
-        return sum_taxless_totals(self.get_final_lines(), self.currency)
-
-    def get_taxful_total_price(self):
-        price = self.taxful_total_price_if_known
-        if not price:
-            raise TaxesNotCalculated("Taxes not known for taxful_total_price")
-        return price
-
-    def get_taxless_total_price(self):
-        price = self.taxless_total_price_if_known
-        if price is None:
-            raise TaxesNotCalculated("Taxes not known for taxless_total_price")
-        return price
-
-    def get_total_price_of_products(self):
-        """
-        Taxful or taxless total price of products.
-
-        Taxfulness depends on self.shop.prices_include_tax.
-
-        :rtype: Price
-        """
-        product_lines = self._get_product_lines()
-        if self.shop.prices_include_tax:
-            return sum_taxful_totals(product_lines, self.currency)
-        else:
-            return sum_taxless_totals(product_lines, self.currency)
-
     def _get_product_lines(self):
         """
         Get lines with a product.
@@ -334,16 +294,6 @@ class OrderSource(object):
         if payment_method:
             for error in payment_method.get_validation_errors(source=self):
                 yield error
-
-
-def sum_taxful_totals(lines, currency):
-    zero = TaxfulPrice(0, currency)
-    return sum((x.taxful_total_price for x in lines), zero)
-
-
-def sum_taxless_totals(lines, currency):
-    zero = TaxlessPrice(0, currency)
-    return sum((x.taxless_total_price for x in lines), zero)
 
 
 def _collect_lines_from_signal(signal_results):

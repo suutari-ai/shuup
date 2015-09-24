@@ -41,7 +41,7 @@ class ConfirmPhase(CheckoutPhaseViewMixin, FormView):
         basket = self.request.basket
         assert isinstance(basket, BaseBasket)
         basket.calculate_taxes()
-        errors = list(basket.get_validation_errors(shop=self.request.shop))
+        errors = list(basket.get_validation_errors())
         context["basket"] = basket
         context["errors"] = errors
         context["orderable"] = (not errors)

@@ -17,6 +17,7 @@ from django.core.exceptions import ImproperlyConfigured
 from shoop.core.models import AnonymousContact
 from shoop.front.models import StoredBasket
 from shoop.utils.importing import cached_load
+from shoop.core.order_creator import TaxesNotCalculated
 
 
 class BasketStorage(six.with_metaclass(abc.ABCMeta)):
@@ -87,8 +88,16 @@ class DatabaseBasketStorage(BasketStorage):
         stored_basket.shop = basket.shop
         stored_basket.data = data
         stored_basket.currency = basket.shop.currency
-        stored_basket.taxless_total = basket.taxless_total_price_if_known
-        stored_basket.taxful_total = basket.taxful_total_price_if_known
+
+        try:
+            stored_basket.taxless_total = basket.taxless_total_price
+        except TaxesNotCalculated:
+            pass
+        try:
+            stored_basket.taxful_total = basket.taxful_total_price
+        except TaxesNotCalculated:
+            pass
+
         stored_basket.product_count = basket.product_count
         user = getattr(request, "user", AnonymousUser())
         customer = getattr(request, "customer", AnonymousContact())

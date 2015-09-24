@@ -19,11 +19,11 @@ class DefaultTaxModule(taxing.TaxModule):
     name = _("Default Taxation")
 
     def add_taxes(self, source, lines):
-        from six.moves import input; input('Getting taxes for %s lines (total: %s). Press enter...' % (len(source.get_lines()), source.total_price))  #TODO: REMOVE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #from six.moves import input; input('Getting taxes for %s lines (total: %s). Press enter...' % (len(source.get_lines()), source.total_price))  #TODO: REMOVE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         super(DefaultTaxModule, self).add_taxes(source, lines)
 
     def get_taxed_price_for(self, context, item, price):
-        import time; time.sleep(1); print('Getting taxes for %s (price %s) in %s' % (item, price, context))  # TODO: REMOVE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #import time; time.sleep(1); print('Getting taxes for %s (price %s) in %s' % (item, price, context))  # TODO: REMOVE THIS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         return _calculate_taxes(price, context, item.tax_class)
 
 

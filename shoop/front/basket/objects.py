@@ -48,7 +48,6 @@ class BasketLine(SourceLine):
         self.unit_price = price_info.unit_base_price
         self.total_discount = price_info.discount_amount
         assert self.total_price == price_info.price
-        # TODO: (TAX) Cache also taxes for BasketLine? (with product.get_taxed_price)
         self.net_weight = product.net_weight
         self.gross_weight = product.gross_weight
         self.shipping_mode = product.shipping_mode
@@ -74,9 +73,9 @@ class BasketLine(SourceLine):
             raise ValueError("Invalid basket line type. Only values of OrderLineType are allowed.")
         self.__dict__["type"] = type
 
-    def add_quantity(self, quantity):
+    def set_quantity(self, quantity):
         cls = Decimal if self.product.sales_unit.allow_fractions else int
-        self.quantity = cls(max(0, self.quantity + quantity))
+        self.quantity = cls(max(0, quantity))
 
     @property
     def can_delete(self):
@@ -229,8 +228,13 @@ class BaseBasket(OrderSource):
         if isinstance(data_line, SourceLine):
             data_line = data_line.to_dict()
         assert isinstance(data_line, dict)
+        line_ids = [x["line_id"] for x in self._data_lines]
+        try:
+            index = line_ids.index(data_line["line_id"])
+        except ValueError:
+            index = len(line_ids)
         self.delete_line(data_line["line_id"])
-        self._data_lines.append(data_line)
+        self._data_lines.insert(index, data_line)
         self.uncache()
 
     def add_product(self, supplier, shop, product, quantity, force_new_line=False, extra=None, parent_line=None):
@@ -247,14 +251,20 @@ class BaseBasket(OrderSource):
         if not data:
             data = self._initialize_product_line_data(product=product, supplier=supplier, shop=shop)
 
-        line = BasketLine.from_dict(self, data)
-        line.add_quantity(quantity)
-        line.cache_info(self.request)
-        line.update(**extra)
-
         if parent_line:
-            line.parent_line_id = parent_line.line_id
+            data["parent_line_id"] = parent_line.line_id
 
+        new_quantity = max(0, data["quantity"] + Decimal(quantity))
+
+        return self.update_line(data, quantity=new_quantity, **extra)
+
+    def update_line(self, data_line, **kwargs):
+        line = BasketLine.from_dict(self, data_line)
+        new_quantity = kwargs.pop("quantity", None)
+        if new_quantity is not None:
+            line.set_quantity(new_quantity)
+        line.update(**kwargs)
+        line.cache_info(self.request)
         self._add_or_replace_line(line)
         return line
 
@@ -303,12 +313,12 @@ class BaseBasket(OrderSource):
 
     orderable = property(_get_orderable)
 
-    def get_validation_errors(self, shop):
+    def get_validation_errors(self):
         for error in super(BaseBasket, self).get_validation_errors():
             yield error
 
-        shipping_methods = self.get_available_shipping_methods(shop)
-        payment_methods = self.get_available_payment_methods(shop)
+        shipping_methods = self.get_available_shipping_methods()
+        payment_methods = self.get_available_payment_methods()
 
         advice = _(
             "Try to remove some products from the basket "
@@ -326,7 +336,7 @@ class BaseBasket(OrderSource):
             product = line.product
             if not product:
                 continue
-            shop_product = product.get_shop_instance(shop=shop)
+            shop_product = product.get_shop_instance(shop=self.shop)
             if not shop_product:
                 yield ValidationError(
                     _("%s not available in this shop") % product.name,
@@ -349,29 +359,27 @@ class BaseBasket(OrderSource):
 
         return dict(q_counter)
 
-    def get_available_shipping_methods(self, shop):
+    def get_available_shipping_methods(self):
         """
-        Get available shipping methods for given shop.
+        Get available shipping methods.
 
-        :type shop: Shop
         :rtype: list[ShippingMethod]
         """
         return [
             m for m
-            in ShippingMethod.objects.available(shop_id=shop.pk, product_ids=self.product_ids)
+            in ShippingMethod.objects.available(shop=self.shop, products=self.product_ids)
             if m.is_valid_for_source(source=self)
         ]
 
-    def get_available_payment_methods(self, shop):
+    def get_available_payment_methods(self):
         """
-        Get available payment methods for given shop.
+        Get available payment methods.
 
-        :type shop: Shop
         :rtype: list[PaymentMethod]
         """
         return [
             m for m
-            in PaymentMethod.objects.available(shop_id=shop.pk, product_ids=self.product_ids)
+            in PaymentMethod.objects.available(shop=self.shop, products=self.product_ids)
             if m.is_valid_for_source(source=self)
         ]
 

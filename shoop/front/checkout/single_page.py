@@ -47,9 +47,8 @@ class OrderForm(forms.Form):
 
     def limit_method_fields(self):
         basket = self.basket  # type: shoop.front.basket.objects.BaseBasket
-        shop = self.shop
-        shipping_methods = basket.get_available_shipping_methods(shop)
-        payment_methods = basket.get_available_payment_methods(shop)
+        shipping_methods = basket.get_available_shipping_methods()
+        payment_methods = basket.get_available_payment_methods()
         self["shipping_method"].field.choices = _to_choices(shipping_methods)
         self["payment_method"].field.choices = _to_choices(payment_methods)
 
@@ -92,7 +91,8 @@ class SingleCheckoutPhase(CheckoutPhaseViewMixin, FormView):
         ctx = FormView.get_context_data(self, **kwargs)
         basket = self.request.basket  # type: shoop.front.basket.objects.BaseBasket
         ctx["basket"] = basket
-        errors = list(basket.get_validation_errors(shop=self.request.shop))
+        basket.calculate_taxes()
+        errors = list(basket.get_validation_errors())
         ctx["errors"] = errors
         ctx["orderable"] = (not errors)
         return ctx
