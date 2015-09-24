@@ -59,6 +59,8 @@
   - [-] Implement the filters
   - [ ] Use the new filters (instead of home_currency)
   - [ ] Replace home_currencys after merging master
+** TODO Make value-added taxes work (_calculate_taxes)
+** TODO Make compound taxes raise a NYI error (_calculate_taxes)
 ** STARTED Write general tax system documentation
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)
