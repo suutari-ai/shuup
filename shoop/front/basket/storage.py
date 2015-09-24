@@ -87,7 +87,8 @@ class DatabaseBasketStorage(BasketStorage):
         stored_basket = self._get_stored_basket(basket)
         stored_basket.shop = basket.shop
         stored_basket.data = data
-        stored_basket.currency = basket.shop.currency
+        stored_basket.currency = basket.currency
+        stored_basket.prices_include_tax = basket.prices_include_tax
 
         try:
             stored_basket.taxless_total = basket.taxless_total_price
@@ -113,6 +114,14 @@ class DatabaseBasketStorage(BasketStorage):
 
     def load(self, basket):
         stored_basket = self._get_stored_basket(basket)
+        if stored_basket.shop != basket.shop:
+            msg = (
+                "Cannot load basket of a different Shop ("
+                "StoredBasket=%s with Shop=%s, Dest. Basket Shop=%s)" % (
+                    stored_basket.id, stored_basket.shop.id, basket.shop.id))
+            raise ValueError(msg)
+        if not _price_units_match(stored_basket, stored_basket.shop):
+            raise TypeError("Basket %s: Price unit mismatch" % basket.id)
         return stored_basket.data or {}
 
     def delete(self, basket):
@@ -141,6 +150,12 @@ class DatabaseBasketStorage(BasketStorage):
                 request.session.pop(self._get_session_key(basket), None)
             stored_basket = StoredBasket()
         return stored_basket
+
+
+def _price_units_match(x, y):
+    return (
+        (x.currency == y.currency) and
+        (x.prices_include_tax == y.prices_include_tax))
 
 
 def get_storage():

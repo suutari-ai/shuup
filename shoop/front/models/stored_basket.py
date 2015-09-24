@@ -42,6 +42,7 @@ class StoredBasket(models.Model):
     taxless_total_value = MoneyValueField(default=0, null=True, blank=True)
     taxful_total_value = MoneyValueField(default=0, null=True, blank=True)
     currency = CurrencyField()
+    prices_include_tax = models.BooleanField()
     product_count = models.IntegerField(default=0)
     products = ManyToManyField("shoop.Product", blank=True)
 

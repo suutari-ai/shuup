@@ -198,8 +198,6 @@ class Product(AttributableMixin, TranslatableModel, TaxableItem):
     gross_weight = MeasurementField(unit="g", verbose_name=_('gross weight (g)'))
 
     # Misc.
-    purchase_price = MoneyValueField(verbose_name=_('purchase price'), blank=True, null=True)
-    suggested_retail_price = MoneyValueField(verbose_name=_('suggested retail price'), blank=True, null=True)
     manufacturer = models.ForeignKey("Manufacturer", blank=True, null=True, verbose_name=_('manufacturer'))
     primary_image = models.ForeignKey(
         "ProductMedia", null=True, blank=True,
