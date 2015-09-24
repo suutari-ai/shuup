@@ -31,7 +31,7 @@ class ExpensiveSwedenShippingModule(BaseShippingMethodModule):
     def get_effective_name(self, source, **kwargs):
         return u"Expenseefe-a Svedee Sheepping"
 
-    def get_effective_price(self, source, **kwargs):
+    def get_effective_price_info(self, source, **kwargs):
         four = source.shop.create_price('4.00')
         five = source.shop.create_price('5.00')
         if source.shipping_address and source.shipping_address.country == "SE":
@@ -133,14 +133,14 @@ def test_waiver():
     source = BasketishOrderSource(get_default_shop())
     assert not source.prices_include_tax
     assert sm.get_effective_name(source) == u"Waivey"
-    assert sm.get_effective_price(source).price == source.shop.create_price(100)
+    assert sm.get_effective_price_info(source).price == source.shop.create_price(100)
     source.add_line(
         type=OrderLineType.PRODUCT,
         product=get_default_product(),
         unit_price=source.shop.create_price(400),
         quantity=1
     )
-    assert sm.get_effective_price(source).price == source.shop.create_price(0)
+    assert sm.get_effective_price_info(source).price == source.shop.create_price(0)
 
 
 @pytest.mark.django_db

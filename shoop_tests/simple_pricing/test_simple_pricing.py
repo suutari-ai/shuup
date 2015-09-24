@@ -61,11 +61,11 @@ def test_shop_specific_cheapest_price_1(rf):
     product = create_product("Just-A-Product", shop, default_price=200)
 
     # SimpleProductPrice.objects.create(product=product, shop=None, price=200)
-    SimpleProductPrice.objects.create(product=product, shop=shop, group=group, price=250)
+    SimpleProductPrice.objects.create(product=product, shop=shop, group=group, price_value=250)
     spm = SimplePricingModule()
 
     # Cheaper price is valid even if shop-specific price exists
-    assert product.get_price(spm.get_context_from_request(request), quantity=1) == price(200)
+    assert product.get_price(request, quantity=1) == price(200)
 
 
 @pytest.mark.django_db
@@ -75,11 +75,11 @@ def test_shop_specific_cheapest_price_2(rf):
 
     product = create_product("Just-A-Product-Too", shop, default_price=199)
 
-    SimpleProductPrice.objects.create(product=product, shop=shop, group=group, price=250)
+    SimpleProductPrice.objects.create(product=product, shop=shop, group=group, price_value=250)
     spm = SimplePricingModule()
 
     # Cheaper price is valid even if the other way around applies
-    assert product.get_price(spm.get_context_from_request(request), quantity=1) == price(199)
+    assert product.get_price(request, quantity=1) == price(199)
 
 
 @pytest.mark.django_db
@@ -90,7 +90,7 @@ def test_set_taxful_price_works(rf):
     product = create_product("Anuva-Product", shop, default_price=300)
 
     # create ssp with higher price
-    spp = SimpleProductPrice(product=product, shop=shop, group=group, price=250)
+    spp = SimpleProductPrice(product=product, shop=shop, group=group, price_value=250)
     spp.save()
 
     spm = SimplePricingModule()
@@ -109,7 +109,7 @@ def test_set_taxful_price_works_with_product_id(rf):
     product = create_product("Anuva-Product", shop, default_price=300)
 
     # create ssp with higher price
-    spp = SimpleProductPrice(product=product, shop=shop, group=group, price=250)
+    spp = SimpleProductPrice(product=product, shop=shop, group=group, price_value=250)
     spp.save()
 
     spm = SimplePricingModule()
@@ -129,10 +129,10 @@ def test_price_infos(rf):
     product_one = create_product("Product_1", shop, default_price=150)
     product_two = create_product("Product_2", shop, default_price=250)
 
-    spp = SimpleProductPrice(product=product_one, shop=shop, group=group, price=100)
+    spp = SimpleProductPrice(product=product_one, shop=shop, group=group, price_value=100)
     spp.save()
 
-    spp = SimpleProductPrice(product=product_two, shop=shop, group=group, price=200)
+    spp = SimpleProductPrice(product=product_two, shop=shop, group=group, price_value=200)
     spp.save()
 
     product_ids = [product_one.pk, product_two.pk]
@@ -160,7 +160,7 @@ def test_no_customer(rf):
 
     product = create_product("random-1", shop=shop, default_price=100)
 
-    SimpleProductPrice.objects.create(product=product, group=group, shop=shop, price=50)
+    SimpleProductPrice.objects.create(product=product, group=group, shop=shop, price_value=50)
 
     request = rf.get("/")
     request.shop = shop
@@ -181,7 +181,7 @@ def test_zero_default_price(rf):
     # create a product with zero price
     product = create_product("random-1", shop=shop, default_price=0)
 
-    SimpleProductPrice.objects.create(product=product, group=group, shop=shop, price=50)
+    SimpleProductPrice.objects.create(product=product, group=group, shop=shop, price_value=50)
 
     spm = SimplePricingModule()
     pricing_context = spm.get_context_from_request(request)

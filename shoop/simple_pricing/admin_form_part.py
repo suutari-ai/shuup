@@ -71,9 +71,9 @@ class SimplePricingForm(forms.Form):
         else:
             (spp, created) = SimpleProductPrice.objects.get_or_create(
                 product=self.product, group=group, shop=shop,
-                defaults={'price': value})
+                defaults={'price_value': value})
             if not created:
-                spp.price = value
+                spp.price_value = value
                 spp.save()
 
     def save(self):
