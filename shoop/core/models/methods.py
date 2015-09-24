@@ -114,8 +114,8 @@ class Method(ModuleInterface, TranslatableModel, TaxableItem):
             return False
         return True
 
-    def get_effective_price(self, source):
-        return self.module.get_effective_price(source=source)
+    def get_effective_price_info(self, source):
+        return self.module.get_effective_price_info(source=source)
 
     def get_effective_name(self, source):
         return self.module.get_effective_name(source=source)

@@ -113,14 +113,13 @@ class BaseMethodModule(object):
             return (product_total >= waive_limit)
         return False
 
-    def get_effective_price(self, source, **kwargs):
+    def get_effective_price_info(self, source, **kwargs):
         """
-        Get effective price as PriceInfo.
+        Get price of this method for given OrderSource.
 
         :param source: source object
         :type source: shoop.core.order_creator.OrderSource
         :param kwargs: Other kwargs for future expansion
-        :return: taxless or taxful price
         :rtype: shoop.core.pricing.PriceInfo
         """
         price_value = self.get_options().get("price", 0)
@@ -148,7 +147,7 @@ class BaseMethodModule(object):
     def get_source_lines(self, source):
         from shoop.core.order_creator.source import SourceLine
 
-        price_info = self.get_effective_price(source)
+        price_info = self.get_effective_price_info(source)
         assert price_info.quantity == 1
         yield SourceLine(
             source=source,

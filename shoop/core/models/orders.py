@@ -386,15 +386,18 @@ class Order(models.Model):
         If the end sum of all payments is equal or greater than
         self.taxful_total_price, then the order is marked as paid.
 
-        :param Money amount:
+        :param amount:
           Amount of the payment to be created
-        :param str|None payment_identifier:
+        :type amount: Money
+        :param payment_identifier:
           Identifier of the created payment. If not set, default value
           of "gateway_id:order_id:number" will be used (where number is
           number of payments in the order).
-        :param str description:
+        :type payment_identifier: str|None
+        :param description:
           Description of the payment. Will be set to `method` property
           of the created payment.
+        :type description: str
 
         :returns: The created Payment object
         :rtype: shoop.core.models.Payment

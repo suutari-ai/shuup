@@ -35,9 +35,9 @@ class PriceSumProperty(object):
         self.line_getter = line_getter
         self.params = {}
         if 'taxful' in self.field:
-            self.price_kwargs['includes_tax'] = True
+            self.params['includes_tax'] = True
         elif 'taxless' in self.field:
-            self.price_kwargs['includes_tax'] = False
+            self.params['includes_tax'] = False
 
     def __get__(self, instance, type=None):
         if instance is None:
