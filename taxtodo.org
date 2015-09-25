@@ -33,7 +33,7 @@
     - [X] Add flag to OrderSource and use it
     - [ ] Add getter to TaxModule?
   - [-] Get rid of OrderSource.uncache
-        - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
+    - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
     - [-] Check all callers of uncache
     - [-] Implement automatic uncaching
       - [-] Refactor OrderSource.lines to OrderSource.add_line
@@ -52,21 +52,36 @@
   - [ ] Check all "param.*Decimal.*tax" lines
   - [ ] Check these again after merging master
 ** TODO Make tax Admin views work again (and test them through)
-** TODO Make sure that basket with differing currency/taxness cannot be loaded
+** STARTED Make sure that basket with differing currency/taxness cannot be loaded
 ** STARTED Make sure that all prices are created with Shop.create_price
 ** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
-** STARTED Jinja filters for Price & Money
-  - [-] Implement the filters
-  - [ ] Use the new filters (instead of home_currency)
+** STARTED Jinja filter for Money
+  - [X] Implement the filter/formatter
+  - [X] Unit tests for the new filter/formatter
+  - [X] Use the new filter (instead of home_currency)
+  - [ ] Replace home_currencys after merging master
+** TODO TaxAwarePriceInfo
+** TODO Jinja filters for (TaxAware)PriceInfo
+  - [X] Implement the filter/formatter
+  - [X] Unit tests for the new filter/formatter
+  - [X] Use the new filter (instead of home_currency)
   - [ ] Replace home_currencys after merging master
 ** TODO Make value-added taxes work (_calculate_taxes)
 ** TODO Make compound taxes raise a NYI error (_calculate_taxes)
+** TODO Add MoneyPropped to all MoneyPropery users
 ** STARTED Write general tax system documentation
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)
 ** TODO Test shipping with and without ShippingMethod price (from UI)
 ** TODO Test payment creating (with and without paymentmethod price) (from UI)
-
+** TODO Check all the TAX TODOs from code again
+** TODO Organize changes to nice sequence of commits and PRs
+  - [ ] MoneyField -> MoneyValueField
+  - [ ] Currency support to Money
+  - [ ]
+  - [ ] Tax system documentation
+  - [ ] Doc generating settings
+  - [ ] Generate new API documentation templates
 
 * Notes
 
