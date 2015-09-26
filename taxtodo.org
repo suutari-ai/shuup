@@ -69,6 +69,21 @@
 ** TODO Make value-added taxes work (_calculate_taxes)
 ** TODO Make compound taxes raise a NYI error (_calculate_taxes)
 ** TODO Add MoneyPropped to all MoneyPropery users
+** TODO Add new contacts  to a tax_group automatically
+  - [ ] PersonContacts to "Retail customers" tax_group
+  - [ ] CompanyContacts to "Wholesale customers" tax_group
+** STARTED Add tax_group to Customer Admin module
+** STARTED Make tax_group optional on TaxRule
+  - [X] Make the TaxRule Admin form savable with no tax_groups
+  - [ ] Add help text that "no tax groups means that it matches all tax groups"
+** STARTED Add customer_tax_number various places
+  - [X] To TaxingContext
+  - [ ] To CompanyContact: Rename vat_code to tax_number
+  - [ ] To Address: Rename vat_code to tax_number
+  - [ ] To Order: Rename vat_code to tax_number
+  - [ ] Unify lengths of tax_number fields in CompanyContact, Address, Order, OrderForm
+  - [X] Generalize VAT code validation to more usable for international use
+  - [ ] What else?
 ** STARTED Write general tax system documentation
   - [ ] Merchant documentatiin
   - [ ] Developer documentation

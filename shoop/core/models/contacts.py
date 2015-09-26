@@ -85,7 +85,9 @@ class Contact(NameMixin, PolymorphicModel):
 
 class CompanyContact(Contact):
     members = models.ManyToManyField("Contact", related_name="company_memberships", blank=True)
-    vat_code = models.CharField(max_length=32, blank=True, verbose_name=_('VAT code'))
+    tax_number = models.CharField(
+        max_length=32, blank=True,
+        verbose_name=_("Tax number (e.g. EIN in US or VAT code in Europe)"))
 
     class Meta:
         verbose_name = _('company')
