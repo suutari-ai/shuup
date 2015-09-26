@@ -17,7 +17,7 @@ from enumfields import Enum, EnumIntegerField
 from parler.managers import TranslatableQuerySet
 from parler.models import TranslatableModel, TranslatedFields
 
-from shoop.core.fields import InternalIdentifierField, MeasurementField, MoneyValueField
+from shoop.core.fields import InternalIdentifierField, MeasurementField
 from shoop.core.taxing import TaxableItem
 from shoop.core.utils.slugs import generate_multilanguage_slugs
 from shoop.utils.analog import LogEntryKind, define_log_model
