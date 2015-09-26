@@ -7,13 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shoop', '0010_merge'),
+        ('default_tax', '0001_initial'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='contact',
-            name='tax_group',
-            field=models.ForeignKey(to='shoop.CustomerTaxGroup', null=True, blank=True),
+            model_name='taxrule',
+            name='customer_tax_groups',
+            field=models.ManyToManyField(blank=True, to='shoop.CustomerTaxGroup'),
         ),
     ]

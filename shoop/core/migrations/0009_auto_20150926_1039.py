@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 import shoop.core.models.shops
 import shoop.core.fields
 
@@ -9,7 +10,7 @@ import shoop.core.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shoop', '0006_shop_add_logo_and_public_name'),
+        ('shoop', '0008_maintenance_mode'),
     ]
 
     operations = [
@@ -62,10 +63,26 @@ class Migration(migrations.Migration):
             model_name='orderline',
             name='_prices_include_tax',
         ),
+        migrations.RemoveField(
+            model_name='product',
+            name='purchase_price',
+        ),
+        migrations.RemoveField(
+            model_name='product',
+            name='suggested_retail_price',
+        ),
+        migrations.RemoveField(
+            model_name='suppliedproduct',
+            name='purchase_price',
+        ),
+        migrations.RemoveField(
+            model_name='suppliedproduct',
+            name='suggested_retail_price',
+        ),
         migrations.AddField(
             model_name='order',
             name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, default='EUR'),
+            field=shoop.core.fields.CurrencyField(max_length=4, default=settings.SHOOP_HOME_CURRENCY),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -76,19 +93,13 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='payment',
-            name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, default='EUR'),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='payment',
             name='foreign_amount_value',
-            field=shoop.core.fields.MoneyValueField(decimal_places=9, blank=True, max_digits=36, null=True, default=None),
+            field=shoop.core.fields.MoneyValueField(null=True, decimal_places=9, default=None, max_digits=36, blank=True),
         ),
         migrations.AddField(
             model_name='payment',
             name='foreign_currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, blank=True, null=True, default=None),
+            field=shoop.core.fields.CurrencyField(null=True, max_length=4, default=None, blank=True),
         ),
         migrations.AddField(
             model_name='shop',
@@ -98,17 +109,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tax',
             name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, blank=True, null=True, default=None),
+            field=shoop.core.fields.CurrencyField(null=True, max_length=4, default=None, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='contact',
+            name='tax_group',
+            field=models.ForeignKey(blank=True, null=True, to='shoop.CustomerTaxGroup'),
         ),
         migrations.AlterField(
             model_name='order',
             name='display_currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, blank=True),
-        ),
-        migrations.AlterField(
-            model_name='productmedia',
-            name='external_url',
-            field=models.URLField(verbose_name='URL', help_text="Enter URL to external file. If this field is filled, the selected media doesn't apply.", null=True, blank=True),
+            field=shoop.core.fields.CurrencyField(blank=True, max_length=4),
         ),
         migrations.AlterField(
             model_name='shop',
