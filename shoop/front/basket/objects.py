@@ -400,7 +400,3 @@ class BaseBasket(OrderSource):
     @property
     def is_empty(self):
         return not bool(self.get_lines())
-
-    @property
-    def shop_ids(self):
-        return set(l.shop.id for l in self.get_lines() if l.shop)

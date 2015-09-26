@@ -12,7 +12,7 @@ from django.db.models.fields.related import ManyToManyField
 from django.utils.crypto import get_random_string
 
 from shoop.core.fields import CurrencyField, MoneyValueField, TaggedJSONField
-from shoop.core.models import Contact, Shop
+from shoop.core.models import Contact, PersonContact, Product, Shop
 from shoop.utils.properties import TaxfulPriceProperty, TaxlessPriceProperty
 
 
@@ -25,8 +25,16 @@ class StoredBasket(models.Model):
     key = models.CharField(max_length=32, default=generate_key)
 
     shop = models.ForeignKey(Shop)
-    owner_contact = models.ForeignKey(Contact, blank=True, null=True)
-    owner_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+
+    customer = models.ForeignKey(
+        Contact, blank=True, null=True,
+        related_name="customer_baskets")
+    orderer = models.ForeignKey(
+        PersonContact, blank=True, null=True,
+        related_name="orderer_baskets")
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, blank=True, null=True,
+        related_name="baskets_created")
 
     created_on = models.DateTimeField(auto_now_add=True, db_index=True, editable=False)
     updated_on = models.DateTimeField(auto_now=True, db_index=True, editable=False)
@@ -37,14 +45,16 @@ class StoredBasket(models.Model):
     data = TaggedJSONField()
 
     # For statistics etc., as `data` is opaque:
-    taxful_total = TaxfulPriceProperty('taxful_total_value', 'currency')
-    taxless_total = TaxlessPriceProperty('taxless_total_value', 'currency')
-    taxless_total_value = MoneyValueField(default=0, null=True, blank=True)
-    taxful_total_value = MoneyValueField(default=0, null=True, blank=True)
+    taxful_total_price = TaxfulPriceProperty('taxful_total_price_value', 'currency')
+    taxless_total_price = TaxlessPriceProperty('taxless_total_price_value', 'currency')
+
+    taxless_total_price_value = MoneyValueField(default=0, null=True, blank=True)
+    taxful_total_price_value = MoneyValueField(default=0, null=True, blank=True)
     currency = CurrencyField()
     prices_include_tax = models.BooleanField()
+
     product_count = models.IntegerField(default=0)
-    products = ManyToManyField("shoop.Product", blank=True)
+    products = ManyToManyField(Product, blank=True)
 
     class Meta:
         app_label = "shoop_front"

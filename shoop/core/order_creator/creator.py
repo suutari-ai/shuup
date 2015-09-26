@@ -10,19 +10,13 @@ from __future__ import unicode_literals
 from decimal import Decimal
 
 import six
-from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
 
 from shoop.core.models import Order, OrderLine, OrderLineType
 from shoop.core.shortcuts import update_order_line_from_product
+from shoop.core.utils.users import real_user_or_none
 from shoop.front.signals import order_creator_finished
 from shoop.utils.numbers import bankers_round
-
-
-def real_user_or_none(user):
-    assert (user is None or user.is_anonymous() or
-            isinstance(user, get_user_model()))
-    return user if (user and not user.is_anonymous()) else None
 
 
 class OrderCreator(object):
@@ -172,13 +166,6 @@ class OrderCreator(object):
             lines.extend(self.source_line_to_order_lines(order, line))
         return lines
 
-    def get_creator(self, order_source):
-        if order_source and order_source.creator:
-            return order_source.creator
-        if self.request and hasattr(self.request, "user"):
-            return self.request.user
-        return None
-
     def create_order(self, order_source):
         # order_provision.target_user = self._maybe_create_user(
         #     user=order_provision.target_user,
@@ -201,7 +188,7 @@ class OrderCreator(object):
             customer_comment=order_source.customer_comment,
             marketing_permission=bool(order_source.marketing_permission),
             ip_address=(self.request.META.get("REMOTE_ADDR") if self.request else None),
-            creator=real_user_or_none(self.get_creator(order_source)),
+            creator=real_user_or_none(order_source.creator),
             orderer=(order_source.orderer or None),
             customer=(order_source.customer or None),
             billing_address=order_source.billing_address,

@@ -70,6 +70,8 @@
 ** TODO Make compound taxes raise a NYI error (_calculate_taxes)
 ** TODO Add MoneyPropped to all MoneyPropery users
 ** STARTED Write general tax system documentation
+  - [ ] Merchant documentatiin
+  - [ ] Developer documentation
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)
 ** TODO Test shipping with and without ShippingMethod price (from UI)

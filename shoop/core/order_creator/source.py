@@ -29,7 +29,12 @@ class TaxesNotCalculated(TypeError):
     """
 
 
-class PriceSumProperty(object):
+class _PriceSum(object):
+    """
+    Property that calculates sum of prices.
+
+    Used to implement various total price proprties to OrderSource.
+    """
     def __init__(self, field, line_getter="get_final_lines"):
         self.field = field
         self.line_getter = line_getter
@@ -46,6 +51,29 @@ class PriceSumProperty(object):
         zero = (TaxfulPrice if taxful else TaxlessPrice)(0, instance.currency)
         lines = getattr(instance, self.line_getter)()
         return sum((getattr(x, self.field) for x in lines), zero)
+
+    @property
+    def or_none(self):
+        return _UnknownTaxesAsNone(self)
+
+
+class _UnknownTaxesAsNone(object):
+    """
+    Property that turns TaxesNotCalculated exception to None.
+
+    Used to implement the OrderSource taxful/taxless total price
+    properties with the "_or_none" suffix.
+    """
+    def __init__(self, prop):
+        self.prop = prop
+
+    def __get__(self, instance, type=None):
+        if instance is None:
+            return self
+        try:
+            return self.prop.__get__(instance)
+        except TaxesNotCalculated:
+            return None
 
 
 class OrderSource(object):
@@ -137,13 +165,19 @@ class OrderSource(object):
             extra_data=order.extra_data,
         )
 
-    total_price = PriceSumProperty("total_price")
-    taxful_total_price = PriceSumProperty("taxful_total_price")
-    taxless_total_price = PriceSumProperty("taxless_total_price")
-    total_discount = PriceSumProperty("total_discount")
-    taxful_total_discount = PriceSumProperty("taxful_total_discount")
-    taxless_total_discount = PriceSumProperty("taxless_total_discount")
-    total_price_of_products = PriceSumProperty("total_price", "_get_product_lines")
+    total_price = _PriceSum("total_price")
+    taxful_total_price = _PriceSum("taxful_total_price")
+    taxless_total_price = _PriceSum("taxless_total_price")
+    taxful_total_price_or_none = taxful_total_price.or_none
+    taxless_total_price_or_none = taxless_total_price.or_none
+
+    total_discount = _PriceSum("total_discount")
+    taxful_total_discount = _PriceSum("taxful_total_discount")
+    taxless_total_discount = _PriceSum("taxless_total_discount")
+    taxful_total_discount_or_none = taxful_total_discount.or_none
+    taxless_total_discount_or_none = taxless_total_discount.or_none
+
+    total_price_of_products = _PriceSum("total_price", "_get_product_lines")
 
     @property
     def shipping_method(self):
@@ -192,10 +226,11 @@ class OrderSource(object):
         """
         Get lines with processed lines added.
 
-        This usually includes the all lines which are also returned by
+        This implementation includes the all lines returned by
         `get_lines` and in addition, lines from shipping and payment
         methods, but these lines can be extended, deleted or replaced by
-        a subclass and/or with the `post_compute_source_lines` signal.
+        a subclass (by overriding `_compute_processed_lines` method) and
+        with the `post_compute_source_lines` signal.
 
         .. note::
 
@@ -209,11 +244,14 @@ class OrderSource(object):
         if lines is None:
             lines = self.__compute_lines()
             self._processed_lines_cache = lines
-        if with_taxes and not self._taxes_calculated:
-            self._calculate_taxes(lines)
+        if not self._taxes_calculated:
+            if with_taxes or self.calculate_taxes_automatically:
+                self._calculate_taxes(lines)
         return lines
 
-    def calculate_taxes(self):
+    def calculate_taxes(self, force_recalculate=False):
+        if force_recalculate:
+            self._taxes_calculated = False
         self.get_final_lines(with_taxes=True)
 
     def _calculate_taxes(self, lines):
@@ -251,9 +289,6 @@ class OrderSource(object):
         lines.extend(_collect_lines_from_signal(
             post_compute_source_lines.send(
                 sender=type(self), source=self, lines=lines)))
-
-        if self.calculate_taxes_automatically:
-            self._calculate_taxes(lines)
 
         return lines
 

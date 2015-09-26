@@ -11,13 +11,11 @@ import abc
 
 import six
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 
-from shoop.core.models import AnonymousContact
+from shoop.core.utils.users import real_user_or_none
 from shoop.front.models import StoredBasket
 from shoop.utils.importing import cached_load
-from shoop.core.order_creator import TaxesNotCalculated
 
 
 class BasketStorage(six.with_metaclass(abc.ABCMeta)):
@@ -83,29 +81,20 @@ class DatabaseBasketStorage(BasketStorage):
         return "basket_%s_key" % basket.basket_name
 
     def save(self, basket, data):
+        """
+        :type basket: shoop.front.basket.objects.BaseBasket
+        """
         request = basket.request
         stored_basket = self._get_stored_basket(basket)
         stored_basket.data = data
-
-        try:
-            stored_basket.taxless_total = basket.taxless_total_price
-        except TaxesNotCalculated:
-            pass
-        try:
-            stored_basket.taxful_total = basket.taxful_total_price
-        except TaxesNotCalculated:
-            pass
-
+        stored_basket.taxless_total_price = basket.taxless_total_price_or_none
+        stored_basket.taxful_total_price = basket.taxful_total_price_or_none
         stored_basket.product_count = basket.product_count
-        user = getattr(request, "user", AnonymousUser())
-        customer = getattr(request, "customer", AnonymousContact())
-        if not user.is_anonymous:
-            stored_basket.owner_user = user
-        if not customer.is_anonymous:
-            stored_basket.owner_contact = customer
+        stored_basket.customer = (basket.customer or None)
+        stored_basket.orderer = (basket.orderer or None)
+        stored_basket.creator = real_user_or_none(basket.creator)
         stored_basket.save()
-        product_ids = set(basket.get_product_ids_and_quantities().keys())
-        stored_basket.products = product_ids
+        stored_basket.products = set(basket.product_ids)
         basket_get_kwargs = {"pk": stored_basket.pk, "key": stored_basket.key}
         request.session[self._get_session_key(basket)] = basket_get_kwargs
 
