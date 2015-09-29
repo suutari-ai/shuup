@@ -97,27 +97,34 @@
   - [ ] Replace home_currencys
 
 ** TODO Organize changes to nice sequence of commits and PRs
-  - [ ] MethodQuerySet.available_ids: Accept non-ids too
+  - [ ] vat_code -> tax_number
+
+  - [ ] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
+
+  - [ ] Method: get_effective_price -> get_effective_price_info
+
   - [ ] Currency support to Money
+
   - [ ] Rename MoneyField to MoneyValueField
+
   - [ ] Add CurrencyField
+
   - [ ] Shop.create_price: Currency support
   - [ ] Order: Add currency and prices_include_tax fields
-  - [ ] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
   - [ ] Payment: Add currency fields
   - [ ] StoredBasket: Add currency field
   - [ ] Use MoneyProperty in models
+  - [ ] StoredBasket: Fix owner fields
+
   - [ ] Admin dashboard: Filter by currency of the Shop
   - [ ] Filters: home_currency -> money
-  - [ ] Method: get_effective_price -> get_effective_price_info
   - [ ] TaxRule: Allow customer tax group to be blank
   - [ ] Add TaxableItem interface
   - [ ] Remove Product.get_taxed_price
   - [ ] Move real_user_or_none
-  - [ ] StoredBasket: Fix owner fields
   - [ ] OrderSource.get_final_lines: Add with_taxes argument
+  - [ ] OrderSource
   - [ ] TaxModule: Redo API
-  - [ ] vat_code -> tax_number
   - [ ] Tax system documentation
   - [ ] Doc generating settings
   - [ ] Generate new API documentation templates
@@ -125,6 +132,7 @@
   - [ ] doc/conf.py changes
   - [ ] doc/api regeneration
   - [ ] doc: Tax documentation
+  - [ ] MethodQuerySet.available_ids: Accept non-ids too
 
 * Notes
 
