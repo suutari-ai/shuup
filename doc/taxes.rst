@@ -1,6 +1,32 @@
 Taxes in Shoop
 ==============
 
+Shoop supports flexible taxation of order items by pluggable
+:class:`~shoop.core.taxing.TaxModule` addons. Most important tax related
+models provided by Shoop Core are :class:`~shoop.core.models.Tax`,
+:class:`~shoop.core.models.TaxClass` and
+:class:`~shoop.core.models.CustomerTaxGroup`.  Tax defines properties of
+the tax, e.g. its rate, code, name and such.  TaxClass is is assigned to
+products and payment & shipping methods and CustomerTaxGroup is assigned to customers, i.e. to :class:`~shoop.core.mofe
+
+Notes: (TODO: (TAX) Write real docs from these notes)
+ - Taxes are not calculated automatically.
+ - Prices can be stored taxful or taxless (i.e. including or excluding
+   taxes). Shop.prices_include_tax determines how prices in that shop
+   are stored. Taxful and taxless prices cannot be mixed.
+ - You should usually use just the plain price, base_unit_price,
+   discount_amount rather than taxless_price or taxful_price when you
+   can, since using the taxful/taxless prefixed version means that taxes
+   it is possible that has to be calculated, which can be expensive.
+
+
+When several taxes are applied for a single product, there is two
+possible ways how the taxes will be calculated: adding the taxes
+together or compounding them over each other.  Adding taxes together is
+used by the US.  Compounding is used rarely, one example that uses
+compounding is Quebec Canada.
+
+
 Settings
 --------
 
@@ -94,8 +120,8 @@ TaxModule
   * ...
 
 
-TaxView
-^^^^^^^
+PriceTaxContext
+^^^^^^^^^^^^^^^
 
   * customer_tax_group (FK)
   * location (country, region, postal_code, ...)
