@@ -1,13 +1,6 @@
 shoop.front.apps.simple_order_notification package
 ==================================================
 
-Subpackages
------------
-
-.. toctree::
-
-    shoop.front.apps.simple_order_notification.admin_module
-
 Submodules
 ----------
 

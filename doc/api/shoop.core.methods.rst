@@ -20,6 +20,14 @@ shoop.core.methods.default module
     :undoc-members:
     :show-inheritance:
 
+shoop.core.methods.ui module
+----------------------------
+
+.. automodule:: shoop.core.methods.ui
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

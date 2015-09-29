@@ -4,14 +4,6 @@ shoop.front.apps.simple_search package
 Submodules
 ----------
 
-shoop.front.apps.simple_search.template_helpers module
-------------------------------------------------------
-
-.. automodule:: shoop.front.apps.simple_search.template_helpers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 shoop.front.apps.simple_search.urls module
 ------------------------------------------
 

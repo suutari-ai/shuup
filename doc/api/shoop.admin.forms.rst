@@ -12,14 +12,6 @@ shoop.admin.forms.fields module
     :undoc-members:
     :show-inheritance:
 
-shoop.admin.forms.widgets module
---------------------------------
-
-.. automodule:: shoop.admin.forms.widgets
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

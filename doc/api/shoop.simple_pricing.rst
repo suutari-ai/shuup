@@ -1,13 +1,6 @@
 shoop.simple_pricing package
 ============================
 
-Subpackages
------------
-
-.. toctree::
-
-    shoop.simple_pricing.migrations
-
 Submodules
 ----------
 
@@ -15,14 +8,6 @@ shoop.simple_pricing.admin_form_part module
 -------------------------------------------
 
 .. automodule:: shoop.simple_pricing.admin_form_part
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-shoop.simple_pricing.api module
--------------------------------
-
-.. automodule:: shoop.simple_pricing.api
     :members:
     :undoc-members:
     :show-inheritance:
@@ -47,6 +32,14 @@ shoop.simple_pricing.settings module
 ------------------------------------
 
 .. automodule:: shoop.simple_pricing.settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+shoop.simple_pricing.utils module
+---------------------------------
+
+.. automodule:: shoop.simple_pricing.utils
     :members:
     :undoc-members:
     :show-inheritance:

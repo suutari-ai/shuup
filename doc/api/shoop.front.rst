@@ -8,8 +8,6 @@ Subpackages
 
     shoop.front.apps
     shoop.front.basket
-    shoop.front.checkout
-    shoop.front.migrations
     shoop.front.models
     shoop.front.template_helpers
     shoop.front.templatetags
@@ -18,14 +16,6 @@ Subpackages
 
 Submodules
 ----------
-
-shoop.front.admin_module module
--------------------------------
-
-.. automodule:: shoop.front.admin_module
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 shoop.front.middleware module
 -----------------------------
