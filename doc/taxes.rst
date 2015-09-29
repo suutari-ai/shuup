@@ -14,11 +14,10 @@ Notes: (TODO: (TAX) Write real docs from these notes)
  - Prices can be stored taxful or taxless (i.e. including or excluding
    taxes). Shop.prices_include_tax determines how prices in that shop
    are stored. Taxful and taxless prices cannot be mixed.
- - You should usually use just the plain total_price, unit_price,
-   discount_amount rather than taxless_total_price or taxful_total_price
-   when you can, since using the taxful/taxless prefixed version means
-   that taxes it is possible that has to be calculated, which can be
-   expensive.
+ - You should usually use just the plain price, base_unit_price,
+   discount_amount rather than taxless_price or taxful_price when you
+   can, since using the taxful/taxless prefixed version means that taxes
+   it is possible that has to be calculated, which can be expensive.
 
 Settings
 --------
