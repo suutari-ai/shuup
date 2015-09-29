@@ -19,9 +19,11 @@
         <li><a href="/">{% trans %}Home{% endtrans %}</a></li>
         {% set category = shop_product.primary_category %}
         {% if category %}
-            {% for c in category.get_ancestors() if c.is_visible(customer=request.customer) %}
+            {% for c in category.get_ancestors(include_self=True) if c.is_visible(customer=request.customer) %}
                 <li><a href="{{ shoop.urls.model_url(c) }}">{{ c.name }}</a></li>
             {% endfor %}
+        {% else %}
+            <li><a href="{{ url('shoop:xtheme_extra_view', view='products') }}">{% trans %}Products{% endtrans %}</a></li>
         {% endif %}
         <li class="active">{{ product.name }}</li>
     </ol>
@@ -36,6 +38,19 @@
                 {% if product.description %}
                     <p class="product-short-description">{{ product.description|safe|truncate(150, False) }}</p>
                 {% endif %}
+                <div class="product-price">
+                    {% if priceinfo.is_discounted %}
+                        <div class="price-line">
+                            <h4 class="visible-xs">{% trans %}Price{% endtrans %}</h4>
+                            <span class="lead">
+                                <small class="text-muted original-price"><s>{{ priceinfo.base_price|money }}</s></small>
+                                <strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small>
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="price-line"><span class="lead"><strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small></span></div>
+                    {% endif %}
+                </div>
                 <hr>
             </div>
         </div>
@@ -54,23 +69,22 @@
                 {% if product.description %}
                     <p class="product-short-description">{{ product.description|safe|truncate(150, False) }}</p>
                 {% endif %}
+                <div class="product-price">
+                    {% if priceinfo.is_discounted %}
+                        <div class="price-line">
+                            <h4 class="visible-xs">{% trans %}Price{% endtrans %}</h4>
+                            <span class="lead">
+                                <small class="text-muted original-price"><s>{{ priceinfo.base_price|money }}</s></small>
+                                <strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small>
+                            </span>
+                        </div>
+                    {% else %}
+                        <div class="price-line"><span class="lead"><strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small></span></div>
+                    {% endif %}
+                </div>
             </div>
             <hr>
-            <div class="product-price">
-                {% if priceinfo.is_discounted %}
-                    <div class="price-line">
-                        <h4 class="visible-xs">{% trans %}Price{% endtrans %}</h4>
-                        <span class="lead">
-                            <small class="text-muted original-price"><s>{{ priceinfo.base_price|money }}</s></small>
-                            <strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small>
-                        </span>
-                    </div>
-                {% else %}
-                    <div class="price-line"><span class="lead"><strong>{{ priceinfo.price|money }}</strong><small> / {{ product.sales_unit.short_name }}</small></span></div>
-                {% endif %}
-            </div>
-            <hr>
-            <div class="well" id="product-price-section">
+            <div id="product-price-section">
                 {% include "shoop/front/product/_detail_order_section.jinja" with context %}
             </div>
         </div>
