@@ -1,6 +1,6 @@
 #+TITLE: Tax system: Fix, polish, document (SHOOP-975)
 
-* TODOs [3/20]
+* TODOs [4/31]
 
 ** DONE Improve PriceInfo: quantity, docs, tests
 ** DONE Currency support to Money (with tests)
@@ -21,9 +21,6 @@
       - [ ] OrderCreator.add_line_taxes
       - [ ] OrderLine.total_tax_amount
       - [ ] Method.module_data
-    - [ ] Check all MoneyField usages after merging master (and convert
-      to MoneyValueField and add properties)
-    - [ ] Check all "amount" usages after merging master
 ** STARTED Check usages of module_data of Methods for prices
 ** STARTED Check when taxes are determined and amend that
 ** STARTED OrderSource tuning
@@ -50,26 +47,26 @@
   - [ ] Check all "param.*Decimal.*money" lines
   - [ ] Check all "type.*tax" lines
   - [ ] Check all "param.*Decimal.*tax" lines
-  - [ ] Check these again after merging master
 ** TODO Make tax Admin views work again (and test them through)
 ** STARTED Make sure that basket with differing currency/taxness cannot be loaded
 ** STARTED Make sure that all prices are created with Shop.create_price
 ** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
-** STARTED Jinja filter for Money
+** DONE Jinja filter for Money
   - [X] Implement the filter/formatter
   - [X] Unit tests for the new filter/formatter
   - [X] Use the new filter (instead of home_currency)
-  - [ ] Replace home_currencys after merging master
-** TODO TaxAwarePriceInfo
-** TODO Jinja filters for (TaxAware)PriceInfo
-  - [X] Implement the filter/formatter
-  - [X] Unit tests for the new filter/formatter
-  - [X] Use the new filter (instead of home_currency)
-  - [ ] Replace home_currencys after merging master
+** TODO Unify price handling in templates
+  - [-] Make LinePriceMixin usable for PriceInfo and rename it to Priceful
+  - [-] Use Priceful in PriceInfo
+  - [ ] TaxAwarePriceInfo
+  - [ ] Jinja filters for Priced
+    - [ ] Implement the filter/formatter
+    - [ ] Unit tests for the new filter/formatter
+    - [ ] Use the new filter (instead of home_currency)
 ** TODO Make value-added taxes work (_calculate_taxes)
 ** TODO Make compound taxes raise a NYI error (_calculate_taxes)
 ** TODO Add MoneyPropped to all MoneyPropery users
-** TODO Add new contacts  to a tax_group automatically
+** TODO Add new contacts to a tax_group automatically
   - [ ] PersonContacts to "Retail customers" tax_group
   - [ ] CompanyContacts to "Wholesale customers" tax_group
 ** STARTED Add tax_group to Customer Admin module
@@ -78,23 +75,31 @@
   - [ ] Add help text that "no tax groups means that it matches all tax groups"
 ** STARTED Add customer_tax_number various places
   - [X] To TaxingContext
-  - [ ] To CompanyContact: Rename vat_code to tax_number
-  - [ ] To Address: Rename vat_code to tax_number
-  - [ ] To Order: Rename vat_code to tax_number
+  - [X] To CompanyContact: Rename vat_code to tax_number
+  - [X] To Address: Rename vat_code to tax_number
+  - [X] To Order: Rename vat_code to tax_number
   - [ ] Unify lengths of tax_number fields in CompanyContact, Address, Order, OrderForm
   - [X] Generalize VAT code validation to more usable for international use
   - [ ] What else?
 ** STARTED Write general tax system documentation
-  - [ ] Merchant documentatiin
+  - [ ] Merchant documentation
   - [ ] Developer documentation
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)
 ** TODO Test shipping with and without ShippingMethod price (from UI)
-** TODO Test payment creating (with and without paymentmethod price) (from UI)
+p** TODO Test payment creating (with and without paymentmethod price) (from UI)
 ** TODO Check all the TAX TODOs from code again
+** TODO Merge/rebase to master and do the refactorings on there too
+  - [ ] MoneyField -> MoneyValueField and Money/PriceProperty
+  - [ ] Check all "amount" occurences
+  - [ ] Check type specifiers in docstring for Price/Money params and
+    rtypes (see the list above)
+  - [ ] Replace home_currencys
+
 ** TODO Organize changes to nice sequence of commits and PRs
   - [ ] MoneyField -> MoneyValueField
   - [ ] Currency support to Money
+  - [ ] vat_code -> tax_number
   - [ ]
   - [ ] Tax system documentation
   - [ ] Doc generating settings
