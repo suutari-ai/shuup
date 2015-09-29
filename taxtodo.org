@@ -1,6 +1,6 @@
 #+TITLE: Tax system: Fix, polish, document (SHOOP-975)
 
-* TODOs [4/31]
+* TODOs [4/30]
 
 ** DONE Improve PriceInfo: quantity, docs, tests
 ** DONE Currency support to Money (with tests)
@@ -65,7 +65,7 @@
     - [ ] Use the new filter (instead of home_currency)
 ** TODO Make value-added taxes work (_calculate_taxes)
 ** TODO Make compound taxes raise a NYI error (_calculate_taxes)
-** TODO Add MoneyPropped to all MoneyPropery users
+** STARTED Add MoneyPropped to all MoneyPropery users
 ** TODO Add new contacts to a tax_group automatically
   - [ ] PersonContacts to "Retail customers" tax_group
   - [ ] CompanyContacts to "Wholesale customers" tax_group
@@ -87,7 +87,7 @@
 ** TODO Test order creating from basket (from UI)
 ** TODO Test order processing in Admin (from UI)
 ** TODO Test shipping with and without ShippingMethod price (from UI)
-p** TODO Test payment creating (with and without paymentmethod price) (from UI)
+** TODO Test payment creating (with and without paymentmethod price) (from UI)
 ** TODO Check all the TAX TODOs from code again
 ** TODO Merge/rebase to master and do the refactorings on there too
   - [ ] MoneyField -> MoneyValueField and Money/PriceProperty
@@ -97,13 +97,34 @@ p** TODO Test payment creating (with and without paymentmethod price) (from UI)
   - [ ] Replace home_currencys
 
 ** TODO Organize changes to nice sequence of commits and PRs
-  - [ ] MoneyField -> MoneyValueField
+  - [ ] MethodQuerySet.available_ids: Accept non-ids too
   - [ ] Currency support to Money
+  - [ ] Rename MoneyField to MoneyValueField
+  - [ ] Add CurrencyField
+  - [ ] Shop.create_price: Currency support
+  - [ ] Order: Add currency and prices_include_tax fields
+  - [ ] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
+  - [ ] Payment: Add currency fields
+  - [ ] StoredBasket: Add currency field
+  - [ ] Use MoneyProperty in models
+  - [ ] Admin dashboard: Filter by currency of the Shop
+  - [ ] Filters: home_currency -> money
+  - [ ] Method: get_effective_price -> get_effective_price_info
+  - [ ] TaxRule: Allow customer tax group to be blank
+  - [ ] Add TaxableItem interface
+  - [ ] Remove Product.get_taxed_price
+  - [ ] Move real_user_or_none
+  - [ ] StoredBasket: Fix owner fields
+  - [ ] OrderSource.get_final_lines: Add with_taxes argument
+  - [ ] TaxModule: Redo API
   - [ ] vat_code -> tax_number
-  - [ ]
   - [ ] Tax system documentation
   - [ ] Doc generating settings
   - [ ] Generate new API documentation templates
+  - [ ] migrations (in one go, or several?)
+  - [ ] doc/conf.py changes
+  - [ ] doc/api regeneration
+  - [ ] doc: Tax documentation
 
 * Notes
 
