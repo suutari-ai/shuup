@@ -5,11 +5,31 @@ from shoop.utils.numbers import UnitMixupError
 
 class MoneyProperty(object):
     """
-    TODO: (TAX) Document MoneyProperty.
+    Property for a Money amount.
+
+    Will return `Money` objects when the property is being get and
+    accepts `Money` objects on set.  Value and currency are read/written
+    from/to other fields.
+
+    Fields are given as locators, that is a string in dotted format,
+    e.g. locator ``"foo.bar"`` points to ``instance.foo.bar`` where
+    ``instance`` is an instance of the class owning the `MoneyProperty`.
+
+    Setting value of this property to a `Money` object with different
+    currency that is currently set (in the field pointed by the currency
+    locator), will raise an `UnitMixupError`.
     """
     value_class = Money
 
     def __init__(self, value, currency):
+        """
+        Initialize MoneyProperty with given field locators.
+
+        :param value: Locator for value of the Money
+        :type value: str
+        :param currency: Locator for currency of the Money
+        :type currency: str
+        """
         self._fields = {'value': value, 'currency': currency}
 
     def __repr__(self):
@@ -60,11 +80,25 @@ class MoneyProperty(object):
 
 class PriceProperty(MoneyProperty):
     """
-    TODO: (TAX) Document PriceProperty.
+    Property for Price object.
+
+    Similar to `MoneyProperty` but also has ``includes_tax`` field.
+
+    Operaters with `TaxfulPrice` and `TaxlessPrice` objects.
     """
     value_class = Price
 
     def __init__(self, value, currency, includes_tax, **kwargs):
+        """
+        Initialize PriceProperty with given field locators.
+
+        :param value: Locator for value of the Price
+        :type value: str
+        :param currency: Locator for currency of the Price
+        :type currency: str
+        :param includes_tax: Locator for includes_tax of the Price
+        :type includes_tax: str
+        """
         super(PriceProperty, self).__init__(value, currency, **kwargs)
         self._fields['includes_tax'] = includes_tax
 
@@ -128,6 +162,9 @@ def _check_transformed_types(self, transformed):
 
 
 def resolve(obj, path):
+    """
+    Resolve a locator `path` starting from object `obj`.
+    """
     if path:
         for name in path.split('.'):
             obj = getattr(obj, name, None)
