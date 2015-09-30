@@ -37,7 +37,7 @@ class Shop(TranslatableModel):
     owner = models.ForeignKey("Contact", blank=True, null=True)
     options = JSONField(blank=True, null=True)
     currency = CurrencyField(default=_get_default_currency)
-    prices_include_tax = models.BooleanField(default=False)
+    prices_include_tax = models.BooleanField(default=True)
     logo = FilerImageField(verbose_name=_("logo"), blank=True, null=True)
     maintenance_mode = models.BooleanField(verbose_name=_("maintenance mode"), default=False)
 
