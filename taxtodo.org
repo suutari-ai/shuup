@@ -1,102 +1,11 @@
 #+TITLE: Tax system: Fix, polish, document (SHOOP-975)
 
-* TODOs [4/30]
+* TODOs
 
-** DONE Improve PriceInfo: quantity, docs, tests
-** DONE Currency support to Money (with tests)
-** STARTED Improve docstrings of Price, Money
-** TODO Unit tests for bankers_round(Price)
-** DONE Implement CurrencyField
-** STARTED Add Money/Price properties to models
-  - [-] Create MoneyProperty and PriceProperty classes
-    - [X] Implement MoneyProperty and PriceProperty
-    - [X] Unit tests for MoneyProperty and PriceProperty
-    - [-] Docs for MoneyProperty and PriceProperty
-  - [-] Rename MoneyField to MoneyValueField
-    - [ ] Check all MoneyField usages and add MoneyProperty or PriceProperty
-    - [X] Check all "amount" usages
-    - [ ] Fix callers of model init and objects.create
-    - [ ] Fix users of amount/price fields
-      - [ ] Order.cache_prices
-      - [ ] OrderCreator.add_line_taxes
-      - [ ] OrderLine.total_tax_amount
-      - [ ] Method.module_data
-** STARTED Check usages of module_data of Methods for prices
-** STARTED Check when taxes are determined and amend that
-** STARTED OrderSource tuning
-  - [ ] Docstrings
-  - [-] Make calculate_taxes explicit
-  - [-] Implement auto-calculate taxes
-    - [X] Add flag to OrderSource and use it
-    - [ ] Add getter to TaxModule?
-  - [-] Get rid of OrderSource.uncache
-    - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
-    - [-] Check all callers of uncache
-    - [-] Implement automatic uncaching
-      - [-] Refactor OrderSource.lines to OrderSource.add_line
-      - [ ] What else is needed?
-  - [ ] Improve price de/serialization
-  - [ ] Check test coverage
-  - [ ] Add and improve tests
-** STARTED Check type specifiers in docstring for Price/Money params and rtypes
-  - [ ] Check all "type.*amount" lines
-  - [ ] Check all "param.*Decimal.*amount" lines
-  - [ ] Check all "type.*price" lines
-  - [ ] Check all "param.*Decimal.*price" lines
-  - [ ] Check all "type.*money" lines
-  - [ ] Check all "param.*Decimal.*money" lines
-  - [ ] Check all "type.*tax" lines
-  - [ ] Check all "param.*Decimal.*tax" lines
-** TODO Make tax Admin views work again (and test them through)
-** STARTED Make sure that basket with differing currency/taxness cannot be loaded
-** STARTED Make sure that all prices are created with Shop.create_price
-** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
-** DONE Jinja filter for Money
-  - [X] Implement the filter/formatter
-  - [X] Unit tests for the new filter/formatter
-  - [X] Use the new filter (instead of home_currency)
-** TODO Unify price handling in templates
-  - [-] Make LinePriceMixin usable for PriceInfo and rename it to Priceful
-  - [-] Use Priceful in PriceInfo
-  - [ ] TaxAwarePriceInfo
-  - [ ] Jinja filters for Priced
-    - [ ] Implement the filter/formatter
-    - [ ] Unit tests for the new filter/formatter
-    - [ ] Use the new filter (instead of home_currency)
-** TODO Make value-added taxes work (_calculate_taxes)
-** TODO Make compound taxes raise a NYI error (_calculate_taxes)
-** STARTED Add MoneyPropped to all MoneyPropery users
-** TODO Add new contacts to a tax_group automatically
-  - [ ] PersonContacts to "Retail customers" tax_group
-  - [ ] CompanyContacts to "Wholesale customers" tax_group
-** STARTED Add tax_group to Customer Admin module
-** STARTED Make tax_group optional on TaxRule
-  - [X] Make the TaxRule Admin form savable with no tax_groups
-  - [ ] Add help text that "no tax groups means that it matches all tax groups"
-** STARTED Add customer_tax_number various places
-  - [X] To TaxingContext
-  - [X] To CompanyContact: Rename vat_code to tax_number
-  - [X] To Address: Rename vat_code to tax_number
-  - [X] To Order: Rename vat_code to tax_number
-  - [ ] Unify lengths of tax_number fields in CompanyContact, Address, Order, OrderForm
-  - [X] Generalize VAT code validation to more usable for international use
-  - [ ] What else?
-** STARTED Write general tax system documentation
-  - [ ] Merchant documentation
-  - [ ] Developer documentation
-** TODO Test order creating from basket (from UI)
-** TODO Test order processing in Admin (from UI)
-** TODO Test shipping with and without ShippingMethod price (from UI)
-** TODO Test payment creating (with and without paymentmethod price) (from UI)
-** TODO Check all the TAX TODOs from code again
-** TODO Merge/rebase to master and do the refactorings on there too
-  - [ ] MoneyField -> MoneyValueField and Money/PriceProperty
-  - [ ] Check all "amount" occurences
-  - [ ] Check type specifiers in docstring for Price/Money params and
-    rtypes (see the list above)
-  - [ ] Replace home_currencys
-** TODO Make all Models ShoopModels
-** TODO Organize changes to nice sequence of commits and PRs
+** Misc TODO [2/14]
+*** DONE Improve PriceInfo: quantity, docs, tests
+*** DONE Make sure that basket with differing currency/taxness cannot be loaded
+*** STARTED Organize changes to nice sequence of commits and PRs
   - [X] Currency support to Money
   - [ ] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
   - [ ] vat_code -> tax_number
@@ -112,9 +21,9 @@
   - [ ] Method: get_effective_price -> get_effective_price_info
 
   - [ ] Admin dashboard: Filter by currency of the Shop
-  - [ ] Filters: home_currency -> money
+  - [X] Filters: home_currency -> money
   - [ ] TaxRule: Allow customer tax group to be blank
-  - [ ] Add TaxableItem interface
+  - [X] Add TaxableItem interface
   - [ ] Remove Product.get_taxed_price
   - [ ] Move real_user_or_none
   - [ ] OrderSource.get_final_lines: Add with_taxes argument
@@ -128,6 +37,111 @@
   - [ ] doc/api regeneration
   - [ ] doc: Tax documentation
   - [ ] MethodQuerySet.available_ids: Accept non-ids too
+*** TODO Merge/rebase to master and do the refactorings on there too
+  - [ ] MoneyField -> MoneyValueField and Money/PriceProperty
+  - [ ] Check all "amount" occurences
+  - [ ] Check type specifiers in docstring for Price/Money params and
+    rtypes (see the list above)
+  - [ ] Replace home_currencys
+*** STARTED Add tax_group to Customer Admin module
+*** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
+*** STARTED Make tax Admin views work again
+*** STARTED Check when taxes are determined and amend that
+*** STARTED Make tax_group optional on TaxRule
+   - [X] Make the TaxRule Admin form savable with no tax_groups
+   - [ ] Add help text that "no tax groups means that it matches all tax groups"
+*** TODO Make value-added taxes work (_calculate_taxes)
+*** TODO Make compound taxes raise a NYI error (_calculate_taxes)
+
+*** TODO Add new contacts to a tax_group automatically
+  - [ ] PersonContacts to "Retail customers" tax_group
+  - [ ] CompanyContacts to "Wholesale customers" tax_group
+*** TODO Check all the TAX TODOs from code again
+
+** Core Refactoring TODO [3/8]
+*** DONE Currency support to Money (with tests)
+*** DONE Implement CurrencyField
+*** DONE Make sure that all prices are created with Shop.create_price
+*** STARTED Add Money/Price properties to models
+  - [X] Create MoneyProperty and PriceProperty classes
+    - [X] Implement MoneyProperty and PriceProperty
+    - [X] Unit tests for MoneyProperty and PriceProperty
+  - [-] Rename MoneyField to MoneyValueField
+  - [-] Check all MoneyField usages and add MoneyProperty or PriceProperty
+  - [-] Add MoneyPropped to all MoneyPropery users
+  - [X] Check all "amount" usages
+  - [X] Fix callers of model init and objects.create
+  - [-] Fix users of amount/price fields
+    - [X] Order.cache_prices
+    - [X] OrderCreator.add_line_taxes
+    - [X] OrderLine.total_tax_amount
+    - [ ] Method.module_data
+*** STARTED OrderSource tuning
+  - [ ] Docstrings
+  - [-] Make calculate_taxes explicit
+  - [-] Implement auto-calculate taxes
+    - [X] Add flag to OrderSource and use it
+    - [ ] Add getter to TaxModule?
+  - [-] Get rid of OrderSource.uncache
+    - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
+    - [-] Check all callers of uncache
+    - [-] Implement automatic uncaching
+      - [-] Refactor OrderSource.lines to OrderSource.add_line
+      - [ ] What else is needed?
+  - [ ] Improve price de/serialization
+  - [ ] Check test coverage
+  - [ ] Add and improve tests
+*** STARTED Check type specifiers in docstring for Price/Money params and rtypes
+  - [ ] Check all "type.*amount" lines
+  - [ ] Check all "param.*Decimal.*amount" lines
+  - [ ] Check all "type.*price" lines
+  - [ ] Check all "param.*Decimal.*price" lines
+  - [ ] Check all "type.*money" lines
+  - [ ] Check all "param.*Decimal.*money" lines
+  - [ ] Check all "type.*tax" lines
+  - [ ] Check all "param.*Decimal.*tax" lines
+*** STARTED Add customer_tax_number various places
+  - [X] To TaxingContext
+  - [X] To CompanyContact: Rename vat_code to tax_number
+  - [X] To Address: Rename vat_code to tax_number
+  - [X] To Order: Rename vat_code to tax_number
+  - [ ] Unify lengths of tax_number fields in CompanyContact, Address, Order, OrderForm
+  - [X] Generalize VAT code validation to more usable for international use
+  - [ ] What else?
+
+*** STARTED Check usages of module_data of Methods for prices
+** Template Refactoring TODO [1/2]
+*** DONE Jinja filter for Money
+  - [X] Implement the filter/formatter
+  - [X] Unit tests for the new filter/formatter
+  - [X] Use the new filter (instead of home_currency)
+
+*** STARTED Unify price handling in templates
+  - [-] Make LinePriceMixin usable for PriceInfo and rename it to Priceful
+  - [-] Use Priceful in PriceInfo
+  - [ ] TaxAwarePriceInfo
+  - [ ] Jinja filters for Priced
+    - [ ] Implement the filter/formatter
+    - [ ] Unit tests for the new filter/formatter
+    - [ ] Use the new filter (instead of home_currency)
+** UI tuning TODO [0/1]
+*** TODO TaxRule Admin: Add help text for "no tax groups":
+    "no tax groups means that it matches all tax groups"
+** Documentation TODO [1/6]
+*** STARTED Write general tax system documentation for developers
+*** TODO Write general tax system documentation for merchants
+*** DONE Docstrings: Improve docstrings of Price, Money
+*** STARTED Docstrings: MoneyProperty
+*** STARTED Docstrings: PriceProperty
+*** STARTED Docstrings: MoneyPropped
+** Testing TODO [0/6]
+*** TODO Unit tests for bankers_round(Price)
+*** STARTED Test tax Admin views through (from UI)
+*** STARTED Test order creating from basket (from UI)
+*** STARTED Test order processing in Admin (from UI)
+*** STARTED Test shipping with and without ShippingMethod price (from UI)
+*** STARTED Test payment creating (with and without paymentmethod price) (from UI)
+
 
 * Notes
 
