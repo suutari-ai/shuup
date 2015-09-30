@@ -119,18 +119,3 @@ def test_money_formatter_with_extra_digits():
         assert money(usd("1234.123456"), widen=2) == nbsp("1 234,1235 $")
         assert money(usd("1234.123456"), widen=3) == nbsp("1 234,12346 $")
         assert money(usd("1234.123456"), widen=4) == nbsp("1 234,123456 $")
-
-
-if __name__ == '__main__':
-    import babel
-    all_locales = [babel.Locale.parse(x)
-                   for x in babel.localedata.locale_identifiers()]
-    from collections import defaultdict
-    patterns = defaultdict(list)
-    for x in all_locales:
-        patterns[x.currency_formats.get(None).pattern].append(str(x))
-
-    for (x, y) in patterns.items():
-        print(repr(x))
-        print("     " + ",".join(sorted(y)))
-        print()
