@@ -14,12 +14,12 @@ from parler.models import TranslatedFields
 
 from shoop.core.excs import ImmutabilityError
 from shoop.core.fields import CurrencyField, InternalIdentifierField, MoneyValueField
-from shoop.utils.properties import MoneyProperty
+from shoop.utils.properties import MoneyProperty, MoneyPropped
 
 from ._base import TranslatableShoopModel
 
 
-class Tax(TranslatableShoopModel):
+class Tax(MoneyPropped, TranslatableShoopModel):
     identifier_attr = 'code'
 
     code = InternalIdentifierField(unique=True)

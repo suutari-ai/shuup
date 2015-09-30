@@ -10,12 +10,12 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from shoop.core.fields import CurrencyField, MoneyValueField
-from shoop.utils.properties import MoneyProperty
+from shoop.utils.properties import MoneyProperty, MoneyPropped
 
 __all__ = ("Payment",)
 
 
-class Payment(models.Model):
+class Payment(MoneyPropped, models.Model):
     # TODO: Revise!!!
     order = models.ForeignKey("Order", related_name='payments', on_delete=models.PROTECT)
     created_on = models.DateTimeField(auto_now_add=True)
