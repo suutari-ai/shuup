@@ -59,7 +59,11 @@ def test_discount_percentage_special_cases():
 
 def test_repr():
     pi1 = PriceInfo(price('0.3'), price(42), Decimal('1.3'))
-    r1 = "PriceInfo(TaxlessPrice('0.3', 'EUR'), TaxlessPrice('42', 'EUR'), Decimal('1.3'))"
+    r1 = (
+        "PriceInfo("
+        "TaxlessPrice('0.3', 'EUR'), TaxlessPrice('42', 'EUR'), Decimal('1.3')"
+        ")"
+    )
     assert repr(pi1) == r1
 
     pi2 = PriceInfo(
