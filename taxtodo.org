@@ -95,26 +95,21 @@
   - [ ] Check type specifiers in docstring for Price/Money params and
     rtypes (see the list above)
   - [ ] Replace home_currencys
-
+** TODO Make all Models ShoopModels
 ** TODO Organize changes to nice sequence of commits and PRs
-  - [ ] vat_code -> tax_number
-
+  - [X] Currency support to Money
   - [ ] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
-
-  - [ ] Method: get_effective_price -> get_effective_price_info
-
-  - [ ] Currency support to Money
-
+  - [ ] vat_code -> tax_number
   - [ ] Rename MoneyField to MoneyValueField
-
   - [ ] Add CurrencyField
-
   - [ ] Shop.create_price: Currency support
   - [ ] Order: Add currency and prices_include_tax fields
   - [ ] Payment: Add currency fields
   - [ ] StoredBasket: Add currency field
   - [ ] Use MoneyProperty in models
   - [ ] StoredBasket: Fix owner fields
+  - [ ] Make all Models ShoopModels
+  - [ ] Method: get_effective_price -> get_effective_price_info
 
   - [ ] Admin dashboard: Filter by currency of the Shop
   - [ ] Filters: home_currency -> money
