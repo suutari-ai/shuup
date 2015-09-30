@@ -57,7 +57,7 @@ class Shop(TranslatableModel):
         Takes the ``prices_include_tax`` and ``currency`` settings of
         this Shop into account.
 
-        :type value: decimal.Decimal|str
+        :type value: decimal.Decimal|int|str
         :rtype: shoop.core.pricing.Price
         """
         if self.prices_include_tax:
