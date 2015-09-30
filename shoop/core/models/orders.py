@@ -534,8 +534,7 @@ class Order(models.Model):
             all_line_taxes.extend(line_taxes)
             if not line_taxes:
                 untaxed += line.taxless_total_price
-        return taxing.TaxSummary.from_line_taxes(
-            self.currency, all_line_taxes, untaxed)
+        return taxing.TaxSummary.from_line_taxes(all_line_taxes, untaxed)
 
     def get_product_ids_and_quantities(self):
         quantities = defaultdict(lambda: 0)
