@@ -9,10 +9,11 @@ from . import numbers
 
 class Money(numbers.UnitedDecimal):
     """
-    Money with value and currency.
+    Money value with currency.
 
     The pure decimal value is available from the base classes
-    `~shoop.utils.numbers.UnitedDecimal.value` property.
+    `~shoop.utils.numbers.UnitedDecimal.value` property (preferred way)
+    or by casting to `Decimal`.
 
     Money objects with different currencies cannot be compared or
     calculated with and will raise `~shoop.utils.numbers.UnitMixupError`.

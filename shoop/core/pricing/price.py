@@ -9,7 +9,7 @@ from shoop.utils.money import Money
 
 class Price(Money):
     """
-    Money value with taxful/taxless info.
+    Money amount with taxful/taxless info.
 
     Taxful and taxless prices cannot be mixed in comparison or in
     calculations, i.e. operations like ``x < y`` or ``x + y`` for two
@@ -18,7 +18,8 @@ class Price(Money):
 
     In addition to `includes_tax` info, Prices are Money and know their
     `~shoop.utils.numbers.UnitedDecimal.value` and
-    `~shoop.utils.money.Money.currency`.
+    `~shoop.utils.money.Money.currency`.  To get the bare Money amount
+    of a `Price`, use the `amount` property.
     """
     includes_tax = None
 
