@@ -6,7 +6,6 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 from babel.numbers import format_currency, format_number
-from django.conf import settings
 from django.template import loader
 from django.utils.encoding import force_text
 
