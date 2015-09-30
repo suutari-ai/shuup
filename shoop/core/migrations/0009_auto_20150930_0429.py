@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import shoop.core.fields
 import shoop.core.models.shops
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -58,17 +59,20 @@ class Migration(migrations.Migration):
             old_name='amount',
             new_name='amount_value',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='address',
-            name='vat_code',
+            old_name='vat_code',
+            new_name='tax_number',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='companycontact',
-            name='vat_code',
+            old_name='vat_code',
+            new_name='tax_number',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='order',
-            name='vat_code',
+            old_name='vat_code',
+            new_name='tax_number',
         ),
         migrations.RemoveField(
             model_name='orderline',
@@ -90,12 +94,12 @@ class Migration(migrations.Migration):
             model_name='suppliedproduct',
             name='suggested_retail_price',
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='address',
             name='tax_number',
             field=models.CharField(max_length=64, verbose_name='Tax number', blank=True),
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='companycontact',
             name='tax_number',
             field=models.CharField(max_length=32, verbose_name='Tax number (e.g. EIN in US or VAT code in Europe)', blank=True),
@@ -103,7 +107,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='order',
             name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, default='EUR'),
+            field=shoop.core.fields.CurrencyField(max_length=4, default=settings.SHOOP_HOME_CURRENCY),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -112,7 +116,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=True),
             preserve_default=False,
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='order',
             name='tax_number',
             field=models.CharField(max_length=20, verbose_name='Tax number', blank=True),

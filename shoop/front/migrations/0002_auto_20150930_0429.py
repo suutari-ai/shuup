@@ -25,15 +25,17 @@ class Migration(migrations.Migration):
             old_name='taxless_total',
             new_name='taxless_total_price_value',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='storedbasket',
-            name='owner_contact',
+            old_name='owner_contact',
+            new_name='customer',
         ),
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='storedbasket',
-            name='owner_user',
+            old_name='owner_user',
+            new_name='creator',
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='storedbasket',
             name='creator',
             field=models.ForeignKey(null=True, blank=True, to=settings.AUTH_USER_MODEL, related_name='baskets_created'),
@@ -41,10 +43,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='storedbasket',
             name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, default='EUR'),
+            field=shoop.core.fields.CurrencyField(max_length=4, default=settings.SHOOP_HOME_CURRENCY),
             preserve_default=False,
         ),
-        migrations.AddField(
+        migrations.AlterField(
             model_name='storedbasket',
             name='customer',
             field=models.ForeignKey(null=True, blank=True, to='shoop.Contact', related_name='customer_baskets'),
