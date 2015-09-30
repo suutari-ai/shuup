@@ -32,7 +32,7 @@ def get_unfinalized_basket_block(currency, days=14):
         StoredBasket.objects.filter(currency=currency)
         .filter(updated_on__range=(early_cutoff, late_cutoff), product_count__gte=0)
         .exclude(deleted=True, finished=True)
-        .aggregate(count=Count("id"), sum=Sum("taxful_total_value"))
+        .aggregate(count=Count("id"), sum=Sum("taxful_total_price_value"))
     )
     if not data["count"]:
         return
