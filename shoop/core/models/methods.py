@@ -83,7 +83,7 @@ class MethodQuerySet(TranslatableQuerySet):
 
 
 @python_2_unicode_compatible
-class Method(ModuleInterface, TranslatableModel, TaxableItem):
+class Method(TaxableItem, ModuleInterface, TranslatableModel):
     tax_class = models.ForeignKey("TaxClass", verbose_name=_('tax class'))
     status = EnumIntegerField(MethodStatus, db_index=True, default=MethodStatus.ENABLED, verbose_name=_('status'))
     identifier = InternalIdentifierField(unique=True)

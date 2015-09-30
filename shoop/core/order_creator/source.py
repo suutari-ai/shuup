@@ -333,7 +333,7 @@ def _collect_lines_from_signal(signal_results):
                 yield line
 
 
-class SourceLine(LinePriceMixin, TaxableItem):
+class SourceLine(TaxableItem, LinePriceMixin):
     """
     Line of OrderSource.
 

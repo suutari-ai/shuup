@@ -151,7 +151,7 @@ class ProductQuerySet(TranslatableQuerySet):
 
 
 @python_2_unicode_compatible
-class Product(AttributableMixin, TranslatableModel, TaxableItem):
+class Product(TaxableItem, AttributableMixin, TranslatableModel):
 
     COMMON_SELECT_RELATED = ("type", "primary_image", "tax_class")
 
