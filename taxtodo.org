@@ -1,0 +1,194 @@
+#+TITLE: Tax system: Fix, polish, document (SHOOP-975)
+
+* TODOs
+
+** Misc TODO [11/13]
+*** DONE Improve PriceInfo: quantity, docs, tests
+*** DONE Make sure that basket with differing currency/taxness cannot be loaded
+*** DONE Organize changes to nice sequence of commits and PRs
+  - [X] Currency support to Money
+  - [X] Remove purchase_price and suggested_retail_price from Product and SuppliedProduct
+  - [X] vat_code -> tax_number
+  - [X] Rename MoneyField to MoneyValueField
+  - [X] Add CurrencyField
+  - [X] Shop.create_price: Currency support
+  - [X] Order: Add currency and prices_include_tax fields
+  - [X] Payment: Add currency fields
+  - [X] StoredBasket: Add currency field
+  - [X] Use MoneyProperty in models
+  - [X] StoredBasket: Fix owner fields
+  - [X] Make all Models ShoopModels
+  - [X] Method: get_effective_price -> get_effective_price_info
+  - [X] Admin dashboard: Filter by currency of the Shop
+  - [X] Filters: home_currency -> money
+  - [X] TaxRule: Allow customer tax group to be blank
+  - [X] Add TaxableItem interface
+  - [X] Remove Product.get_taxed_price
+  - [X] Move real_user_or_none
+  - [X] OrderSource.get_final_lines: Add with_taxes argument
+  - [X] OrderSource
+  - [X] TaxModule: Redo API
+  - [X] Tax system documentation
+  - [X] Doc generating settings
+  - [X] Generate new API documentation templates
+  - [X] migrations (in one go, or several?)
+  - [X] doc/conf.py changes
+  - [X] doc/api regeneration
+  - [X] doc: Tax documentation
+  - [X] MethodQuerySet.available_ids: Accept non-ids too
+*** DONE Merge/rebase to master and do the refactorings on there too
+  - [X] MoneyField -> MoneyValueField and Money/PriceProperty
+  - [X] Check all "amount" occurences
+  - [X] Check type specifiers in docstring for Price/Money params and
+    rtypes (see the list above)
+  - [X] Replace home_currencys
+  - [X] unit_base_price -> base_unit_price
+*** DONE Add tax_group to Customer Admin module
+*** DONE Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
+*** DONE Make tax Admin views work again
+*** DONE Check when taxes are determined and amend that
+*** DONE Make tax_group optional on TaxRule
+   - [X] Make the TaxRule Admin form savable with no tax_groups
+   - [X] Add help text that "no tax groups means that it matches all tax groups"
+*** DONE Make value-added taxes work (_calculate_taxes)
+*** DONE Make compound taxes work
+*** TODO Add new contacts to a tax_group automatically
+  - [ ] PersonContacts to "Retail customers" tax_group
+  - [ ] CompanyContacts to "Wholesale customers" tax_group
+*** TODO Check all the TAX TODOs from code again
+
+** Core Refactoring TODO [6/9]
+*** DONE Currency support to Money (with tests)
+*** DONE Implement CurrencyField
+*** DONE Make sure that all prices are created with Shop.create_price
+*** DONE Add Money/Price properties to models
+  - [X] Create MoneyProperty and PriceProperty classes
+    - [X] Implement MoneyProperty and PriceProperty
+    - [X] Unit tests for MoneyProperty and PriceProperty
+  - [X] Rename MoneyField to MoneyValueField
+  - [X] Check all MoneyField usages and add MoneyProperty or PriceProperty
+  - [X] Add MoneyPropped to all MoneyProperty users
+  - [X] Check all "amount" usages
+  - [X] Fix callers of model init and objects.create
+  - [X] Fix users of amount/price fields
+    - [X] Order.cache_prices
+    - [X] OrderCreator.add_line_taxes
+    - [X] OrderLine.total_tax_amount
+    - [X] Method.module_data
+*** STARTED OrderSource tuning
+  - [-] Docstrings
+  - [X] Make calculate_taxes explicit
+  - [-] Implement auto-calculate taxes
+    - [X] Add flag to OrderSource and use it
+    - [ ] Add getter to TaxModule?
+  - [-] Get rid of OrderSource.uncache
+    - but wait... see `source.shipping_address.postal_code = "11111"` in test_tax_system
+    - [-] Check all callers of uncache
+    - [-] Implement automatic uncaching
+      - [-] Refactor OrderSource.lines to OrderSource.add_line
+      - [ ] What else is needed?
+  - [ ] Improve price de/serialization
+  - [ ] Check test coverage
+  - [ ] Add and improve tests
+*** DONE Check type specifiers in docstring for Price/Money params and rtypes
+  - [X] Check all "type.*amount" lines
+  - [X] Check all "param.*Decimal.*amount" lines
+  - [X] Check all "type.*price" lines
+  - [X] Check all "param.*Decimal.*price" lines
+  - [X] Check all "type.*money" lines
+  - [X] Check all "param.*Decimal.*money" lines
+  - [X] Check all "type.*tax" lines
+  - [X] Check all "param.*Decimal.*tax" lines
+*** DONE Add customer_tax_number various places
+  - [X] To TaxingContext
+  - [X] To CompanyContact: Rename vat_code to tax_number
+  - [X] To Address: Rename vat_code to tax_number
+  - [X] To Order: Rename vat_code to tax_number
+  - [X] Generalize VAT code validation to more usable for international use
+*** TODO Unify lengths of tax_number fields in CompanyContact, Address, Order, OrderForm
+*** STARTED Check usages of module_data of Methods for prices
+
+** Template Refactoring TODO [1/2]
+*** DONE Jinja filter for Money
+  - [X] Implement the filter/formatter
+  - [X] Unit tests for the new filter/formatter
+  - [X] Use the new filter (instead of home_currency)
+*** STARTED Unify price handling in templates
+  - [X] Make LinePriceMixin usable for PriceInfo and rename it to Priceful
+  - [X] Use Priceful in PriceInfo
+  - [ ] TaxAwarePriceInfo
+  - [ ] Jinja filters for Priceful
+    - [ ] Implement the filter/formatter
+    - [ ] Unit tests for the new filter/formatter
+    - [ ] Use the new filter (instead of home_currency)
+** UI tuning TODO [1/1]
+*** DONE TaxRule Admin: Add help text for "no tax groups":
+    "no tax groups means that it matches all tax groups"
+** Documentation TODO [4/6]
+*** STARTED Write general tax system documentation for developers
+*** TODO Write general tax system documentation for merchants
+*** DONE Docstrings: Improve docstrings of Price, Money
+*** DONE Docstrings: MoneyProperty
+*** DONE Docstrings: PriceProperty
+*** DONE Docstrings: MoneyPropped
+** Testing TODO [5/6]
+*** TODO Unit tests for bankers_round(Price)
+*** DONE Test tax Admin views through (from UI)
+*** DONE Test order creating from basket (from UI)
+*** DONE Test order processing in Admin (from UI)
+*** DONE Test shipping with and without ShippingMethod price (from UI)
+*** DONE Test payment creating (with and without paymentmethod price) (from UI)
+
+** Review comments TODO [11/13]
+*** DONE Document CurrencyBound class
+*** DONE get_sales_of_the_day_block: Make request first argument
+*** DONE Remove "if shop_inst:" from get_shop_instance
+*** DONE Fix Mixin to be first on "class OrderForm(forms.Form, TaxNumberCleanMixin)"
+*** DONE Fix typo: _tranform_init_kwargs
+*** DONE Fix typo: tranform (MoneyPropped docstring)
+*** DONE Fix typo: tranform_single_init_kwarg
+*** DONE Fix "Conflicting product and line tax classes: <TaxClass:2-> vs <TaxClass:1-default>"
+*** DONE Make Tax objects immutable only after they have been used
+*** DONE Admin: Fix Tax view breadcrumbs
+*** TODO Use get_babel_locale() in format_money
+*** DONE Rename "total_price":s to "price"
+*** STARTED Check Janne's and Teemu's comments [7/9]
+ - [X] Jos syöttää postinumerovälin 20200-20300 patterninksi, arvo 20200
+   tai 20300 ei kelpaa
+ - [X] jos syöttää postinumerovälin "20200 - 20300" mikään arvo välistä
+   ei kelpaa, koska arvoja ei stripata
+ - [X] Saving Tax object for the second time will cause huge problem: it
+   wont work
+ - [ ] Tax.currency = Currencyfield, should have options for avavailable
+   currencies
+ - [ ] "* valid currency accepted is HOMO" -> Accept only known currency
+ - [X] Breadcrumb (Home Taxes Finnish normal taxation) taxes points to
+   "tax classes"
+ - [X] Jos tuotteelle vaihtaa tax classin kun tuote on jo jollain
+   korissa, tulee seuraava ongelma:
+   http://localhost:8002/checkout/addresses/
+   shoop/core/order_creator/source.py in tax_class, line 463
+   Conflicting product and line tax classes: <TaxClass:2-> vs <TaxClass:1-default>
+ - [X] Breadcrumbs:
+   - [X] Home Taxes  None for : postinumero 20200
+   - [X] None for : postinumero 20200
+ - [X] "* Patternit vaativat aputekstin "
+
+
+* Notes
+
+** When are taxes determined
+
+ 1. In basket confirm:
+    - ConfirmPhase.get_context_data
+    - BaseBasket.get_validation_errors
+    - OrderSource.get_final_lines
+    - OrderSource._compute_processed_lines
+    - OrderSource._compute_taxes
+
+ 2. Saving basket to database
+    - DatabaseBasketStorage.save
+    - OrderSource.taxless_total_price / OrderSource.taxful_total_price
+    - OrderSource.get_final_lines
+    - OrderSource._compute_processed_lines
+    - OrderSource._compute_taxes
