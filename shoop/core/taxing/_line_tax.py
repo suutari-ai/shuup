@@ -16,8 +16,8 @@ class LineTax(object):
     """
     Tax of some line.
 
-    This is an interface for specifying taxes of an
-    :obj:`~shoop.core.models.OrderLine` or :obj:`~shoop.front.
+    This is an interface for specifying taxes of an `OrderLine` or
+    `SourceLine`.
 
     :ivar tax: The tax that this line is about.
     :type tax: shoop.core.models.Tax
