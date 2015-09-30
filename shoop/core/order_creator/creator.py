@@ -31,8 +31,6 @@ class OrderCreator(object):
         :param source_line: The SourceLine
         """
         order_line = OrderLine(order=order)
-        order_line.currency = source_line.source.currency
-        order_line.prices_include_tax = source_line.source.prices_include_tax
         product = source_line.product
         quantity = Decimal(source_line.quantity)
         if product:
