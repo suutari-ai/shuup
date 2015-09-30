@@ -86,7 +86,7 @@ def test_shop_specific_cheapest_price_2(rf):
 def test_set_taxful_price_works(rf):
     request, shop, group = initialize_test(rf, True)
     price = shop.create_price
-    
+
     product = create_product("Anuva-Product", shop, default_price=300)
 
     # create ssp with higher price
