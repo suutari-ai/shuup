@@ -14,8 +14,8 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 from shoop.admin.base import AdminModule
+from shoop.admin.currencybound import CurrencyBound
 from shoop.admin.dashboard import DashboardMoneyBlock
-from shoop.core.models import Shop
 from shoop.front.models.stored_basket import StoredBasket
 
 
@@ -48,15 +48,7 @@ def get_unfinalized_basket_block(currency, days=14):
     )
 
 
-class BasketAdminModule(AdminModule):
-    def __init__(self, currency=None, *args, **kwargs):
-        if currency is None:
-            first_shop = Shop.objects.first()
-            if first_shop:
-                currency = first_shop.currency
-        self.currency = currency
-        super(BasketAdminModule, self).__init__(*args, **kwargs)
-
+class BasketAdminModule(CurrencyBound, AdminModule):
     def get_dashboard_blocks(self, request):
         if not self.currency:
             return

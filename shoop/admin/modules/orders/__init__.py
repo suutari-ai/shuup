@@ -11,22 +11,15 @@ from django.db.models import Q
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from shoop.admin.base import AdminModule, MenuEntry, SearchResult, Notification
+from shoop.admin.currencybound import CurrencyBound
 from shoop.admin.utils.urls import admin_url, get_model_url, derive_model_url
-from shoop.core.models import Order, OrderStatusRole, Shop
+from shoop.core.models import Order, OrderStatusRole
 import six
 
 
-class OrderModule(AdminModule):
+class OrderModule(CurrencyBound, AdminModule):
     name = _("Orders")
     breadcrumbs_menu_entry = MenuEntry(name, url="shoop_admin:order.list")
-
-    def __init__(self, currency=None, *args, **kwargs):
-        if currency is None:
-            first_shop = Shop.objects.first()
-            if first_shop:
-                currency = first_shop.currency
-        self.currency = currency
-        super(OrderModule, self).__init__(*args, **kwargs)
 
     def get_urls(self):
         return [
