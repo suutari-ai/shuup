@@ -210,8 +210,6 @@ class OrderSource(object):
         line = SourceLine(source=self, **kwargs)
         self._lines.append(line)
         self.uncache()
-        if self.calculate_taxes_automatically:
-            self.calculate_taxes()
         return line
 
     def get_lines(self):
