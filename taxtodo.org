@@ -43,6 +43,7 @@
   - [ ] Check type specifiers in docstring for Price/Money params and
     rtypes (see the list above)
   - [ ] Replace home_currencys
+  - [ ] unit_base_price -> base_unit_price
 *** STARTED Add tax_group to Customer Admin module
 *** STARTED Check SHOOP_HOME_CURRENCY usages and replace with Shop.currency
 *** STARTED Make tax Admin views work again
