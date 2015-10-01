@@ -57,10 +57,9 @@ def test_broken_order_lines():
 
 @pytest.mark.django_db
 def test_line_discount():
-    order = create_empty_order()
+    order = create_empty_order(prices_include_tax=False)
     order.save()
     currency = order.shop.currency
-    assert order.prices_include_tax is False
     ol = OrderLine(
         order=order,
         type=OrderLineType.OTHER,

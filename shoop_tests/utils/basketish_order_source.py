@@ -10,6 +10,4 @@ from shoop.core.order_creator.source import OrderSource
 
 
 class BasketishOrderSource(OrderSource):
-
-    def __init__(self, shop):
-        super(BasketishOrderSource, self).__init__(shop)
+    pass

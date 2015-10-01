@@ -134,7 +134,7 @@ class DictStoredBasket(object):
     @classmethod
     def from_basket_and_data(cls, basket, data):
         return cls(
-            id=(getattr(basket, "id", None) or basket.name),
+            id=(getattr(basket, "id", None) or basket.basket_name),
             shop_id=basket.shop.id,
             currency=basket.currency,
             prices_include_tax=basket.prices_include_tax,

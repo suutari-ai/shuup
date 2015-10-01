@@ -131,7 +131,6 @@ def test_waiver():
                             "price": "100"
                         })
     source = BasketishOrderSource(get_default_shop())
-    assert not source.prices_include_tax
     assert sm.get_effective_name(source) == u"Waivey"
     assert sm.get_effective_price_info(source).price == source.shop.create_price(100)
     source.add_line(

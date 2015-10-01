@@ -15,7 +15,7 @@ from shoop.core.order_creator.source import OrderSource, SourceLine
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 from shoop.core.taxing import TaxModule
 from shoop.core.taxing.utils import stacked_value_added_taxes
-from shoop.testing.factories import get_default_shop, get_tax
+from shoop.testing.factories import get_shop, get_tax
 
 
 TAX_MODULE_SPEC = [__name__ + ":IrvineCaliforniaTaxation"]
@@ -39,7 +39,7 @@ class IrvineCaliforniaTaxation(TaxModule):
 
 @pytest.mark.django_db
 def test_stacked_tax_taxless_price():
-    source = OrderSource(get_default_shop())
+    source = OrderSource(get_shop(prices_include_tax=False))
     assert source.prices_include_tax is False
     source.add_line(
         type=OrderLineType.OTHER, quantity=1, unit_price=source.create_price(10)
@@ -66,10 +66,7 @@ def test_stacked_tax_taxless_price():
 
 @pytest.mark.django_db
 def test_stacked_tax_taxful_price():
-    shop = get_default_shop()
-    shop.prices_include_tax = True
-    shop.currency = 'EUR'
-    shop.save()
+    shop = get_shop(prices_include_tax=True, currency='EUR')
     source = OrderSource(shop)
     assert source.prices_include_tax
     source.add_line(
