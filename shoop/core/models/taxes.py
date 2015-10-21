@@ -50,6 +50,8 @@ class Tax(MoneyPropped, ImmutableMixin, TranslatableShoopModel):
     enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
     def clean(self):
+        if not self.code:
+            self.code = None
         super(Tax, self).clean()
         if self.rate is None and self.amount is None:
             raise ValidationError(_('Either rate or amount is required'))
