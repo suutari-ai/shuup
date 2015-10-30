@@ -143,7 +143,7 @@ class Attribute(TranslatableModel):
         elif self.type == AttributeType.TIMEDELTA:
             kwargs.setdefault("help_text", "(as seconds)")
             # TODO: This should be more user friendly
-            return forms.IntegerField(**kwargs)
+            return forms.DecimalField(**kwargs)
         elif self.type == AttributeType.DATETIME:
             return forms.DateTimeField(**kwargs)
         elif self.type == AttributeType.DATE:
@@ -192,7 +192,7 @@ class Attribute(TranslatableModel):
 class AppliedAttribute(TranslatableModel):
     _applied_fk_field = None  # Used by the `repr` implementation
 
-    attribute = models.ForeignKey(Attribute)
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
 
     numeric_value = models.DecimalField(null=True, blank=True, max_digits=36, decimal_places=9)
     datetime_value = models.DateTimeField(auto_now_add=False, editable=True, null=True, blank=True)

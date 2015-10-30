@@ -84,11 +84,11 @@ class OrderModule(CurrencyBound, AdminModule):
         currency = self.currency
         if not currency:
             return
-        yield dashboard.get_sales_of_the_day_block(currency, request)
-        yield dashboard.get_lifetime_sales_block(currency, request)
-        yield dashboard.get_avg_purchase_size_block(currency, request)
-        yield dashboard.get_open_orders_block(currency, request)
-        yield dashboard.get_order_value_chart_dashboard_block(currency, request)
+        yield dashboard.get_sales_of_the_day_block(request, currency)
+        yield dashboard.get_lifetime_sales_block(request, currency)
+        yield dashboard.get_avg_purchase_size_block(request, currency)
+        yield dashboard.get_open_orders_block(request, currency)
+        yield dashboard.get_order_value_chart_dashboard_block(request, currency)
 
     def get_notifications(self, request):
         old_open_orders = Order.objects.filter(

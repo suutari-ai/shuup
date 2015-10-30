@@ -33,7 +33,7 @@ def _to_choices(objects):
     return [(x.id, x) for x in objects]
 
 
-class OrderForm(forms.Form, TaxNumberCleanMixin):
+class OrderForm(TaxNumberCleanMixin, forms.Form):
     company_name = forms.CharField(max_length=128, required=False, label=_(u"Company name"))
     tax_number = forms.CharField(max_length=32, required=False, label=_("Tax number"))
     shipping_method = RelaxedModelChoiceField(queryset=ShippingMethod.objects.none(), label=_(u"Shipping method"))

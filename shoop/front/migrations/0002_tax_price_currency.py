@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import shoop.core.models.shops
 import shoop.core.fields
 from django.conf import settings
 
@@ -9,8 +10,8 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('shoop', '0009_tax_price_currency'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('shoop', '0009_auto_20150930_0429'),
         ('shoop_front', '0001_initial'),
     ]
 
@@ -38,23 +39,23 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='storedbasket',
             name='creator',
-            field=models.ForeignKey(null=True, blank=True, to=settings.AUTH_USER_MODEL, related_name='baskets_created'),
+            field=models.ForeignKey(null=True, related_name='baskets_created', blank=True, to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='storedbasket',
             name='currency',
-            field=shoop.core.fields.CurrencyField(max_length=4, default=settings.SHOOP_HOME_CURRENCY),
+            field=shoop.core.fields.CurrencyField(max_length=4, default=shoop.core.models.shops._get_default_currency),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='storedbasket',
             name='customer',
-            field=models.ForeignKey(null=True, blank=True, to='shoop.Contact', related_name='customer_baskets'),
+            field=models.ForeignKey(null=True, related_name='customer_baskets', blank=True, to='shoop.Contact'),
         ),
         migrations.AddField(
             model_name='storedbasket',
             name='orderer',
-            field=models.ForeignKey(null=True, blank=True, to='shoop.PersonContact', related_name='orderer_baskets'),
+            field=models.ForeignKey(null=True, related_name='orderer_baskets', blank=True, to='shoop.PersonContact'),
         ),
         migrations.AddField(
             model_name='storedbasket',
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='storedbasket',
             name='shop',
-            field=models.ForeignKey(default=1, to='shoop.Shop'),
+            field=models.ForeignKey(to='shoop.Shop', default=1),
             preserve_default=False,
         ),
     ]

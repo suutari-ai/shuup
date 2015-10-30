@@ -6,6 +6,7 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals, with_statement
+from shoop.core.excs import ImpossibleProductModeException
 
 import six
 from django.core.exceptions import ObjectDoesNotExist
@@ -118,7 +119,8 @@ class ProductQuerySet(TranslatableQuerySet):
         root = (self.language(language) if language else self)
 
         if customer and customer.is_all_seeing:
-            qs = root.all().exclude(deleted=True).filter(shop_products__shop=shop)
+            exclude_q = Q(deleted=True) | Q(mode=ProductMode.VARIATION_CHILD)
+            qs = root.all().exclude(exclude_q).filter(shop_products__shop=shop)
         else:
             qs = root.all().exclude(deleted=True).filter(
                 shop_products__shop=shop,
@@ -167,8 +169,8 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
         verbose_name=_('variation parent'))
     stock_behavior = EnumIntegerField(StockBehavior, default=StockBehavior.UNSTOCKED, verbose_name=_('stock'))
     shipping_mode = EnumIntegerField(ShippingMode, default=ShippingMode.NOT_SHIPPED, verbose_name=_('shipping mode'))
-    sales_unit = models.ForeignKey("SalesUnit", verbose_name=_('unit'), blank=True, null=True)
-    tax_class = models.ForeignKey("TaxClass", verbose_name=_('tax class'))
+    sales_unit = models.ForeignKey("SalesUnit", verbose_name=_('unit'), blank=True, null=True, on_delete=models.PROTECT)
+    tax_class = models.ForeignKey("TaxClass", verbose_name=_('tax class'), on_delete=models.PROTECT)
 
     # Identification
     type = models.ForeignKey(
@@ -187,7 +189,7 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
     category = models.ForeignKey(
         "Category", related_name='primary_products', blank=True, null=True,
         verbose_name=_('primary category'),
-        help_text=_("only used for administration and reporting"))
+        help_text=_("only used for administration and reporting"), on_delete=models.PROTECT)
 
     # Physical dimensions
     width = MeasurementField(unit="mm", verbose_name=_('width (mm)'))
@@ -197,7 +199,9 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
     gross_weight = MeasurementField(unit="g", verbose_name=_('gross weight (g)'))
 
     # Misc.
-    manufacturer = models.ForeignKey("Manufacturer", blank=True, null=True, verbose_name=_('manufacturer'))
+    manufacturer = models.ForeignKey(
+        "Manufacturer", blank=True, null=True,
+        verbose_name=_('manufacturer'), on_delete=models.PROTECT)
     primary_image = models.ForeignKey(
         "ProductMedia", null=True, blank=True,
         related_name="primary_image_for_products",
@@ -243,10 +247,9 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
             return cached
 
         shop_inst = self.shop_products.get(shop=shop)
-        if shop_inst:
-            shop_inst._product_cache = self
-            shop_inst._shop_cache = shop
-            shop_inst_cache[shop] = shop_inst
+        shop_inst._product_cache = self
+        shop_inst._shop_cache = shop
+        shop_inst_cache[shop] = shop_inst
 
         return shop_inst
 
@@ -452,32 +455,49 @@ class Product(TaxableItem, AttributableMixin, TranslatableModel):
         :type variables: dict|None
         """
         if parent.is_variation_child():
-            raise ValueError("Multilevel parentage hierarchies aren't supported (parent is a child already)")
+            raise ImpossibleProductModeException(
+                _("Multilevel parentage hierarchies aren't supported (parent is a child already)"),
+                code="multilevel"
+            )
         if parent.mode == ProductMode.VARIABLE_VARIATION_PARENT and not variables:
-            raise ValueError("Parent is a variable variation parent, yet variables were not passed to `link_to_parent`")
+            raise ImpossibleProductModeException(
+                _("Parent is a variable variation parent, yet variables were not passed"),
+                code="no_variables"
+            )
         if parent.mode == ProductMode.SIMPLE_VARIATION_PARENT and variables:
-            raise ValueError("Parent is a simple variation parent, yet variables were passed to `link_to_parent`")
+            raise ImpossibleProductModeException(
+                "Parent is a simple variation parent, yet variables were passed",
+                code="extra_variables"
+            )
         if self.mode == ProductMode.SIMPLE_VARIATION_PARENT:
-            raise ValueError(
-                "Multilevel parentage hierarchies aren't supported (this product is a simple variation parent)"
+            raise ImpossibleProductModeException(
+                _("Multilevel parentage hierarchies aren't supported (this product is a simple variation parent)"),
+                code="multilevel"
             )
         if self.mode == ProductMode.VARIABLE_VARIATION_PARENT:
-            raise ValueError(
-                "Multilevel parentage hierarchies aren't supported (this product is a variable variation parent)"
+            raise ImpossibleProductModeException(
+                _("Multilevel parentage hierarchies aren't supported (this product is a variable variation parent)"),
+                code="multilevel"
             )
 
     def make_package(self, package_def):
         if self.mode != ProductMode.NORMAL:
-            raise ValueError("Product is currently not a normal product, can't turn into package")
+            raise ImpossibleProductModeException(
+                _("Product is currently not a normal product, can't turn into package"),
+                code="abnormal"
+            )
 
         for child_product, quantity in six.iteritems(package_def):
             # :type child_product: Product
             if child_product.is_variation_parent():
-                raise ValueError("Variation parents can not belong into a package")
+                raise ImpossibleProductModeException(
+                    _("Variation parents can not belong into a package"),
+                    code="abnormal"
+                )
             if child_product.is_package_parent():
-                raise ValueError("Can't nest packages")
+                raise ImpossibleProductModeException(_("Packages can't be nested"), code="multilevel")
             if quantity <= 0:
-                raise ValueError("Quantity %s is invalid" % quantity)
+                raise ImpossibleProductModeException(_("Quantity %s is invalid") % quantity, code="quantity")
             ProductPackageLink.objects.create(parent=self, child=child_product, quantity=quantity)
         self.verify_mode()
 
@@ -520,8 +540,8 @@ ProductLogEntry = define_log_model(Product)
 
 
 class ProductCrossSell(models.Model):
-    product1 = models.ForeignKey(Product, related_name="cross_sell_1")
-    product2 = models.ForeignKey(Product, related_name="cross_sell_2")
+    product1 = models.ForeignKey(Product, related_name="cross_sell_1", on_delete=models.CASCADE)
+    product2 = models.ForeignKey(Product, related_name="cross_sell_2", on_delete=models.CASCADE)
     weight = models.IntegerField(default=0)
     type = EnumIntegerField(ProductCrossSellType)
 
@@ -532,7 +552,7 @@ class ProductCrossSell(models.Model):
 
 class ProductAttribute(AppliedAttribute):
     _applied_fk_field = "product"
-    product = models.ForeignKey(Product, related_name='attributes')
+    product = models.ForeignKey(Product, related_name='attributes', on_delete=models.CASCADE)
 
     translations = TranslatedFields(
         translated_string_value=models.TextField(blank=True)

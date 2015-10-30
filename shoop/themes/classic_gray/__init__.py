@@ -21,11 +21,11 @@ class ClassicGrayTheme(Theme):
     template_dir = "classic_gray/"
 
     fields = [
+        ("show_welcome_text", forms.BooleanField(required=False, initial=True, label=_("Show Frontpage Welcome Text"))),
         ("footer_html", forms.CharField(required=False, label=_("Footer custom HTML"), widget=forms.Textarea)),
         ("footer_links", forms.CharField(required=False, label=_("Footer links"), widget=forms.Textarea,
-                                         help_text=_("One line per link in format '[url] [label]'"))),
+                                         help_text=_("One line per link in format 'http://example.com Example Link'"))),
         ("footer_column_order", forms.ChoiceField(required=False, initial="", label=_("Footer column order"))),
-        ("show_welcome_text", forms.BooleanField(required=False, initial=True, label=_("Show Frontpage Welcome Text"))),
     ]
 
     def get_configuration_form(self, form_kwargs):
@@ -50,12 +50,19 @@ class ClassicGrayTheme(Theme):
             else:
                 yield {"url": url}
 
-    def get_cms_links(self):
+    def _format_cms_links(self, **query_kwargs):
         if "shoop.simple_cms" not in settings.INSTALLED_APPS:
             return
         from shoop.simple_cms.models import Page
-        for page in Page.objects.visible().filter(visible_in_menu=True):
+        for page in Page.objects.visible().filter(**query_kwargs):
             yield {"url": "/%s" % page.url, "text": force_text(page)}
+
+    def get_cms_navigation_links(self):
+        return self._format_cms_links(visible_in_menu=True)
+
+    def get_cms_footer_links(self):
+        page_ids = self.get_setting("footer_cms_pages") or []
+        return self._format_cms_links(id__in=page_ids)
 
 
 class ClassicGrayThemeAppConfig(AppConfig):

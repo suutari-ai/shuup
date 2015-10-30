@@ -124,27 +124,27 @@ class MoneyPropped(object):
 
     Add this mixin as (first) base for the class that has
     `MoneyProperty` properties and this will make its `__init__`
-    tranform passed kwargs to the fields specified in the
+    transform passed kwargs to the fields specified in the
     `MoneyProperty`.
     """
     def __init__(self, *args, **kwargs):
-        transformed = _tranform_init_kwargs(type(self), kwargs)
+        transformed = _transform_init_kwargs(type(self), kwargs)
         super(MoneyPropped, self).__init__(*args, **kwargs)
         _check_transformed_types(self, transformed)
 
 
-def _tranform_init_kwargs(cls, kwargs):
+def _transform_init_kwargs(cls, kwargs):
     transformed = []
     for field in list(kwargs.keys()):
         prop = getattr(cls, field, None)
         if isinstance(prop, MoneyProperty):
             value = kwargs.pop(field)
-            _tranform_single_init_kwarg(prop, field, value, kwargs)
+            _transform_single_init_kwarg(prop, field, value, kwargs)
             transformed.append((field, value))
     return transformed
 
 
-def _tranform_single_init_kwarg(prop, field, value, kwargs):
+def _transform_single_init_kwarg(prop, field, value, kwargs):
     if value is not None and not isinstance(value, prop.value_class):
         raise TypeError('Expecting type %s for field "%s" (got %r)' %
                         (prop.value_class.__name__, field, value))

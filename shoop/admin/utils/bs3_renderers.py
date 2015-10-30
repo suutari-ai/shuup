@@ -7,7 +7,7 @@
 # LICENSE file in the root directory of this source tree.
 from bootstrap3.renderers import FieldRenderer
 from bootstrap3.utils import add_css_class
-from django.forms.models import ModelMultipleChoiceField
+from django.forms import ModelMultipleChoiceField, DateField, DateTimeField
 
 
 class AdminFieldRenderer(FieldRenderer):
@@ -17,8 +17,16 @@ class AdminFieldRenderer(FieldRenderer):
         self.set_placeholder = bool(kwargs.pop("set_placeholder", True))
         self.widget_class = kwargs.pop("widget_class", None)
         default_show_help_block = True
-        if isinstance(field, ModelMultipleChoiceField):
+        if isinstance(field.field, ModelMultipleChoiceField):
             default_show_help_block = False
+            if not self.widget_class:
+                self.widget_class = "multiselect"
+        if isinstance(field.field, DateTimeField):
+            if not self.widget_class:
+                self.widget_class = "datetime"
+        if isinstance(field.field, DateField):
+            if not self.widget_class:
+                self.widget_class = "date"
         self.show_help_block = bool(kwargs.pop("show_help_block", default_show_help_block))
 
         kwargs["required_css_class"] = "required-field"

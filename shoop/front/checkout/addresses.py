@@ -25,7 +25,7 @@ class AddressForm(forms.ModelForm):
         fields = ("name", "phone", "email", "street", "street2", "postal_code", "city", "region", "country")
 
 
-class CompanyForm(forms.ModelForm, TaxNumberCleanMixin):
+class CompanyForm(TaxNumberCleanMixin, forms.ModelForm):
     company_name_field = "name"
 
     class Meta:

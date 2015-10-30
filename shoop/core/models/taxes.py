@@ -12,34 +12,41 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from parler.models import TranslatedFields
 
-from shoop.core.excs import ImmutabilityError
 from shoop.core.fields import CurrencyField, InternalIdentifierField, MoneyValueField
+from shoop.utils.i18n import format_money, format_percent
 from shoop.utils.properties import MoneyProperty, MoneyPropped
 
-from ._base import TranslatableShoopModel
+from ._base import ImmutableMixin, TranslatableShoopModel
 
 
-class Tax(MoneyPropped, TranslatableShoopModel):
+class Tax(MoneyPropped, ImmutableMixin, TranslatableShoopModel):
     identifier_attr = 'code'
 
-    code = InternalIdentifierField(unique=True)
+    immutability_message = _(
+        "Cannot change business critical fields of Tax that is in use")
+    unprotected_fields = ['enabled']
+
+    code = InternalIdentifierField(
+        unique=True, editable=True, verbose_name=_("code"), help_text="")
 
     translations = TranslatedFields(
-        name=models.CharField(max_length=64),
+        name=models.CharField(max_length=64, verbose_name=_("name")),
     )
 
     rate = models.DecimalField(
         max_digits=6, decimal_places=5, blank=True, null=True,
-        verbose_name=_('tax rate'),
-        help_text=_("The percentage rate of the tax. Mutually exclusive with flat amounts.")
-    )
+        verbose_name=_("tax rate"), help_text=_(
+            "The percentage rate of the tax."))
     amount = MoneyProperty('amount_value', 'currency')
     amount_value = MoneyValueField(
         default=None, blank=True, null=True,
-        verbose_name=_('tax amount'),
-        help_text=_("The flat amount of the tax. Mutually exclusive with percentage rates.")
-    )
-    currency = CurrencyField(default=None, blank=True, null=True)
+        verbose_name=_("tax amount value"), help_text=_(
+            "The flat amount of the tax. "
+            "Mutually exclusive with percentage rates."))
+    currency = CurrencyField(
+        default=None, blank=True, null=True,
+        verbose_name=_("currency of tax amount"))
+
     enabled = models.BooleanField(default=True, verbose_name=_('enabled'))
 
     def clean(self):
@@ -48,13 +55,9 @@ class Tax(MoneyPropped, TranslatableShoopModel):
             raise ValidationError(_('Either rate or amount is required'))
         if self.amount is not None and self.rate is not None:
             raise ValidationError(_('Cannot have both rate and amount'))
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if self.pk:
-            # TODO: (TAX) Make it possible to disable Tax
-            raise ImmutabilityError('Tax objects are immutable')
-        super(Tax, self).save(*args, **kwargs)
+        if self.amount is not None and not self.currency:
+            raise ValidationError(
+                _("Currency is required if amount is specified"))
 
     def calculate_amount(self, base_amount):
         """
@@ -68,6 +71,17 @@ class Tax(MoneyPropped, TranslatableShoopModel):
         if self.rate is not None:
             return self.rate * base_amount
         raise ValueError("Improperly configured tax: %s" % self)
+
+    def __str__(self):
+        text = super(Tax, self).__str__()
+        if self.rate is not None:
+            text += " ({})".format(format_percent(self.rate, digits=3))
+        if self.amount is not None:
+            text += " ({})".format(format_money(self.amount))
+        return text
+
+    def _is_in_use(self):
+        return self.order_line_taxes.exists()
 
     class Meta:
         verbose_name = _('tax')
