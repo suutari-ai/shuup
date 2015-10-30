@@ -156,7 +156,8 @@ def test_weight_limits():
 @pytest.mark.xfail # TODO: (TAX) Make this test not fail
 @pytest.mark.django_db
 def test_tax():
-    sm = ShippingMethod(tax_class=None, module_data={"price": 50})
+    tax_class = get_default_tax_class()
+    sm = ShippingMethod(tax_class=tax_class, module_data={"price": 50})
     source = BasketishOrderSource(get_default_shop())
     # Since `tax_class` is None, the highest tax percentage in the order should be used:
     source.add_line(type=OrderLineType.PRODUCT, tax_rate=Decimal("0.8"))
