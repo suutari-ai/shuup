@@ -179,9 +179,10 @@ class JsonOrderCreator(object):
         address_fields = [
             "name", "tax_number", "phone", "email", "street", "street2", "postal_code", "city", "region", "country"
         ]
-        fields = {"is_immutable": True}
         for field in address_fields:
             fields[field] = address.get(field, "")
+
+        return MutableAddress.from_dict(address)
 
         address = Address.objects.filter(**fields).first()
         if not address:
@@ -199,19 +200,21 @@ class JsonOrderCreator(object):
         source = OrderSource(shop=shop)
 
         customer_data = state.pop("customer", None)
-        billing_address = customer_data.pop("billingAddress", {})
-        shipping_address = customer_data.pop("shippingAddress", {})
-        ship_to_billing_address = customer_data.pop("shipToBillingAddress", False)
+        billing_address_data = customer_data.pop("billingAddress", {})
+        shipping_address_data = (
+            billing_address_data
+            if customer_data.pop("shipToBillingAddress", False)
+            else customer_data.pop("shippingAddress", {}))
         is_company = customer_data.pop("isCompany", False)
         save_address = customer_data.pop("saveAddress", False)
         customer = self.safe_get_first(Contact, pk=customer_data.get("id")) if customer_data else None
         if not customer:
-            customer = self._create_contact_from_address(billing_address, is_company)
+            customer = self._create_contact_from_address(billing_address_data, is_company)
             if not customer:
                 return
 
-        billing_address = self._create_address(billing_address)
-        shipping_address = billing_address if ship_to_billing_address else self._create_address(shipping_address)
+        billing_address = self._create_address(billing_address_data)
+        shipping_address = self._create_address(shipping_address_data)
 
         if save_address:
             customer.default_billing_address = billing_address

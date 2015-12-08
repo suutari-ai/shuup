@@ -19,7 +19,9 @@ from shoop.admin.form_part import FormPart, FormPartsViewMixin, SaveFormPartsMix
 from shoop.admin.toolbar import get_default_edit_toolbar
 from shoop.admin.utils.urls import get_model_url
 from shoop.admin.utils.views import CreateOrUpdateView
-from shoop.core.models import Address, CompanyContact, Contact, ContactGroup, PersonContact
+from shoop.core.models import (
+    CompanyContact, Contact, ContactGroup, PersonContact, MutableAddress,
+)
 from shoop.utils.excs import Problem
 from shoop.utils.form_group import FormDef
 
@@ -151,7 +153,7 @@ class ContactBaseFormPart(FormPart):
 
 class AddressForm(forms.ModelForm):
     class Meta:
-        model = Address
+        model = MutableAddress
         fields = (
             "prefix", "name", "suffix", "name_ext",
             "phone", "email",
