@@ -97,7 +97,7 @@ REQUIRES = [
 
 REQUIRES_FOR_PYTHON2_ONLY = [
     'enum34==1.0.4',
-]
+] if sys.version_info < (3, 0) else []
 
 EXTRAS_REQUIRE = {
     ':python_version=="2.7"': REQUIRES_FOR_PYTHON2_ONLY,
