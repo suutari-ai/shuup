@@ -11,7 +11,7 @@ before_install:
   - pip install -U pip
   - pip install codecov
 install:
-  - pip install -e .[everything]
+  - pip install .[everything]
 script:
   - flake8
   - isort -c -rc shoop
