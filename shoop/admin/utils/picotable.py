@@ -260,6 +260,9 @@ class Column(object):
         if isinstance(value, Manager):
             value = ", ".join("%s" % x for x in value.all())
 
+        if not value:
+            value = ""
+
         return force_text(value)
 
 
