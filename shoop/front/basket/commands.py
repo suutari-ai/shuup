@@ -13,8 +13,8 @@ import six
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-
 from shoop.core.models import Product, ProductVariationResult
+from shoop.core.order_creator import get_order_source_modifier_modules
 from shoop.utils.importing import cached_load
 from shoop.utils.numbers import parse_decimal_string
 
@@ -118,6 +118,17 @@ def handle_clear(request, basket, **kwargs):
 
     basket.clear_all()
     return {'ok': True}
+
+
+def handle_add_campaign_code(request, basket, code):
+    if not code:
+        return {"ok": False}
+
+    # check if customer can actually use the code
+    for module in get_order_source_modifier_modules():
+        if module.code_is_usable(code, request):
+            return {"ok": basket.add_code(code)}
+    return {"ok": False}
 
 
 def handle_update(request, basket, **kwargs):

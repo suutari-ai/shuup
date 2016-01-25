@@ -13,6 +13,7 @@ import six
 from django.utils.encoding import force_text
 
 from shoop.core.models import Order, OrderLine, OrderLineType
+from shoop.core.order_creator import get_order_source_modifier_modules
 from shoop.core.shortcuts import update_order_line_from_product
 from shoop.core.utils.users import real_user_or_none
 from shoop.front.signals import order_creator_finished
@@ -205,6 +206,8 @@ class OrderCreator(object):
         order.cache_prices()
         order.save()
 
+        self._assign_campaign_usages(order=order, codes=order_source.codes)
+
         order_creator_finished.send(OrderCreator, order=order, source=order_source, request=self.request)
 
         order.save()
@@ -214,6 +217,10 @@ class OrderCreator(object):
         order.cache_prices()
         order.save()
         return order
+
+    def _assign_campaign_usages(self, order, codes):
+        for module in get_order_source_modifier_modules():
+            module.add_code_usages(codes, order)
 
     def process_order_before_lines(self, source, order):
         # Subclass hook
