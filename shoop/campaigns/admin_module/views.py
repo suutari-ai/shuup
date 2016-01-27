@@ -111,14 +111,14 @@ class CatalogCampaignEditView(_Breadcrumbed, CampaignEditView):
     model = CatalogCampaign
     form_class = CatalogCampaignForm
     parent_name = _("Catalog Campaign")
-    parent_url = "shoop_admin:catalog_campaign.list"
+    parent_url = "shoop_admin:catalog_campaigns.list"
 
 
 class BasketCampaignEditView(_Breadcrumbed, CampaignEditView):
     model = BasketCampaign
     form_class = BasketCampaignForm
     parent_name = _("Basket Campaign")
-    parent_url = "shoop_admin:basket_campaign.list"
+    parent_url = "shoop_admin:basket_campaigns.list"
 
 
 class CouponListView(PicotableListView):
