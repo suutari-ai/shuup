@@ -167,8 +167,6 @@ LOGIN_URL = "/login"
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
 
 SHOOP_PRICING_MODULE = "simple_pricing"
-SHOOP_CATALOG_CAMPAIGN_MODULES = ["catalog_campaigns"]
-SHOOP_BASKET_CAMPAIGN_MODULES = ["basket_campaigns"]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
