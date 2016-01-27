@@ -11,14 +11,15 @@ from django.utils.translation import ugettext_lazy as _
 
 from shoop.campaigns.models.campaigns import BasketCampaign, CatalogCampaign
 from shoop.core.models import OrderLineType
-from shoop.core.pricing import BasketCampaignModule, CatalogCampaignModule
+from shoop.core.order_creator import OrderSourceModifierModule
+from shoop.core.pricing import DiscountModule
 
 
-class CampaignCatalogCampaignModule(CatalogCampaignModule):
+class CampaignCatalogCampaignModule(DiscountModule):
     identifier = "catalog_campaigns"
     name = _("Campaigns")
 
-    def discount_price(self, context, price_info, product):
+    def discount_price(self, context, product, price_info):
         """
         Get the discounted price for context.
 
@@ -54,11 +55,11 @@ class CampaignCatalogCampaignModule(CatalogCampaignModule):
         return price_info
 
 
-class CampaignBasketCampaignModule(BasketCampaignModule):
+class CampaignBasketCampaignModule(OrderSourceModifierModule):
     identifier = "basket_campaigns"
     name = _("Campaign Basket Discounts")
 
-    def get_basket_campaign_lines(self, order_source, lines):
+    def get_new_lines(self, order_source, lines):
         price_so_far = sum((x.price for x in lines), order_source.zero_price)
 
         def get_discount_line(campaign, amount, price_so_far):
@@ -92,7 +93,7 @@ class CampaignBasketCampaignModule(BasketCampaignModule):
             text += " (%s %s)" % (_("Coupon Code:"), campaign.coupon.code)
         return order_source.create_line(
             line_id="discount_%s" % str(random.randint(0, 0x7FFFFFFF)),
-            type=OrderLineType.CAMPAIGN,
+            type=OrderLineType.DISCOUNT,
             quantity=1,
             discount_amount=campaign.shop.create_price(highest_discount),
             text=text

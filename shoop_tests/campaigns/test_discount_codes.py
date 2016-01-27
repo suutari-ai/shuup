@@ -133,7 +133,7 @@ def test_campaign_with_coupons(rf):
     basket.add_code(dc.code)
 
     assert len(basket.get_final_lines()) == 3  # now basket has codes so they will be applied too
-    assert OrderLineType.CAMPAIGN in [l.type for l in basket.get_final_lines()]
+    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]
 
     # Ensure codes persist between requests, so do what the middleware would, i.e.
     basket.save()
@@ -141,7 +141,6 @@ def test_campaign_with_coupons(rf):
     del request.basket
     basket = get_basket(request)
 
-    assert basket.codes == set([dc.code])
+    assert basket.codes == [dc.code]
     assert len(basket.get_final_lines()) == 3  # now basket has codes so they will be applied too
-    assert OrderLineType.CAMPAIGN in [l.type for l in basket.get_final_lines()]
-
+    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]

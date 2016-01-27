@@ -13,10 +13,10 @@ class CampaignAppConfig(AppConfig):
     verbose_name = "Shoop Campaigns"
     label = "campaigns"
     provides = {
-        "catalog_campaign_module": [
+        "discount_module": [
             "shoop.campaigns.modules:CampaignCatalogCampaignModule"
         ],
-        "basket_campaign_module": [
+        "order_source_modifier_module": [
             "shoop.campaigns.modules:CampaignBasketCampaignModule"
         ],
         "admin_module": [

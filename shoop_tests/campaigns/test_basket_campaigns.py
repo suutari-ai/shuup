@@ -50,7 +50,7 @@ def test_basket_campaign_module_case1(rf):
     assert len(basket.get_final_lines()) == 2  # case 1
     assert basket.product_count == 2
     assert basket.total_price == (price(single_product_price) * basket.product_count - price(discount_amount_value))
-    assert OrderLineType.CAMPAIGN in [l.type for l in basket.get_final_lines()]
+    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]
 
 
 @pytest.mark.django_db
@@ -90,13 +90,13 @@ def test_basket_campaign_case2(rf):
     assert len(basket.get_final_lines()) == 4  # Shipping should not affect the rule being triggered
 
     line_types = [l.type for l in basket.get_final_lines()]
-    assert OrderLineType.CAMPAIGN not in line_types
+    assert OrderLineType.DISCOUNT not in line_types
 
     product = create_product(printable_gibberish(), shop=shop, supplier=supplier, default_price=single_product_price)
     basket.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
 
     assert len(basket.get_final_lines()) == 6  # Discount included
-    assert OrderLineType.CAMPAIGN in [l.type for l in basket.get_final_lines()]
+    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]
 
 
 @pytest.mark.django_db
@@ -126,10 +126,10 @@ def test_only_cheapest_price_is_selected(rf):
 
     assert len(basket.get_final_lines()) == 2
     line_types = [l.type for l in basket.get_final_lines()]
-    assert OrderLineType.CAMPAIGN in line_types
+    assert OrderLineType.DISCOUNT in line_types
 
     for line in basket.get_final_lines():
-        if line.type == OrderLineType.CAMPAIGN:
+        if line.type == OrderLineType.DISCOUNT:
             assert line.discount_amount == price(discount2)
 
 
