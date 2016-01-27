@@ -1,11 +1,11 @@
-from decimal import Decimal
-
 import datetime
+from decimal import Decimal
 
 import pytest
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 from django.utils.translation import activate
+
 from shoop.campaigns.models.campaigns import CatalogCampaign
 from shoop.campaigns.models.catalog_filters import CategoryFilter
 from shoop.campaigns.models.context_conditions import ContactGroupCondition
@@ -340,4 +340,3 @@ def test_availability(rf):
     campaign.save()
 
     assert not campaign.is_available()
-

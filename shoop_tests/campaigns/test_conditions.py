@@ -2,10 +2,13 @@ from decimal import Decimal
 
 import pytest
 from django.utils.encoding import force_text
-from shoop.campaigns.models.basket_conditions import ProductsInBasketCondition, BasketTotalAmountCondition, \
-    BasketTotalProductAmountCondition
+
+from shoop.campaigns.models.basket_conditions import (
+    BasketTotalAmountCondition, BasketTotalProductAmountCondition,
+    ProductsInBasketCondition
+)
 from shoop.front.basket import get_basket
-from shoop.testing.factories import get_default_supplier, create_product
+from shoop.testing.factories import create_product, get_default_supplier
 from shoop_tests.campaigns import initialize_test
 
 

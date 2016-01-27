@@ -1,9 +1,14 @@
 # test that admin actually saves catalog
 import pytest
 from django.utils.translation import activate
-from shoop.campaigns.admin_module.views import CatalogCampaignEditView, BasketCampaignEditView
+
+from shoop.campaigns.admin_module.views import (
+    BasketCampaignEditView, CatalogCampaignEditView
+)
 from shoop.campaigns.models.campaigns import CatalogCampaign, Coupon
-from shoop.testing.factories import get_default_shop, get_default_supplier, create_product
+from shoop.testing.factories import (
+    create_product, get_default_shop, get_default_supplier
+)
 from shoop.testing.utils import apply_request_middleware
 from shoop_tests.utils import printable_gibberish
 from shoop_tests.utils.forms import get_form_data

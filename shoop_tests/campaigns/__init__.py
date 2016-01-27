@@ -1,5 +1,8 @@
 from django.utils.translation import activate
-from shoop.testing.factories import get_shop, get_default_customer_group, create_random_person
+
+from shoop.testing.factories import (
+    create_random_person, get_default_customer_group, get_shop
+)
 from shoop.testing.utils import apply_request_middleware
 
 
