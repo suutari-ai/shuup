@@ -81,6 +81,9 @@ Provide Categories
     `~shoop.core.order_creator.OrderSourceModifierModule` for modifying
     order source, e.g. in its
     `~shoop.core.order_creator.OrderSource.get_final_lines`.
+``order_source_code_user_module``
+    `~shoop.core.order_creator.OrderSourceCodeUserModule` for using the
+    codes in `~shoop.core.order_creator.OrderSource`.
 ``payment_method_module``
     Payment method module classes (deriving from :py:class:`shoop.core.methods.base.BasePaymentMethodModule`),
     as used by :py:class:`shoop.core.models.PaymentMethod`.

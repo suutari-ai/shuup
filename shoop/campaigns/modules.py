@@ -11,7 +11,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from shoop.campaigns.models.campaigns import BasketCampaign, CatalogCampaign
 from shoop.core.models import OrderLineType
-from shoop.core.order_creator import OrderSourceModifierModule
+from shoop.core.order_creator import (
+    OrderSourceCodeUserModule, OrderSourceModifierModule
+)
 from shoop.core.pricing import DiscountModule
 
 
@@ -55,7 +57,7 @@ class CampaignCatalogCampaignModule(DiscountModule):
         return price_info
 
 
-class CampaignBasketCampaignModule(OrderSourceModifierModule):
+class CampaignBasketCampaignModule(OrderSourceModifierModule, OrderSourceCodeUserModule):
     identifier = "basket_campaigns"
     name = _("Campaign Basket Discounts")
 
@@ -99,15 +101,14 @@ class CampaignBasketCampaignModule(OrderSourceModifierModule):
             text=text
         )
 
-    def code_is_usable(self, code, customer):
-        for campaign in BasketCampaign.objects.filter(active=True,
-                                                      coupon__code=code,
-                                                      coupon__active=True):
-            return campaign.coupon.can_use_code(customer)
+    def can_use_code(self, order_source, code):
+        # FIXME: Date filtering
+        for campaign in BasketCampaign.objects.filter(
+                active=True, coupon__code=code, coupon__active=True):
+            return campaign.coupon.can_use_code(order_source.customer)
         return False
 
-    def add_code_usages(self, codes, order):
-        for campaign in BasketCampaign.objects.filter(active=True,
-                                                      coupon__code__in=codes,
-                                                      coupon__active=True):
+    def use_code(self, code, order):
+        for campaign in BasketCampaign.objects.filter(
+                active=True, coupon__code=code, coupon__active=True):
             campaign.coupon.use(order)

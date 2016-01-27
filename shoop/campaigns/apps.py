@@ -19,6 +19,9 @@ class CampaignAppConfig(AppConfig):
         "order_source_modifier_module": [
             "shoop.campaigns.modules:CampaignBasketCampaignModule"
         ],
+        "order_source_code_user_module": [
+            "shoop.campaigns.modules:CampaignBasketCampaignModule"
+        ],
         "admin_module": [
             "shoop.campaigns.admin_module:CampaignAdminModule",
         ],

@@ -76,6 +76,11 @@ SHOOP_DISCOUNT_MODULES = ["catalog_campaigns"]
 #: See `shoop.core.order_creator.OrderSourceModifierModule` for details.
 SHOOP_ORDER_SOURCE_MODIFIER_MODULES = ["basket_campaigns"]
 
+#: List of identifiers of order source code user modules.
+#:
+#: See `shoop.core.order_creator.OrderSourceCodeUserModule` for details.
+SHOOP_ORDER_SOURCE_CODE_USER_MODULES = ["basket_campaigns"]
+
 #: The identifier of the tax module to use for determining taxes of products and order lines.
 #:
 #: Determines taxing rules for products, shipping/payment methods and
