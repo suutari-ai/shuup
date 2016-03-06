@@ -4,7 +4,6 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
-from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 
 
 class TaxedPrice(object):
@@ -37,9 +36,6 @@ class TaxedPrice(object):
         :type taxes: list[shoop.core.taxing.LineTax]|None
         :param taxes: List of taxes applied to the price.
         """
-        assert isinstance(taxful, TaxfulPrice)
-        assert isinstance(taxless, TaxlessPrice)
-
         self.taxful = taxful
         self.taxless = taxless
         self.taxes = taxes or []

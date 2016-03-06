@@ -8,7 +8,11 @@
 
 from decimal import Decimal
 
+from shoop.core.models import TaxClass
 from shoop.core.pricing import PriceInfo, TaxlessPrice
+
+
+tax_class = TaxClass(identifier='dummy')  # dummy tax class
 
 
 def price(value):
@@ -52,7 +56,7 @@ def test_quantity_not_one_with_discounts():
 
 
 def test_discount_percentage_special_cases():
-    pi1 = PriceInfo(price(10), price(0), quantity=1)
+    pi1 = PriceInfo(price(10), price(0), 1)
     assert pi1.discount_percentage == 0
 
 

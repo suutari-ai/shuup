@@ -65,6 +65,7 @@ class ShoopFrontMiddleware(object):
         self._set_customer(request)
         self._set_basket(request)
         self._set_timezone(request)
+        request.display_prices_including_taxes = False
 
     def _set_shop(self, request):
         # TODO: Not the best logic :)

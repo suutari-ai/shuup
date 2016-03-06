@@ -10,15 +10,18 @@ from __future__ import unicode_literals
 from datetime import date
 from json import dumps as json_dump
 
+import jinja2
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
 from django.utils import translation
 from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime
+from django.utils.translation import ugettext as _
 from django_jinja import library
 from jinja2.runtime import Undefined
 
+from shoop.core.utils.prices import convert_taxness
 from shoop.utils.i18n import (
     format_money, format_percent, get_current_babel_locale
 )
@@ -41,6 +44,64 @@ def get_language_choices():
         name_in_current_lang = translation.ugettext(name)
         local_name = lang_info["name_local"]
         yield (code, name_in_current_lang, local_name)
+
+
+@library.filter
+@jinja2.contextfilter
+def price(context, item, quantity=1, labels=None):
+    """
+    Get formatted price of item.
+
+    :type context: jinja2.runtime.Context
+    :type item: shoop.core.pricing.Priceful
+    """
+    (priceful, template) = _get_price_template(context, item, quantity, labels)
+    return template.format(price=money(priceful.price))
+
+
+@library.filter
+@jinja2.contextfilter
+def base_price(context, item, quantity=1, labels=None):
+    (priceful, template) = _get_price_template(context, item, quantity, labels)
+    return template.format(price=money(priceful.base_price))
+
+
+@library.filter
+@jinja2.contextfilter
+def base_unit_price(context, item, quantity=1, labels=None):
+    (priceful, template) = _get_price_template(context, item, quantity, labels)
+    return template.format(price=money(priceful.base_unit_price))
+
+
+@library.filter
+@jinja2.contextfilter
+def discounted_unit_price(context, item, quantity=1, labels=None):
+    (priceful, template) = _get_price_template(context, item, quantity, labels)
+    return template.format(price=money(priceful.discounted_unit_price))
+
+
+def _get_price_template(context, item, quantity, labels):
+    request = context.get('request')  # type: django.http.HttpRequest
+    wants_taxes = getattr(request, 'display_prices_including_taxes', None)
+
+    if hasattr(item, 'get_price_info'):
+        priceful = item.get_price_info(request, quantity=quantity)
+    else:
+        priceful = item
+
+    if wants_taxes is None:
+        new_priceful = priceful
+    else:
+        new_priceful = convert_taxness(request, item, priceful, wants_taxes)
+
+    if not labels and False:
+        template = '{price}'
+    else:
+        template = (
+            _("{price} (incl. tax)") if new_priceful.price.includes_tax else
+            _("{price} (excl. tax)"))
+
+    return (new_priceful, template)
 
 
 @library.filter
