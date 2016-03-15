@@ -28,8 +28,6 @@ from parler.managers import TranslatableQuerySet
 from parler.models import TranslatableModel, TranslatedFields
 
 from shoop.core.fields import InternalIdentifierField
-from shoop.core.templatetags.shoop_common import datetime as format_datetime
-from shoop.core.templatetags.shoop_common import number as format_number
 from shoop.utils.dates import parse_date
 from shoop.utils.numbers import parse_decimal_string
 from shoop.utils.text import flatten
@@ -324,6 +322,8 @@ class AppliedAttribute(TranslatableModel):
         :return: Textual value
         :rtype: str
         """
+        from shoop.core.templatetags.shoop_common import datetime as format_datetime
+        from shoop.core.templatetags.shoop_common import number as format_number
         try:
             if self.attribute.type == AttributeType.BOOLEAN:
                 return yesno(self.value)

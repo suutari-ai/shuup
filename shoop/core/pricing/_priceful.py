@@ -100,6 +100,8 @@ class Priceful(object):
         :rtype: decimal.Decimal
         """
         if not self.base_price:
+            if self.base_unit_price:
+                return 1 - (self.discounted_unit_price / self.base_unit_price)
             return decimal.Decimal(0)
         return 1 - (self.price / self.base_price)
 
@@ -121,7 +123,10 @@ class Priceful(object):
 
         :return: True, iff price < base price.
         """
-        return (self.price < self.base_price)
+        if self.quantity:
+            return (self.price < self.base_price)
+        else:
+            return (self.discounted_unit_price < self.base_unit_price)
 
     @property
     def discounted_unit_price(self):
@@ -132,7 +137,8 @@ class Priceful(object):
 
         :rtype: shoop.core.pricing.Price
         """
-        return self.base_unit_price - (self.discount_amount / (self.quantity or 1))
+        unit_discount_amount = self.discount_amount / (self.quantity or 1)
+        return self.base_unit_price - unit_discount_amount
 
     @property
     def unit_discount_amount(self):
@@ -143,7 +149,7 @@ class Priceful(object):
 
         :rtype: shoop.core.pricing.Price
         """
-        return self.discount_amount / (self.quantity or 1)
+        return self.base_unit_price - self.discounted_unit_price
 
     @property
     def tax_rate(self):
