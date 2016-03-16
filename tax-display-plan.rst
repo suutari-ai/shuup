@@ -1,8 +1,8 @@
-Price displaying pre-tax or with taxes
-======================================
+Price displaying hide prides, pre-tax or with taxes
+===================================================
 
-Notes on how to implement displaying prices pre-tax or with taxes based
-on customer or customer group preference.
+Notes on how to implement displaying prices hide prices, pre-tax or with taxes
+based on customer or customer group preference.
 
 Terms
 -----
@@ -28,6 +28,12 @@ Open Questions
   * Currently I decided to use the same display taxness for prices in
     basket but not for orders.
 
+* Should we block access to basket and checkout if prices is hidden?
+
+* Should we block adding to basket if prices is hidden?
+
+* Should we raise from pricing filters if the hide price mode is on?
+
 Plan
 ----
 
@@ -50,3 +56,4 @@ TODO
 
 * Calculating taxes for basket does not work yet.  It seems that
   ``basket.tax_amount`` always returns 0 EUR.
+* Add translation for ``PriceDisplayOption`` enum

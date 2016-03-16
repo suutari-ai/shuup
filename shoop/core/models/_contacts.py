@@ -11,12 +11,13 @@ from django.conf import settings
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
-from enumfields import Enum, EnumField
+from enumfields import Enum, EnumField, EnumIntegerField
 from parler.models import TranslatedFields
 from polymorphic.models import PolymorphicModel
 from timezone_field.fields import TimeZoneField
 
 from shoop.core.fields import InternalIdentifierField, LanguageField
+from shoop.core.pricing import PriceDisplayMode, PriceDisplayOption
 from shoop.core.utils.name_mixin import NameMixin
 
 from ._base import TranslatableShoopModel
@@ -27,6 +28,10 @@ class ContactGroup(TranslatableShoopModel):
     identifier = InternalIdentifierField(unique=True)
     members = models.ManyToManyField("Contact", related_name="groups", verbose_name=_('members'), blank=True)
     show_pricing = models.BooleanField(verbose_name=_('show as pricing option'), default=True)
+    price_display_option = EnumIntegerField(
+        PriceDisplayOption,
+        default=PriceDisplayOption.DISPLAY_PRICES_AS_STORED,
+        verbose_name=_('price display option'))
 
     translations = TranslatedFields(
         name=models.CharField(max_length=64, verbose_name=_('name')),
@@ -117,6 +122,9 @@ class Contact(NameMixin, PolymorphicModel):
             }
         )
         return obj
+
+    def get_price_display_mode(self, shop):
+        return PriceDisplayMode(shop, self.get_default_group().price_display_option)
 
 
 class CompanyContact(Contact):

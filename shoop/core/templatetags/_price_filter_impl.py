@@ -2,9 +2,8 @@ import django_jinja.library
 import jinja2
 from django.utils.translation import ugettext as _
 
-from shoop.core.pricing import PriceDisplayOptions, Priceful
+from shoop.core.pricing import PriceDisplayMode, Priceful
 from shoop.core.utils.prices import convert_taxness
-
 
 from .shoop_common import money, percent
 
@@ -24,9 +23,11 @@ class _Filter(object):
 class _PriceDisplayFilter(_Filter):
     def __call__(self, context, item, quantity=1):
         request = context.get('request')
-        options = _get_price_display_options(context)
+        display_mode = _get_price_display_mode(context)
+        if display_mode.hide_prices:
+            return
         orig_priceful = _get_priceful(request, item, quantity)
-        priceful = _convert_priceful(request, options, item, orig_priceful)
+        priceful = _convert_priceful(request, display_mode, item, orig_priceful)
         print(orig_priceful)
         print(priceful)
         price_value = getattr(priceful, self.property_name)
@@ -51,11 +52,13 @@ class _TotalPriceDisplayFilter(_Filter):
         :type source: shoop.core.order_creator.OrderSource|
                       shoop.core.models.Order
         """
-        options = _get_price_display_options(context)
+        display_mode = _get_price_display_mode(context)
+        if display_mode.hide_prices:
+            return
         try:
-            if options.include_taxes is None:
+            if display_mode.include_taxes is None:
                 total = source.total_price
-            elif options.include_taxes:
+            elif display_mode.include_taxes:
                 total = source.taxful_total_price
             else:
                 total = source.taxless_total_price
@@ -70,7 +73,9 @@ class _RangePriceDisplayFilter(_Filter):
         :type product: shoop.core.models.Product
         """
         request = context.get('request')
-        options = _get_price_display_options(context)
+        display_mode = _get_price_display_mode(context)
+        if display_mode.hide_prices:
+            return
         priced_children = product.get_priced_children(request, quantity)
         if priced_children:
             (min_product, min_pi) = priced_children[0]
@@ -79,25 +84,25 @@ class _RangePriceDisplayFilter(_Filter):
             min_product = product
             min_pi = _get_priceful(request, product, quantity)
             (max_product, max_pi) = (min_product, min_pi)
-        min_pf = _convert_priceful(request, options, min_product, min_pi)
-        max_pf = _convert_priceful(request, options, max_product, max_pi)
+        min_pf = _convert_priceful(request, display_mode, min_product, min_pi)
+        max_pf = _convert_priceful(request, display_mode, max_product, max_pi)
         return (_format_price(min_pf.price), _format_price(max_pf.price))
 
 
-def _get_price_display_options(context):
+def _get_price_display_mode(context):
     """
     :type context: jinja2.runtime.Context
     """
-    price_display_options = context.get('price_display_options')
+    price_display_mode = context.get('price_display_mode')
 
-    if price_display_options is None:
+    if price_display_mode is None:
         request = context.get('request')  # type: django.http.HttpRequest
-        price_display_options = getattr(request, 'price_display_options', None)
+        price_display_mode = getattr(request, 'price_display_mode', None)
 
-    if price_display_options is None:
-        price_display_options = PriceDisplayOptions()
+    if price_display_mode is None:
+        price_display_mode = PriceDisplayMode()
 
-    return price_display_options
+    return price_display_mode
 
 
 def _get_priceful(request, item, quantity):
@@ -119,17 +124,17 @@ def _get_priceful(request, item, quantity):
     return item
 
 
-def _convert_priceful(request, price_display_options, item, priceful):
+def _convert_priceful(request, price_display_mode, item, priceful):
     """
     Get taxful or taxless price of given item.
 
     :type request: django.http.HttpRequest
-    :type price_display_options: PriceDisplayOptions
+    :type price_display_mode: PriceDisplayMode
     :type item: shoop.core.taxing.TaxableItem
     :type priceful: shoop.core.pricing.Priceful
     :rtype: shoop.core.pricing.Priceful
     """
-    wants_taxes = price_display_options.include_taxes
+    wants_taxes = price_display_mode.include_taxes
     if wants_taxes is None:
         return priceful
     else:
