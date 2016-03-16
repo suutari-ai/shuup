@@ -93,11 +93,11 @@ class BaseBasket(OrderSource):
         if request:
             self.ip_address = request.META.get("REMOTE_ADDR")
         self.storage = get_storage()
-        self._data = None
-        self.dirty = False
+        self._saved_data = None
         self.customer = getattr(request, "customer", None)
         self.orderer = getattr(request, "person", None)
         self.creator = getattr(request, "user", None)
+        self._load()
 
     def _load(self):
         """
@@ -109,16 +109,31 @@ class BaseBasket(OrderSource):
         :return: Data dict.
         :rtype: dict
         """
-        if self._data is None:
+        if self._saved_data is None:
             try:
-                self._data = self.storage.load(basket=self)
+                data = self.storage.load(basket=self)
             except BasketCompatibilityError as error:
                 msg = _("Basket loading failed: Incompatible basket (%s)")
                 messages.error(self.request, msg % error)
                 self.storage.delete(basket=self)
-                self._data = self.storage.load(basket=self)
-            self.dirty = False
-        return self._data
+                data = self.storage.load(basket=self)
+            self._initialize_from_data_dict(data)
+
+    def _initialize_from_data_dict(self, data):
+        self.uncache()
+        self._lines = [BasketLine.from_dict(self, x) for x in data['lines']]
+        self._codes = list(data['codes'])
+        self._saved_data = data
+
+    def _to_data_dict(self):
+        return {
+            'lines': [line.to_dict() for line in self._lines],
+            'codes': self._codes,
+        }
+
+    @property
+    def dirty(self):
+        return (self._to_data_dict() != self._saved_data)
 
     def save(self):
         """
@@ -128,18 +143,24 @@ class BaseBasket(OrderSource):
         :obj:`~shoop.front.middleware.ShoopFrontMiddleware` will usually
         take care of it.
         """
+        self._save()
+
+    def save_if_dirty(self):
+        self._save(only_if_dirty=True)
+
+    def _save(self, only_if_dirty=False):
         self.clean_empty_lines()
-        self.storage.save(basket=self, data=self._data)
-        self.dirty = False
+        data = self._to_data_dict()
+        if data != self._saved_data:
+            self.storage.save(basket=self, data=data)
+            self._saved_data = data
 
     def delete(self):
         """
         Clear and delete the basket data.
         """
         self.storage.delete(basket=self)
-        self.uncache()
-        self._data = None
-        self.dirty = False
+        self.clear_all()
 
     def finalize(self):
         """
@@ -148,102 +169,39 @@ class BaseBasket(OrderSource):
         This will also clear the basket's data.
         """
         self.storage.finalize(basket=self)
-        self.uncache()
-        self._data = None
-        self.dirty = False
+        self.clear_all()
 
     def clear_all(self):
         """
         Clear all data for this basket.
         """
-        self._data = {}
+        self._lines = []
+        self._codes = []
+        self._saved_data = self._to_data_dict()
         self.uncache()
-        self.dirty = True
-
-    @property
-    def _data_lines(self):
-        """
-        Get the line data (list of dicts).
-
-        If the list is edited, it must be re-assigned
-        to ``self._data_lines`` to ensure the `dirty`
-        flag gets set.
-
-        :return: List of data dicts
-        :rtype: list[dict]
-        """
-        return self._load().setdefault("lines", [])
-
-    @_data_lines.setter
-    def _data_lines(self, new_lines):
-        """
-        Set the line data (list of dicts).
-
-        Note that this assignment must be made instead
-        of editing `_data_lines` in-place to ensure
-        the `dirty` bit gets set.
-
-        :param new_lines: New list of lines.
-        :type new_lines: list[dict]
-        """
-        self._load()["lines"] = new_lines
-        self.dirty = True
-        self.uncache()
-
-    def add_line(self, **kwargs):
-        line = self.create_line(**kwargs)
-        self._data_lines = self._data_lines + [line.to_dict()]
-        return line
 
     def create_line(self, **kwargs):
         return BasketLine(source=self, **kwargs)
 
-    @property
-    def _codes(self):
-        return self._load().setdefault("codes", [])
-
-    @_codes.setter
-    def _codes(self, value):
-        if hasattr(self, "_data"):  # Check that we're initialized
-            self._load()["codes"] = value
-
-    def add_code(self, code):
-        modified = super(BaseBasket, self).add_code(code)
-        self.dirty = bool(self.dirty or modified)
-        return modified
-
-    def clear_codes(self):
-        modified = super(BaseBasket, self).clear_codes()
-        self.dirty = bool(self.dirty or modified)
-        return modified
-
-    def remove_code(self, code):
-        modified = super(BaseBasket, self).remove_code(code)
-        self.dirty = bool(self.dirty or modified)
-        return modified
-
-    def get_lines(self):
-        return [BasketLine.from_dict(self, line) for line in self._data_lines]
-
-    def _initialize_product_line_data(self, product, supplier, shop, quantity=0):
+    def _initialize_product_line(self, product, supplier, shop, quantity=0):
         if product.variation_children.count():
             raise ValueError("Attempting to add variation parent to basket")
 
-        return {
+        return self.create_line(**{
             # TODO: FIXME: Make sure line_id's are unique (not random)
             "line_id": str(random.randint(0, 0x7FFFFFFF)),
             "product": product,
             "supplier": supplier,
             "shop": shop,
             "quantity": parse_decimal_string(quantity),
-        }
+        })
 
     def clean_empty_lines(self):
-        new_lines = [l for l in self._data_lines if l["quantity"] > 0]
-        if len(new_lines) != len(self._data_lines):
-            self._data_lines = new_lines
+        new_lines = [l for l in self._lines if l.quantity > 0]
+        if len(new_lines) != len(self._lines):
+            self._lines = new_lines
 
-    def _compare_line_for_addition(self, current_line_data, product, supplier, shop, extra):
+    def _compare_line_for_addition(self, current_line, product, supplier, shop, extra):
         """
         Compare raw line data for coalescing.
 
@@ -252,49 +210,48 @@ class BaseBasket(OrderSource):
 
         This is nice to override in a project-specific basket class.
 
-        :type current_line_data: dict
+        :type current_line: BasketLine
         :type product: int
         :type extra: dict
         :return:
         """
-        if current_line_data.get("product_id") != product.id:
+        if current_line.product != product:
             return False
-        if current_line_data.get("supplier_id") != supplier.id:
+        if current_line.supplier != supplier:
             return False
-        if current_line_data.get("shop_id") != shop.id:
+        if current_line.shop != shop:
             return False
 
         if isinstance(extra, dict):  # We have extra data, so compare it to that in this line
-            if not compare_partial_dicts(extra, current_line_data):  # Extra data not similar? Okay then. :(
+            if not compare_partial_dicts(extra, current_line.to_dict()):  # Extra data not similar? Okay then. :(
                 return False
         return True
 
-    def _find_product_line_data(self, product, supplier, shop, extra):
+    def _find_product_line(self, product, supplier, shop, extra):
         """
-        Find the underlying basket data dict for a given product and line-specific extra data.
-        This uses _compare_line_for_addition internally, which is nice to override in a project-specific basket class.
+        Find the underlying line object for given arguments.
+
+        This uses `_compare_line_for_addition` internally, which is nice
+        to override in a project-specific basket class.
 
         :param product: Product object
         :param extra: optional dict of extra data
         :return: dict of line or None
         """
-        for line_data in self._data_lines:
-            if self._compare_line_for_addition(line_data, product, supplier, shop, extra):
-                return line_data
+        for line in self._lines:
+            if self._compare_line_for_addition(line, product, supplier, shop, extra):
+                return line
 
-    def _add_or_replace_line(self, data_line):
-        self.dirty = True
-        if isinstance(data_line, SourceLine):
-            data_line = data_line.to_dict()
-        assert isinstance(data_line, dict)
-        line_ids = [x["line_id"] for x in self._data_lines]
+    def _add_or_replace_line(self, line):
+        assert isinstance(line, SourceLine)
+        line_ids = [x.line_id for x in self._lines]
         try:
-            index = line_ids.index(data_line["line_id"])
+            index = line_ids.index(line.line_id)
         except ValueError:
             index = len(line_ids)
-        self.delete_line(data_line["line_id"])
-        self._data_lines.insert(index, data_line)
-        self._data_lines = list(self._data_lines)  # This will set the dirty bit and call uncache.
+        self.delete_line(line.line_id)
+        self._lines.insert(index, line)
+        self.uncache()
 
     def add_product(self, supplier, shop, product, quantity, force_new_line=False, extra=None, parent_line=None):
         if not extra:
@@ -303,22 +260,21 @@ class BaseBasket(OrderSource):
         if quantity <= 0:
             raise ValueError("Invalid quantity!")
 
-        data = None
+        line = None
         if not force_new_line:
-            data = self._find_product_line_data(product=product, supplier=supplier, shop=shop, extra=extra)
+            line = self._find_product_line(product=product, supplier=supplier, shop=shop, extra=extra)
 
-        if not data:
-            data = self._initialize_product_line_data(product=product, supplier=supplier, shop=shop)
+        if not line:
+            line = self._initialize_product_line(product=product, supplier=supplier, shop=shop)
 
         if parent_line:
-            data["parent_line_id"] = parent_line.line_id
+            line.parent_line_id = parent_line.line_id
 
-        new_quantity = max(0, data["quantity"] + Decimal(quantity))
+        new_quantity = max(0, line.quantity + Decimal(quantity))
 
-        return self.update_line(data, quantity=new_quantity, **extra)
+        return self.update_line(line, quantity=new_quantity, **extra)
 
-    def update_line(self, data_line, **kwargs):
-        line = BasketLine.from_dict(self, data_line)
+    def update_line(self, line, **kwargs):
         new_quantity = kwargs.pop("quantity", None)
         if new_quantity is not None:
             line.set_quantity(new_quantity)
@@ -348,23 +304,23 @@ class BaseBasket(OrderSource):
     def delete_line(self, line_id):
         line = self.find_line_by_line_id(line_id)
         if line:
-            line["quantity"] = 0
+            line.quantity = 0
             for subline in self.find_lines_by_parent_line_id(line_id):
-                subline["quantity"] = 0
+                subline.quantity = 0
             self.uncache()
             self.clean_empty_lines()
             return True
         return False
 
     def find_line_by_line_id(self, line_id):
-        for line in self._data_lines:
-            if six.text_type(line.get("line_id")) == six.text_type(line_id):
+        for line in self._lines:
+            if six.text_type(line.line_id) == six.text_type(line_id):
                 return line
         return None
 
     def find_lines_by_parent_line_id(self, parent_line_id):
-        for line in self._data_lines:
-            if six.text_type(line.get("parent_line_id")) == six.text_type(parent_line_id):
+        for line in self._lines:
+            if six.text_type(line.parent_line_id) == six.text_type(parent_line_id):
                 yield line
 
     def _get_orderable(self):
