@@ -15,7 +15,6 @@ from django.utils import timezone
 
 from shoop.core.middleware import ExceptionMiddleware
 from shoop.core.models import get_person_contact, Shop
-from shoop.core.pricing import PriceDisplayOptions
 from shoop.front.basket import get_basket
 
 __all__ = ["ProblemMiddleware", "ShoopFrontMiddleware"]
@@ -89,13 +88,8 @@ class ShoopFrontMiddleware(object):
             # TODO: Fallback to request.shop.timezone (and add such field)
 
     def _set_price_display_options(self, request):
-        if request.GET.get('with_taxes') == '1':
-            taxes = True
-        elif request.GET.get('with_taxes') == '0':
-            taxes = False
-        else:
-            taxes = None
-        request.price_display_options = PriceDisplayOptions(include_taxes=taxes)
+        request.price_display_mode = request.customer.get_price_display_mode(request.shop)
+        request.show_prices = not request.price_display_mode.hide_prices
 
     def process_response(self, request, response):
         if hasattr(request, "basket") and request.basket.dirty:

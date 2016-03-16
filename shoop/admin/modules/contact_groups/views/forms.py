@@ -26,7 +26,7 @@ from shoop.utils.multilanguage_model_form import MultiLanguageModelForm
 class ContactGroupBaseForm(MultiLanguageModelForm):
     class Meta:
         model = ContactGroup
-        fields = ("name",)
+        fields = ("name", "price_display_option")
 
 
 class ContactGroupBaseFormPart(FormPart):

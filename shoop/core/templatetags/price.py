@@ -7,7 +7,6 @@ from ._price_filter_impl import (
     _RangePriceDisplayFilter, _TotalPriceDisplayFilter
 )
 
-
 # For Product, SourceLine, BasketLine, OrderLine
 price = _PriceDisplayFilter('price')
 base_price = _PriceDisplayFilter('base_price')
