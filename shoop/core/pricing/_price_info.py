@@ -21,7 +21,8 @@ class PriceInfo(Priceful):
     base_price = None
     quantity = None
 
-    def __init__(self, price, base_price, quantity, expires_on=None):
+    def __init__(self, price, base_price, quantity, expires_on=None,
+                 discounted_unit_price=None, base_unit_price=None):
         """
         Initialize PriceInfo with prices and other parameters.
 
@@ -51,11 +52,33 @@ class PriceInfo(Priceful):
         assert price.unit_matches_with(base_price)
         assert isinstance(quantity, numbers.Number)
         assert expires_on is None or isinstance(expires_on, numbers.Number)
+        assert discounted_unit_price is None or (
+            quantity == 0 and
+            isinstance(discounted_unit_price, Price) and
+            discounted_unit_price.unit_matches_with(price))
+        assert base_unit_price is None or (
+            quantity == 0 and
+            isinstance(base_unit_price, Price) and
+            base_unit_price.unit_matches_with(price))
 
         self.price = price
         self.base_price = base_price
         self.quantity = quantity
         self.expires_on = expires_on
+        self._discounted_unit_price = discounted_unit_price
+        self._base_unit_price = base_unit_price
+
+    @property
+    def discounted_unit_price(self):
+        if self._discounted_unit_price is not None:
+            return self._discounted_unit_price
+        return super(PriceInfo, self).discounted_unit_price
+
+    @property
+    def base_unit_price(self):
+        if self._base_unit_price is not None:
+            return self._base_unit_price
+        return super(PriceInfo, self).base_unit_price
 
     def __repr__(self):
         expire_str = '' if self.expires_on is None else(
