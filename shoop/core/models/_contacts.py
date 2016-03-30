@@ -108,9 +108,7 @@ class Contact(PolymorphicModel):
     phone = models.CharField(max_length=64, blank=True, verbose_name=_('phone'))
     www = models.URLField(max_length=128, blank=True, verbose_name=_('web address'))
     timezone = TimeZoneField(blank=True, null=True, verbose_name=_('time zone'))
-    prefix = models.CharField(verbose_name=_('name prefix'), max_length=64, blank=True)
     name = models.CharField(max_length=256, verbose_name=_('name'))
-    suffix = models.CharField(verbose_name=_('name suffix'), max_length=64, blank=True)
     name_ext = models.CharField(max_length=256, blank=True, verbose_name=_('name extension'))
     email = models.EmailField(max_length=256, blank=True, verbose_name=_('email'))
 
@@ -232,6 +230,8 @@ class PersonContact(Contact):
     birth_date = models.DateField(blank=True, null=True, verbose_name=_('birth date'))
     first_name = models.CharField(max_length=30, blank=True, verbose_name=_('first name'))
     last_name = models.CharField(max_length=50, blank=True, verbose_name=_('last name'))
+    prefix = models.CharField(verbose_name=_('name prefix'), max_length=64, blank=True)
+    suffix = models.CharField(verbose_name=_('name suffix'), max_length=64, blank=True)
     # TODO: Figure out how/when/if the name and email fields are updated from users
 
     class Meta:
