@@ -239,8 +239,6 @@ class PersonContact(Contact):
         verbose_name_plural = _('persons')
 
     def save(self, *args, **kwargs):
-        if self.first_name or self.last_name:
-            self.name = (" ".join([self.first_name, self.last_name])).strip()
         if self.user_id and not self.pk:  # Copy things
             user = self.user
             if not self.name:
@@ -250,6 +248,9 @@ class PersonContact(Contact):
             if not self.first_name and not self.last_name:
                 self.first_name = user.first_name
                 self.last_name = user.last_name
+
+        names = [self.first_name, self.last_name]
+        self.name = " ".join(x for x in names if x)
 
         return super(PersonContact, self).save(*args, **kwargs)
 
