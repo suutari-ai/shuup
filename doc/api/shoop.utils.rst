@@ -1,16 +1,15 @@
 shoop.utils package
 ===================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    shoop.utils.analog
+
 Submodules
 ----------
-
-shoop.utils.analog module
--------------------------
-
-.. automodule:: shoop.utils.analog
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 shoop.utils.dates module
 ------------------------
