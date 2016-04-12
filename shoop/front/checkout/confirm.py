@@ -63,9 +63,16 @@ class ConfirmPhase(CheckoutPhaseViewMixin, FormView):
         basket = self.request.basket
         assert isinstance(basket, BaseBasket)
         assert basket.shop == self.request.shop
+
+        # FIXME: (SHOOP-882) Should we really update customer etc. here?
+        #
+        # This will, e.g. change basket.customer back to PersonContact
+        # even if it was just set to CompanyContact in
+        # AddressesPhase.process.
         basket.orderer = self.request.person
         basket.customer = self.request.customer
         basket.creator = self.request.user
+
         basket.status = OrderStatus.objects.get_default_initial()
         order_creator = get_basket_order_creator()
         order = order_creator.create_order(basket)
