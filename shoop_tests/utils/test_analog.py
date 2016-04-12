@@ -7,7 +7,7 @@
 # LICENSE file in the root directory of this source tree.
 from django.db import models
 
-from shoop.utils.analog import BaseLogEntry, define_log_model
+from shoop.utils.analog import define_log_model, get_log_model
 
 
 class FakeModel(models.Model):
@@ -15,10 +15,11 @@ class FakeModel(models.Model):
 
 
 def test_analog():
+    base_log_model = get_log_model(None)
     FakeModelLogEntry = define_log_model(FakeModel)
     assert FakeModelLogEntry.__module__ == FakeModel.__module__
     assert FakeModelLogEntry._meta.get_field("target").rel.to is FakeModel
     assert FakeModel.log_entries.related.model is FakeModel
     assert FakeModel.log_entries.related.related_model is FakeModelLogEntry
-    assert issubclass(FakeModelLogEntry, BaseLogEntry)
-    assert isinstance(FakeModelLogEntry(), BaseLogEntry)
+    assert issubclass(FakeModelLogEntry, base_log_model)
+    assert isinstance(FakeModelLogEntry(), base_log_model)
