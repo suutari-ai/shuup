@@ -105,6 +105,8 @@ def get_frontend_request_for_command(state, command, user):
 def get_order_from_state(state, admin_user):
     request = get_frontend_request_for_command(state, "create", admin_user)
     response = OrderCreateView.as_view()(request)
+    assert response.status_code == 200, (
+        'Request failed, response was: %s' % (response.content,))
     assert_contains(response, "orderIdentifier")  # this checks for status codes as a side effect
     data = json.loads(response.content.decode("utf8"))
     return Order.objects.get(identifier=data["orderIdentifier"])
