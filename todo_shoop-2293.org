@@ -1,0 +1,156 @@
+* SHOOP-2293 TODOs
+
+** DONE How to create services with good defaults for behavior components?
+    - Use ServiceProvide.create_service
+    - [[file:shoop/core/models/_service_providers.py::45]]
+
+** DONE Should we implement campaign for waiving shipping/payment costs?
+   - Result: Not yet.  WaivingCostBehaviorComponent will do.
+   - [[file:shoop_tests/core/test_methods.py::10]]
+
+** DONE Reconsider determining service price with behavior compontents
+   - Should we allow changing the price by chaining components so that
+     the price of another component is passed in to next component?
+      - This would need the components be ordered and makes the
+        architecture more complex.
+   - Result: No need (at least yet). WaivingCostBehaviorComponent will do.
+   - [[file:shoop/core/models/_services_concrete.py::76]]
+
+** DONE Implement WeightLimitsBehaviorComponent
+   - [[file:shoop/core/methods/base.py::176]]
+
+** DONE Add ServiceBehaviorComponent.create_cost
+   - [[file:shoop/core/models/_services_base.py::236]]
+
+** DONE Implement WaivingCostBehaviorComponent
+   - [[file:shoop/core/models/_services_concrete.py::63]]
+
+** DONE Port "test_waiver" to new WaivingCostBehaviorComponent
+   - [[file:shoop_tests/core/test_methods.py::96]]
+
+** DONE Add name and help_text to ServiceBehaviorComponent
+   - [[file:shoop/core/models/_services_base.py::197]]
+   - [[file:shoop/core/models/_services_concrete.py::37]]
+
+** DONE Implement checkout_phase_class
+   - [[file:shoop/front/checkout/methods.py::135]]
+
+** DONE Remove admin_detail_view_class support
+
+** DONE Port PseudoPaymentMethodModule to new architecture
+   - [[file:shoop/testing/pseudo_payment.py::49]]
+
+** DONE Fix flake8 and isort errors
+
+** DONE Admin / Order creator: encode_method_extras
+
+** DONE Check Python 2 compatibility
+   - On Python 2 class creation code of ServiceProvider is givin
+     "AttributeError: 'NoneType' object has no attribute 'name'" for
+     Panu. Check this out.
+   - [[file:shoop/core/models/_service_providers.py::18]]
+
+** DONE Do we need ServiceBehaviorComponent.get_name?
+   - Result: No: We can use ServiceProvider.get_effective_name or
+     something like that for dynamic service naming.
+   - [[file:shoop/core/models/_services_base.py::199]]
+
+** DONE Migrations
+
+** DONE Admin / Order creator: check ShippingMethod.objects.enabled()
+   - [[file:shoop/admin/modules/orders/views/create.py::122]]
+
+** DONE Admin / Order creator: check PaymentMethod.objects.enabled()
+   - [[file:shoop/admin/modules/orders/views/create.py::123]]
+
+** DONE Check that method without a provider cannot be saved as enabled
+   - There is no need to do that, since the queryset will check it.
+   - [[file:shoop/core/models/_methods.py::107]]
+
+** DONE Do we need Service.get_effective_name?
+   - Yes we do, see ServiceProvider.get_effective_name.
+   - [[file:shoop/core/models/_services_base.py::95]]
+
+** DONE Move ServiceProvider.shop to Service
+
+** DONE Move model classes to better named submodules
+   - Current names of the service/method submodules under
+     shoop.core.models are stupid.  Make them better.
+
+** DONE Amend shoop_init and populate_mock
+   - Make them create default payment and shipping methods for default shop
+   - [[file:shoop/testing/mock_population.py]]
+   - [[file:shoop/core/management/commands/shoop_init.py]]
+
+** DONE Add verbose_names for every new model and fields
+
+** DONE Re-implement shipping time combining
+
+** DONE Combining costs without description to single line
+
+** DONE Fix ContentType matching query does not exist.
+   - SHOOP-2356
+
+** DONE Create service providers in migrations
+
+** DONE Remove old BaseMethodModule etc.
+   - [X] BaseMethodModule
+   - [X] BaseShippingMethodModule
+   - [X] BasePaymentMethodModule
+   - [X] DefaultShippingMethodModule
+   - [X] DefaultPaymentMethodModule
+   - [X] PseudoPaymentMethodModule
+   - [X] pseudo_payment.py totally
+   - [No] Anything else?
+   - [[file:shoop/core/methods/base.py::23]]
+
+** DONE Add unit test for process_payment_return_request
+   - [[file:shoop/core/models/_methods.py::41]]
+
+** DONE Add unit test for checkout_phase_class
+   - See shoop-stripe for example
+   - [[file:shoop/front/checkout/methods.py::136]]
+
+** DONE Preserve old module_identifier and module_data
+
+** DONE Make Service.shop required
+
+** DONE Clean-up provides
+   - [X] shipping_method_module
+   - [X] payment_method_module
+   - [X] Check the documentation too (also the payment_method_module example)
+   - [X] Anything else? No.
+
+** DONE Consider combining new testing migrations
+   - SHOOP-2366
+
+** DONE How to deal with Service lines with different taxes?
+   - Now ``FixedCostBehaviorComponent`` costs tax_class is always None,
+     so this is not yet a big concern.
+   - Result: Refactored so that costs with a tax class must also have a
+     description and therefore there should be no need to combine lines
+     with different tax classes.
+   - SHOOP-2363
+
+** DONE What should we do with the InternalIdentifier?
+   - Result: No actions needed currently.
+   - ServiceProvider
+   - Service
+   - Probably no need to update these from admin? Since these are internal?
+   - SHOOP-2365
+
+** DONE Add logo and description fields
+
+** STARTED Document models etc.
+   - Remember to regenerate API docs too.
+   - [[file:shoop/core/models/_service_providers.py::31]]
+   - [[file:shoop/core/models/_service_providers.py::39]]
+   - [[file:shoop/core/models/_service_providers.py::83]]
+   - [[file:shoop/core/models/_service_providers.py::93]]
+   - [[file:shoop/core/models/_service_providers.py::111]]
+   - [[file:shoop/core/models/_services_base.py]]
+   - [[file:shoop/core/models/_methods.py]]
+
+** STARTED Add all new translation
+   - At lest core and admin should have some
+   - If no new translation is done this seems to be done
