@@ -12,10 +12,10 @@
 """
 import pytest
 from django.core.exceptions import ValidationError
-from shoop.campaigns.models.basket_conditions import BasketTotalProductAmountCondition
-from shoop.campaigns.models.campaigns import Coupon, BasketCampaign
+from shoop.campaigns.models.cart_conditions import CartTotalProductAmountCondition
+from shoop.campaigns.models.campaigns import Coupon, CartCampaign
 from shoop.core.models import OrderLineType
-from shoop.front.basket import get_basket
+from shoop.front.cart import get_cart
 from shoop.testing.factories import create_random_person, get_default_shop, create_product, get_default_supplier, \
     create_random_order
 from shoop_tests.campaigns import initialize_test
@@ -24,7 +24,7 @@ from shoop_tests.utils import printable_gibberish
 
 def get_default_campaign(coupon=None):
     shop = get_default_shop()
-    return BasketCampaign.objects.create(
+    return CartCampaign.objects.create(
             shop=shop, public_name="test",
             name="test", discount_amount_value=shop.create_price("20"),
             coupon=coupon, active=True
@@ -115,39 +115,39 @@ def test_no_two_same_codes_active():
 @pytest.mark.django_db
 def test_campaign_with_coupons(rf):
     request, shop, group = initialize_test(rf, False)
-    basket = get_basket(request)
+    cart = get_cart(request)
     supplier = get_default_supplier()
 
     for x in range(2):
         product = create_product(printable_gibberish(), shop, supplier=supplier, default_price="50")
-        basket.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
+        cart.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
 
     dc = Coupon.objects.create(code="TEST", active=True)
-    campaign = BasketCampaign.objects.create(
+    campaign = CartCampaign.objects.create(
             shop=shop,
             name="test", public_name="test",
             coupon=dc,
             discount_amount_value=shop.create_price("20"),
             active=True
     )
-    rule = BasketTotalProductAmountCondition.objects.create(value=2)
+    rule = CartTotalProductAmountCondition.objects.create(value=2)
     campaign.conditions.add(rule)
     campaign.save()
 
-    assert len(basket.get_final_lines()) == 2  # no discount was applied because coupon is required
+    assert len(cart.get_final_lines()) == 2  # no discount was applied because coupon is required
 
-    basket.add_code(dc.code)
+    cart.add_code(dc.code)
 
-    assert len(basket.get_final_lines()) == 3  # now basket has codes so they will be applied too
-    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]
+    assert len(cart.get_final_lines()) == 3  # now cart has codes so they will be applied too
+    assert OrderLineType.DISCOUNT in [l.type for l in cart.get_final_lines()]
 
     # Ensure codes persist between requests, so do what the middleware would, i.e.
-    basket.save()
-    # and then reload the basket:
-    del request.basket
-    basket = get_basket(request)
+    cart.save()
+    # and then reload the cart:
+    del request.cart
+    cart = get_cart(request)
 
-    assert basket.codes == [dc.code]
-    assert len(basket.get_final_lines()) == 3  # now basket has codes so they will be applied too
-    assert OrderLineType.DISCOUNT in [l.type for l in basket.get_final_lines()]
+    assert cart.codes == [dc.code]
+    assert len(cart.get_final_lines()) == 3  # now cart has codes so they will be applied too
+    assert OrderLineType.DISCOUNT in [l.type for l in cart.get_final_lines()]
 

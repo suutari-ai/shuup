@@ -97,18 +97,18 @@ Product and category templates can be found under ``shoop/front/templates/``
     A view for a single category.
     This template lists all the products of the selected category.
 
-Shopping basket
+Shopping cart
 ^^^^^^^^^^^^^^^
 
-All shopping basket related templates go in the ``shoop/front/templates/shoop/front/basket``
-folder. This includes the default structure of the shopping basket and additional
-shopping basket elements.
+All shopping cart related templates go in the ``shoop/front/templates/shoop/front/cart``
+folder. This includes the default structure of the shopping cart and additional
+shopping cart elements.
 
-The default shopping basket template also includes the ordering form.
+The default shopping cart template also includes the ordering form.
 This does not apply to shops using multi-phase checkout.
 
-**Default Basket** ``shoop/front/basket/default_basket.jinja``
-    The structure of shopping basket. It includes the shopping basket's
+**Default Cart** ``shoop/front/cart/default_cart.jinja``
+    The structure of shopping cart. It includes the shopping cart's
     contents as a table from a separate file in the partials folder.
     The ordering form is also displayed in this file.
 

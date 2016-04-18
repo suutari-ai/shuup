@@ -73,7 +73,7 @@ addons based on Shoop 2.0.  Here is a list of the API changes and
 instructions how to update your code.
 
 * `Priceful.total_price` has been removed.  This affects
-  e.g. `OrderLine`, `BasketLine` and `PriceInfo` objects.
+  e.g. `OrderLine`, `CartLine` and `PriceInfo` objects.
 
   - Use `Priceful.price` instead.
 

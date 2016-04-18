@@ -9,7 +9,7 @@ import random
 
 from django.utils.translation import ugettext_lazy as _
 
-from shoop.campaigns.models.campaigns import BasketCampaign, CatalogCampaign
+from shoop.campaigns.models.campaigns import CartCampaign, CatalogCampaign
 from shoop.core.models import OrderLineType
 from shoop.core.order_creator import OrderSourceModifierModule
 from shoop.core.pricing import DiscountModule
@@ -55,9 +55,9 @@ class CatalogCampaignModule(DiscountModule):
         return price_info
 
 
-class BasketCampaignModule(OrderSourceModifierModule):
-    identifier = "basket_campaigns"
-    name = _("Campaign Basket Discounts")
+class CartCampaignModule(OrderSourceModifierModule):
+    identifier = "cart_campaigns"
+    name = _("Campaign Cart Discounts")
 
     def get_new_lines(self, order_source, lines):
         price_so_far = sum((x.price for x in lines), order_source.zero_price)
@@ -69,7 +69,7 @@ class BasketCampaignModule(OrderSourceModifierModule):
 
         best_discount = None
         best_discount_campaign = None
-        for campaign in BasketCampaign.get_matching(order_source, lines):
+        for campaign in CartCampaign.get_matching(order_source, lines):
             if campaign.discount_amount:
                 discount_amount = campaign.discount_amount
             else:
@@ -100,7 +100,7 @@ class BasketCampaignModule(OrderSourceModifierModule):
         )
 
     def can_use_code(self, order_source, code):
-        campaigns = BasketCampaign.objects.filter(active=True, coupon__code=code, coupon__active=True)
+        campaigns = CartCampaign.objects.filter(active=True, coupon__code=code, coupon__active=True)
         for campaign in campaigns:
             if not campaign.is_available():
                 continue
@@ -108,6 +108,6 @@ class BasketCampaignModule(OrderSourceModifierModule):
         return False
 
     def use_code(self, order, code):
-        campaigns = BasketCampaign.objects.filter(active=True, coupon__code=code, coupon__active=True)
+        campaigns = CartCampaign.objects.filter(active=True, coupon__code=code, coupon__active=True)
         for campaign in campaigns:
             campaign.coupon.use(order)

@@ -21,7 +21,7 @@ class BaseCheckoutView(View):
     empty_phase_spec = None
 
     def dispatch(self, request, *args, **kwargs):
-        if request.basket.is_empty and self.empty_phase_spec:
+        if request.cart.is_empty and self.empty_phase_spec:
             self.phase_specs = [self.empty_phase_spec]
 
         process = CheckoutProcess(
@@ -56,7 +56,7 @@ class SinglePhaseCheckoutView(BaseCheckoutView):
     phase_specs = [
         "shoop.front.checkout.single_page.SingleCheckoutPhase"
     ]
-    empty_phase_spec = None  # Use the same phase specs when the basket is empty
+    empty_phase_spec = None  # Use the same phase specs when the cart is empty
 
 
 def get_checkout_view():

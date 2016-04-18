@@ -10,14 +10,14 @@ other kind of services too.
 From the Services API point of view a `service
 <shoop.core.models.Service>` is something that may conditionally
 `generate some new lines <shoop.core.models.Service.get_lines>` for a
-basket.  Also various aspects of these services can be customized:
+cart.  Also various aspects of these services can be customized:
 
   * `Availability <shoop.core.models.Service.is_available_for>` of the
-    service for certain basket
+    service for certain cart
   * `Costs <shoop.core.models.Service.get_costs>` of the service for
-    certain basket
+    certain cart
   * `Effective name <shoop.core.models.Service.get_effective_name>` of
-    the service for certain basket
+    the service for certain cart
 
 Each service should have a `service provider
 <shoop.core.models.ServiceProvider>` and `service choice

@@ -4,10 +4,10 @@ shoop.front.models package
 Submodules
 ----------
 
-shoop.front.models.stored_basket module
+shoop.front.models.stored_cart module
 ---------------------------------------
 
-.. automodule:: shoop.front.models.stored_basket
+.. automodule:: shoop.front.models.stored_cart
     :members:
     :undoc-members:
     :show-inheritance:

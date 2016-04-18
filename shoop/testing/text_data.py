@@ -47,7 +47,7 @@ NOUNS = (
     "aftermath", "afternoon", "afterthought", "airplane", "airport",
     "alarm", "anger", "animal", "answer", "apparel", "apple",
     "appliance", "arithmetic", "arm", "army", "aunt", "badge", "bait",
-    "ball", "balloon", "banana", "baseball", "basket", "basketball",
+    "ball", "balloon", "banana", "baseball", "cart", "cartball",
     "bat", "bath", "battle", "bead", "beam", "bean", "beast", "bed",
     "bedroom", "beef", "beetle", "beggar", "beginner", "believe",
     "bike", "bird", "birthday", "bomb", "book", "boot", "border",

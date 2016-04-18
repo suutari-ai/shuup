@@ -9,10 +9,10 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 
 
-def basket_partial(request):
+def cart_partial(request):
     return HttpResponse(
         render_to_string(
-            "classic_gray/navigation_basket_partial.jinja",
+            "classic_gray/navigation_cart_partial.jinja",
             request=request,
         )
     )

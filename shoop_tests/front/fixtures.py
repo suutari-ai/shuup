@@ -22,7 +22,7 @@ def get_request(path="/", user=None):
     return request
 
 
-def get_request_with_basket(path="/", user=None, ajax=False):
+def get_request_with_cart(path="/", user=None, ajax=False):
     request = get_request(path, user)
     get_default_shop()  # Create a Shop
     SessionMiddleware().process_request(request)
@@ -38,6 +38,6 @@ def get_jinja_context(path="/", user=None, **vars):
     env = Environment()
     ctx = Context(environment=env, parent=None, name="FauxContext", blocks={})
     if "request" not in vars:
-        vars["request"] = get_request_with_basket(path, user=user)
+        vars["request"] = get_request_with_cart(path, user=user)
     ctx.vars.update(vars)
     return ctx

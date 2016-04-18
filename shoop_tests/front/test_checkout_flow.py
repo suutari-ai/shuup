@@ -46,7 +46,7 @@ def fill_address_inputs(soup, with_company=False):
     return inputs
 
 
-def _populate_client_basket(client):
+def _populate_client_cart(client):
     index = client.soup("/")
     product_links = index.find_all("a", rel="product-detail")
     assert product_links
@@ -54,17 +54,17 @@ def _populate_client_basket(client):
     assert product_detail_path
     product_detail_soup = client.soup(product_detail_path)
     inputs = extract_form_fields(product_detail_soup)
-    basket_path = reverse("shoop:basket")
+    cart_path = reverse("shoop:cart")
     for i in range(3):  # Add the same product thrice
-        add_to_basket_resp = client.post(basket_path, data={
+        add_to_cart_resp = client.post(cart_path, data={
             "command": "add",
             "product_id": inputs["product_id"],
             "quantity": 1,
             "supplier": get_default_supplier().pk
         })
-        assert add_to_basket_resp.status_code < 400
-    basket_soup = client.soup(basket_path)
-    assert b'no such element' not in basket_soup.renderContents(), 'All product details are not rendered correctly'
+        assert add_to_cart_resp.status_code < 400
+    cart_soup = client.soup(cart_path)
+    assert b'no such element' not in cart_soup.renderContents(), 'All product details are not rendered correctly'
 
 
 @pytest.mark.django_db
@@ -74,7 +74,7 @@ def test_basic_order_flow(with_company):
     n_orders_pre = Order.objects.count()
     populate_if_required()
     c = SmartClient()
-    _populate_client_basket(c)
+    _populate_client_cart(c)
 
     addresses_path = reverse("shoop:checkout", kwargs={"phase": "addresses"})
     addresses_soup = c.soup(addresses_path)
@@ -100,7 +100,7 @@ def test_order_flow_with_payment_phase():
     n_orders_pre = Order.objects.count()
     populate_if_required()
     c = SmartClient()
-    _populate_client_basket(c)
+    _populate_client_cart(c)
 
     # Create methods
     shipping_method = get_default_shipping_method()

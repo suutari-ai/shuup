@@ -22,7 +22,7 @@ from shoop.testing.factories import (
     get_shipping_method
 )
 from shoop.testing.models import ExpensiveSwedenBehaviorComponent
-from shoop_tests.utils.basketish_order_source import BasketishOrderSource
+from shoop_tests.utils.cartish_order_source import CartishOrderSource
 
 
 def get_expensive_sweden_shipping_method():
@@ -43,7 +43,7 @@ def get_expensive_sweden_shipping_method():
 @pytest.mark.parametrize("country", ["FI", "SE", "NL", "NO"])
 def test_methods(admin_user, country):
     contact = get_person_contact(admin_user)
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     source.add_line(
         type=OrderLineType.PRODUCT,
         product=get_default_product(),
@@ -92,7 +92,7 @@ def test_methods(admin_user, country):
 @pytest.mark.django_db
 def test_waiver():
     sm = get_shipping_method(name="Waivey", price=100, waive_at=370)
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     assert sm.get_effective_name(source) == u"Waivey"
     assert sm.get_total_cost(source).price == source.create_price(100)
     source.add_line(
@@ -113,7 +113,7 @@ def test_fixed_cost_with_waiving_costs():
             price_value=p, waive_limit_value=w)
           for (p, w) in [(3, 5), (7, 10), (10, 30)]])
 
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     source.shipping_method = sm
 
     def pricestr(pi):
@@ -170,7 +170,7 @@ def test_translations_of_method_and_component():
     cost.save()
     sm.behavior_components.add(cost)
 
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     source.shipping_method = sm
 
     translation.activate('fi')
@@ -198,7 +198,7 @@ def test_weight_limits():
     sm.behavior_components.add(
         WeightLimitsBehaviorComponent.objects.create(
             min_weight=100, max_weight=500))
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     assert any(ve.code == "min_weight" for ve in sm.get_unavailability_reasons(source))
     source.add_line(type=OrderLineType.PRODUCT, weight=600)
     assert any(ve.code == "max_weight" for ve in sm.get_unavailability_reasons(source))
@@ -247,7 +247,7 @@ def test_source_lines_with_multiple_fixed_costs():
     sm = get_shipping_method(name="Multiple costs", price=starting_price_value)
     sm.behavior_components.clear()
 
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     source.shipping_method = sm
 
     lines = list(sm.get_lines(source))

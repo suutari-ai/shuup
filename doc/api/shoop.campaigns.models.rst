@@ -4,10 +4,10 @@ shoop.campaigns.models package
 Submodules
 ----------
 
-shoop.campaigns.models.basket_conditions module
+shoop.campaigns.models.cart_conditions module
 -----------------------------------------------
 
-.. automodule:: shoop.campaigns.models.basket_conditions
+.. automodule:: shoop.campaigns.models.cart_conditions
     :members:
     :undoc-members:
     :show-inheritance:

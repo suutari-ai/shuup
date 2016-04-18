@@ -20,9 +20,9 @@ from shoop.utils.importing import cached_load
 from shoop.utils.numbers import parse_decimal_string
 
 
-def handle_add(request, basket, product_id, quantity=1, supplier_id=None, **kwargs):
+def handle_add(request, cart, product_id, quantity=1, supplier_id=None, **kwargs):
     """
-    Handle adding a product to the basket.
+    Handle adding a product to the cart.
 
     :param product_id: product ID to add (or if `child_product_id` is truey, the parent ID)
     :param quantity: quantity of products to add
@@ -59,12 +59,12 @@ def handle_add(request, basket, product_id, quantity=1, supplier_id=None, **kwar
     if quantity <= 0:
         raise ValidationError(_(u"The quantity %s is not valid.") % quantity, code="invalid_quantity")
 
-    product_ids_and_quantities = basket.get_product_ids_and_quantities()
-    already_in_basket_qty = product_ids_and_quantities.get(product.id, 0)
+    product_ids_and_quantities = cart.get_product_ids_and_quantities()
+    already_in_cart_qty = product_ids_and_quantities.get(product.id, 0)
     shop_product.raise_if_not_orderable(
         supplier=supplier,
-        quantity=(already_in_basket_qty + quantity),
-        customer=basket.customer
+        quantity=(already_in_cart_qty + quantity),
+        customer=cart.customer
     )
 
     # TODO: Hook/extension point
@@ -81,17 +81,17 @@ def handle_add(request, basket, product_id, quantity=1, supplier_id=None, **kwar
         "shop": request.shop,
     }
 
-    basket.add_product(**add_product_kwargs)
+    cart.add_product(**add_product_kwargs)
 
     return {
-        'ok': basket.product_count,
+        'ok': cart.product_count,
         'added': quantity
     }
 
 
-def handle_add_var(request, basket, product_id, quantity=1, **kwargs):
+def handle_add_var(request, cart, product_id, quantity=1, **kwargs):
     """
-    Handle adding a complex variable product into the basket by resolving the combination variables.
+    Handle adding a complex variable product into the cart by resolving the combination variables.
     This actually uses `kwargs`, expecting `var_XXX=YYY` to exist there, where `XXX` is the PK
     of a ProductVariationVariable and YYY is the PK of a ProductVariationVariableValue. Confused yet?
 
@@ -105,61 +105,61 @@ def handle_add_var(request, basket, product_id, quantity=1, **kwargs):
     if not var_product:
         raise ValidationError(_(u"This variation is not available."), code="invalid_variation_combination")
     # and hand it off to handle_add like we're used to
-    return handle_add(request=request, basket=basket, product_id=var_product.pk, quantity=quantity)
+    return handle_add(request=request, cart=cart, product_id=var_product.pk, quantity=quantity)
 
 
-def handle_del(request, basket, line_id, **kwargs):
+def handle_del(request, cart, line_id, **kwargs):
     """
-    Handle deleting a distinct order line from the basket given its unique line ID.
+    Handle deleting a distinct order line from the cart given its unique line ID.
 
     :param line_id: The line ID to delete.
     :return:
     """
-    return {'ok': basket.delete_line(int(line_id))}
+    return {'ok': cart.delete_line(int(line_id))}
 
 
-def handle_clear(request, basket, **kwargs):
+def handle_clear(request, cart, **kwargs):
     """
-    Handle fully clearing the basket.
+    Handle fully clearing the cart.
     """
 
-    basket.clear_all()
+    cart.clear_all()
     return {'ok': True}
 
 
-def handle_add_campaign_code(request, basket, code):
+def handle_add_campaign_code(request, cart, code):
     if not code:
         return {"ok": False}
 
-    if is_code_usable(basket, code):
-        return {"ok": basket.add_code(code)}
+    if is_code_usable(cart, code):
+        return {"ok": cart.add_code(code)}
     return {"ok": False}
 
 
-def handle_update(request, basket, **kwargs):
+def handle_update(request, cart, **kwargs):
     """
-    Handle updating a basket, i.e. deleting some lines or updating quantities.
+    Handle updating a cart, i.e. deleting some lines or updating quantities.
 
-    This dispatches further to whatever is declared by the `SHOOP_BASKET_UPDATE_METHODS_SPEC`
+    This dispatches further to whatever is declared by the `SHOOP_CART_UPDATE_METHODS_SPEC`
     configuration entry.
     """
-    methods = cached_load("SHOOP_BASKET_UPDATE_METHODS_SPEC")(request=request, basket=basket)
+    methods = cached_load("SHOOP_CART_UPDATE_METHODS_SPEC")(request=request, cart=cart)
     prefix_method_dict = methods.get_prefix_to_method_map()
-    basket_changed = False
+    cart_changed = False
     # If any POST items match a prefix defined in prefix_method_dict, call the appropriate model method.
     for key, value in six.iteritems(kwargs):
         for prefix, method in six.iteritems(prefix_method_dict):
             if key.startswith(prefix):
                 line_id = key[len(prefix):]
-                line = basket.find_line_by_line_id(line_id)
+                line = cart.find_line_by_line_id(line_id)
                 field_changed = method(
                     key=key,
                     value=value,
                     line=line
                 )
-                basket_changed = (basket_changed or field_changed)
+                cart_changed = (cart_changed or field_changed)
                 break
 
-    if basket_changed:  # pragma: no branch
-        basket.clean_empty_lines()
-        basket.dirty = True
+    if cart_changed:  # pragma: no branch
+        cart.clean_empty_lines()
+        cart.dirty = True

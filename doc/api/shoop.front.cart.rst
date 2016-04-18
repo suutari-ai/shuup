@@ -1,53 +1,53 @@
-shoop.front.basket package
+shoop.front.cart package
 ==========================
 
 Submodules
 ----------
 
-shoop.front.basket.command_dispatcher module
+shoop.front.cart.command_dispatcher module
 --------------------------------------------
 
-.. automodule:: shoop.front.basket.command_dispatcher
+.. automodule:: shoop.front.cart.command_dispatcher
     :members:
     :undoc-members:
     :show-inheritance:
 
-shoop.front.basket.commands module
+shoop.front.cart.commands module
 ----------------------------------
 
-.. automodule:: shoop.front.basket.commands
+.. automodule:: shoop.front.cart.commands
     :members:
     :undoc-members:
     :show-inheritance:
 
-shoop.front.basket.objects module
+shoop.front.cart.objects module
 ---------------------------------
 
-.. automodule:: shoop.front.basket.objects
+.. automodule:: shoop.front.cart.objects
     :members:
     :undoc-members:
     :show-inheritance:
 
-shoop.front.basket.order_creator module
+shoop.front.cart.order_creator module
 ---------------------------------------
 
-.. automodule:: shoop.front.basket.order_creator
+.. automodule:: shoop.front.cart.order_creator
     :members:
     :undoc-members:
     :show-inheritance:
 
-shoop.front.basket.storage module
+shoop.front.cart.storage module
 ---------------------------------
 
-.. automodule:: shoop.front.basket.storage
+.. automodule:: shoop.front.cart.storage
     :members:
     :undoc-members:
     :show-inheritance:
 
-shoop.front.basket.update_methods module
+shoop.front.cart.update_methods module
 ----------------------------------------
 
-.. automodule:: shoop.front.basket.update_methods
+.. automodule:: shoop.front.cart.update_methods
     :members:
     :undoc-members:
     :show-inheritance:
@@ -56,7 +56,7 @@ shoop.front.basket.update_methods module
 Module contents
 ---------------
 
-.. automodule:: shoop.front.basket
+.. automodule:: shoop.front.cart
     :members:
     :undoc-members:
     :show-inheritance:

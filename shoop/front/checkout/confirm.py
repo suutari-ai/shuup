@@ -11,8 +11,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 
 from shoop.core.models import OrderStatus
-from shoop.front.basket import get_basket_order_creator
-from shoop.front.basket.objects import BaseBasket
+from shoop.front.cart import get_cart_order_creator
+from shoop.front.cart.objects import Cart
 from shoop.front.checkout import CheckoutPhaseViewMixin
 
 
@@ -30,19 +30,19 @@ class ConfirmPhase(CheckoutPhaseViewMixin, FormView):
     form_class = ConfirmForm
 
     def process(self):
-        self.request.basket.customer_comment = self.storage.get("comment")
-        self.request.basket.marketing_permission = self.storage.get("marketing")
+        self.request.cart.customer_comment = self.storage.get("comment")
+        self.request.cart.marketing_permission = self.storage.get("marketing")
 
     def is_valid(self):
         return bool(self.storage.get("accept_terms"))
 
     def get_context_data(self, **kwargs):
         context = super(ConfirmPhase, self).get_context_data(**kwargs)
-        basket = self.request.basket
-        assert isinstance(basket, BaseBasket)
-        basket.calculate_taxes()
-        errors = list(basket.get_validation_errors())
-        context["basket"] = basket
+        cart = self.request.cart
+        assert isinstance(cart, Cart)
+        cart.calculate_taxes()
+        errors = list(cart.get_validation_errors())
+        context["cart"] = cart
         context["errors"] = errors
         context["orderable"] = (not errors)
         return context
@@ -60,14 +60,14 @@ class ConfirmPhase(CheckoutPhaseViewMixin, FormView):
             return redirect("shoop:order_process_payment", pk=order.pk, key=order.key)
 
     def create_order(self):
-        basket = self.request.basket
-        assert isinstance(basket, BaseBasket)
-        assert basket.shop == self.request.shop
-        basket.orderer = self.request.person
-        basket.customer = self.request.customer
-        basket.creator = self.request.user
-        basket.status = OrderStatus.objects.get_default_initial()
-        order_creator = get_basket_order_creator()
-        order = order_creator.create_order(basket)
-        basket.finalize()
+        cart = self.request.cart
+        assert isinstance(cart, Cart)
+        assert cart.shop == self.request.shop
+        cart.orderer = self.request.person
+        cart.customer = self.request.customer
+        cart.creator = self.request.user
+        cart.status = OrderStatus.objects.get_default_initial()
+        order_creator = get_cart_order_creator()
+        order = order_creator.create_order(cart)
+        cart.finalize()
         return order

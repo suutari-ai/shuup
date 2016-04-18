@@ -17,10 +17,10 @@ class CampaignAdminModule(AdminModule):
     name = _(u"Campaigns")
 
     def get_urls(self):
-        basket_campaign_urls = get_edit_and_list_urls(
-            url_prefix="^campaigns/basket",
-            view_template="shoop.campaigns.admin_module.views.BasketCampaign%sView",
-            name_template="basket_campaigns.%s"
+        cart_campaign_urls = get_edit_and_list_urls(
+            url_prefix="^campaigns/cart",
+            view_template="shoop.campaigns.admin_module.views.CartCampaign%sView",
+            name_template="cart_campaigns.%s"
         )
 
         coupon_urls = get_edit_and_list_urls(
@@ -29,7 +29,7 @@ class CampaignAdminModule(AdminModule):
             name_template="coupons.%s"
         )
 
-        return basket_campaign_urls + coupon_urls + get_edit_and_list_urls(
+        return cart_campaign_urls + coupon_urls + get_edit_and_list_urls(
             url_prefix="^campaigns/catalog",
             view_template="shoop.campaigns.admin_module.views.CatalogCampaign%sView",
             name_template="catalog_campaigns.%s"
@@ -47,9 +47,9 @@ class CampaignAdminModule(AdminModule):
                 category=category, aliases=[_("Show Catalog Campaigns")]
             ),
             MenuEntry(
-                text=_("Basket Campaigns"), icon="fa fa-file-text",
-                url="shoop_admin:basket_campaigns.list",
-                category=category, aliases=[_("Show Basket Campaigns")]
+                text=_("Cart Campaigns"), icon="fa fa-file-text",
+                url="shoop_admin:cart_campaigns.list",
+                category=category, aliases=[_("Show Cart Campaigns")]
             ),
             MenuEntry(
                 text=_("Coupons"), icon="fa fa-file-text",

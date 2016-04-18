@@ -14,37 +14,37 @@ from django.shortcuts import redirect
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
-from shoop.front.basket import commands
-from shoop.front.signals import get_basket_command_handler
+from shoop.front.cart import commands
+from shoop.front.signals import get_cart_command_handler
 from shoop.utils.excs import Problem
 
 
-class BasketCommandDispatcher(object):
+class CartCommandDispatcher(object):
     """
-    BasketCommandDispatcher handles (usually AJAX) requests that somehow update the basket.
-    You should never instantiate BasketCommandDispatcher yourself -- instead use
-    `get_basket_command_dispatcher()`.
+    CartCommandDispatcher handles (usually AJAX) requests that somehow update the cart.
+    You should never instantiate CartCommandDispatcher yourself -- instead use
+    `get_cart_command_dispatcher()`.
 
     All `handle_*` methods are expected to accept `**kwargs`.
     """
 
     commands_module = commands
 
-    def __init__(self, request, basket=None):
+    def __init__(self, request, cart=None):
         """
         :type request: HttpRequest
         """
         self.request = request
         self.ajax = self.request.is_ajax()
-        # :type self.basket: BaseBasket
-        self.basket = (basket or request.basket)
+        # :type self.cart: Cart
+        self.cart = (cart or request.cart)
 
     def get_command_handler(self, command):
         handler = getattr(self.commands_module, "handle_%s" % command.lower(), None)
         if handler and callable(handler):
             return handler
 
-        for receiver, handler in get_basket_command_handler.send(BasketCommandDispatcher, command=command):
+        for receiver, handler in get_cart_command_handler.send(CartCommandDispatcher, command=command):
             if handler and callable(handler):
                 return handler
 
@@ -67,7 +67,7 @@ class BasketCommandDispatcher(object):
                 raise Problem(_(u"Invalid command %s") % command)
             kwargs.pop("csrfmiddlewaretoken", None)  # The CSRF token should never be passed as a kwarg
             kwargs.pop("command", None)  # Nor the command
-            kwargs.update(request=self.request, basket=self.basket)
+            kwargs.update(request=self.request, cart=self.cart)
             kwargs = self.preprocess_kwargs(command, kwargs)
             response = handler(**kwargs) or {}
         except (Problem, ValidationError) as exc:
@@ -85,7 +85,7 @@ class BasketCommandDispatcher(object):
         return_url = (response.get("return") or kwargs.get("return"))
         if return_url and return_url.startswith("/"):
             return HttpResponseRedirect(return_url)
-        return redirect("shoop:basket")
+        return redirect("shoop:cart")
 
     def preprocess_kwargs(self, command, kwargs):
         """

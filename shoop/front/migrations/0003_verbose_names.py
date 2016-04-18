@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 from django.conf import settings
 import shoop.core.fields
-import shoop.front.models.stored_basket
+import shoop.front.models.stored_cart
 
 
 class Migration(migrations.Migration):
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='storedbasket',
             name='key',
-            field=models.CharField(verbose_name='key', max_length=32, default=shoop.front.models.stored_basket.generate_key),
+            field=models.CharField(verbose_name='key', max_length=32, default=shoop.front.models.stored_cart.generate_key),
         ),
         migrations.AlterField(
             model_name='storedbasket',

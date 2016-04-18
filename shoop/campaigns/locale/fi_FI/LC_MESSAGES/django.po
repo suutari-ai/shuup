@@ -25,10 +25,10 @@ msgstr ""
 msgid "Show Catalog Campaigns"
 msgstr ""
 
-msgid "Basket Campaigns"
+msgid "Cart Campaigns"
 msgstr ""
 
-msgid "Show Basket Campaigns"
+msgid "Show Cart Campaigns"
 msgstr ""
 
 msgid "Coupons"
@@ -76,13 +76,13 @@ msgstr ""
 msgid "Discount Code"
 msgstr ""
 
-msgid "Create new Basket Campaign"
+msgid "Create new Cart Campaign"
 msgstr ""
 
 msgid "Catalog Campaign"
 msgstr ""
 
-msgid "Basket Campaign"
+msgid "Cart Campaign"
 msgstr ""
 
 msgid "Code"
@@ -136,13 +136,13 @@ msgstr ""
 msgid "Discount Code already in use."
 msgstr ""
 
-msgid "Basket condition"
+msgid "Cart condition"
 msgstr ""
 
-msgid "Basket product count"
+msgid "Cart product count"
 msgstr ""
 
-msgid "product count in basket"
+msgid "product count in cart"
 msgstr ""
 
 msgid ""
@@ -150,10 +150,10 @@ msgid ""
 "here."
 msgstr ""
 
-msgid "Basket total value"
+msgid "Cart total value"
 msgstr ""
 
-msgid "basket total amount"
+msgid "cart total amount"
 msgstr ""
 
 msgid ""
@@ -161,13 +161,13 @@ msgid ""
 "here worth of products."
 msgstr ""
 
-msgid "Products in basket"
+msgid "Products in cart"
 msgstr ""
 
 msgid "products"
 msgstr ""
 
-msgid "Limit the campaign to have the selected products in basket."
+msgid "Limit the campaign to have the selected products in cart."
 msgstr ""
 
 msgid "shop"
@@ -222,14 +222,14 @@ msgstr ""
 msgid "Catalog Campaign: %(name)s"
 msgstr ""
 
-msgid "basket line text"
+msgid "cart line text"
 msgstr ""
 
-msgid "This text will be shown in basket."
+msgid "This text will be shown in cart."
 msgstr ""
 
 #, python-format
-msgid "Basket Campaign: %(name)s"
+msgid "Cart Campaign: %(name)s"
 msgstr ""
 
 msgid "usage limit per customer"
@@ -297,7 +297,7 @@ msgstr ""
 msgid "Limit the campaign to members of the selected contact groups."
 msgstr ""
 
-msgid "Campaign Basket Discounts"
+msgid "Campaign Cart Discounts"
 msgstr ""
 
 msgid "Coupon Code:"

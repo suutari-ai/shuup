@@ -16,7 +16,7 @@ from shoop.testing.factories import (
     get_initial_order_status
 )
 from shoop.utils.models import get_data_dict
-from shoop_tests.utils.basketish_order_source import BasketishOrderSource
+from shoop_tests.utils.cartish_order_source import CartishOrderSource
 
 
 def test_invalid_order_source_updating():
@@ -61,7 +61,7 @@ def test_codes_type_conversion():
 
 
 def seed_source(user):
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     billing_address = get_address()
     shipping_address = get_address(name="Shippy Doge")
     source.status = get_initial_order_status()

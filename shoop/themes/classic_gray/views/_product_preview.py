@@ -12,7 +12,7 @@ class ProductPreviewView(ProductDetailView):
     template_name = "classic_gray/product_preview.jinja"
 
     def get_context_data(self, **kwargs):
-        # By default the template rendering the basket add form
+        # By default the template rendering the cart add form
         # uses the `request.path` as its' `next` value.
         # This is fine if you are on product page but here in
         # preview, we cannot redirect back to `/xtheme/product_preview`.

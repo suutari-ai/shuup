@@ -13,12 +13,12 @@ from shoop.testing.factories import (
     get_default_shop, get_initial_order_status
 )
 from shoop_tests.core.test_order_creator import seed_source
-from shoop_tests.utils.basketish_order_source import BasketishOrderSource
+from shoop_tests.utils.cartish_order_source import CartishOrderSource
 from shoop_tests.simple_supplier.utils import get_simple_supplier
 
 
 def seed_source(user, shop):
-    source = BasketishOrderSource(shop)
+    source = CartishOrderSource(shop)
     source.status = get_initial_order_status()
     source.customer = get_person_contact(user)
     source.payment_method = get_default_payment_method()

@@ -16,9 +16,9 @@ def initialize_test(rf, include_tax=False):
     activate("en")
     shop = get_shop(prices_include_tax=include_tax)
 
-    # Valid baskets needs some payment methods to be available
+    # Valid carts needs some payment methods to be available
     get_payment_method(shop)
-    # Since some of the baskets are created for the default shop:
+    # Since some of the carts are created for the default shop:
     get_payment_method(None)
 
     group = get_default_customer_group()

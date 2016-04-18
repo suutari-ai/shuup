@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from shoop.admin.forms.fields import PercentageField
 from shoop.apps.provides import get_provide_objects
 from shoop.campaigns.models.campaigns import (
-    BasketCampaign, CatalogCampaign, Coupon
+    CartCampaign, CatalogCampaign, Coupon
 )
 from shoop.utils.multilanguage_model_form import MultiLanguageModelForm
 
@@ -42,7 +42,7 @@ class CampaignFormMixin(object):
         Key can be either `condition` or `filter`.
 
         `identifier` is an identifier string available in:
-          * `shoop.campaigns.basket_conditions.BasketCondition`
+          * `shoop.campaigns.cart_conditions.CartCondition`
           * `shoop.campaigns.catalog_filters.CatalogFilter`
           * `shoop.campaigns.context_conditions.ContextCondition`
 
@@ -170,17 +170,17 @@ class CatalogCampaignForm(CampaignFormMixin, MultiLanguageModelForm):
         return data
 
 
-class BasketCampaignForm(CampaignFormMixin, MultiLanguageModelForm):
-    provide_keys = ["campaign_basket_condition"]
+class CartCampaignForm(CampaignFormMixin, MultiLanguageModelForm):
+    provide_keys = ["campaign_cart_condition"]
 
     discount_percentage = CatalogCampaign._meta.get_field("discount_percentage").formfield(form_class=PercentageField)
 
     class Meta:
-        model = BasketCampaign
+        model = CartCampaign
         fields = CAMPAIGN_COMMON_FIELDS
 
     def __init__(self, *args, **kwargs):
-        super(BasketCampaignForm, self).__init__(*args, **kwargs)
+        super(CartCampaignForm, self).__init__(*args, **kwargs)
 
         coupon_code_choices = [('', '')] + list(
             Coupon.objects.filter(
@@ -197,7 +197,7 @@ class BasketCampaignForm(CampaignFormMixin, MultiLanguageModelForm):
 
     def clean(self):
         """ Ensure atleast one rule is set """
-        data = super(BasketCampaignForm, self).clean()
+        data = super(CartCampaignForm, self).clean()
         any_rules_set = any([data.get(rule_field, False) for rule_field in self.rule_ids])
         if not any_rules_set and self.cleaned_data.get("coupon"):
             any_rules_set = True

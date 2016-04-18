@@ -4,10 +4,10 @@ shoop.front.views package
 Submodules
 ----------
 
-shoop.front.views.basket module
+shoop.front.views.cart module
 -------------------------------
 
-.. automodule:: shoop.front.views.basket
+.. automodule:: shoop.front.views.cart
     :members:
     :undoc-members:
     :show-inheritance:

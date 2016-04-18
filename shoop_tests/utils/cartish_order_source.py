@@ -5,8 +5,9 @@
 #
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
-from shoop.core.order_creator import OrderCreator
+
+from shoop.core.order_creator import OrderSource
 
 
-class BasketOrderCreator(OrderCreator):
+class CartishOrderSource(OrderSource):
     pass

@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
 
     shoop.front.apps
-    shoop.front.basket
+    shoop.front.cart
     shoop.front.checkout
     shoop.front.models
     shoop.front.template_helpers

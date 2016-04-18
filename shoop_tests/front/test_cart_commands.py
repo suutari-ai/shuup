@@ -13,18 +13,18 @@ from django.http.response import HttpResponseRedirect, JsonResponse
 from shoop.core.models import (
     ProductVariationVariable, ProductVariationVariableValue
 )
-from shoop.front.basket import commands as basket_commands
-from shoop.front.basket import get_basket_command_dispatcher
-from shoop.front.basket.command_dispatcher import BasketCommandDispatcher
-from shoop.front.signals import get_basket_command_handler
+from shoop.front.cart import commands as cart_commands
+from shoop.front.cart import get_cart_command_dispatcher
+from shoop.front.cart.command_dispatcher import CartCommandDispatcher
+from shoop.front.signals import get_cart_command_handler
 from shoop.testing.factories import (
     create_product, get_default_product, get_default_shop,
     get_default_supplier
 )
-from shoop_tests.front.fixtures import get_request_with_basket
+from shoop_tests.front.fixtures import get_request_with_cart
 
 
-class ReturnUrlBasketCommandDispatcher(BasketCommandDispatcher):
+class ReturnUrlCartCommandDispatcher(CartCommandDispatcher):
     def postprocess_response(self, command, kwargs, response):
         response["return"] = "/dummy/"
         return response
@@ -32,7 +32,7 @@ class ReturnUrlBasketCommandDispatcher(BasketCommandDispatcher):
 
 @pytest.mark.django_db
 def test_dne():
-    commands = get_basket_command_dispatcher(get_request_with_basket())
+    commands = get_cart_command_dispatcher(get_request_with_cart())
     with pytest.raises(Exception):
         commands.handle("_doesnotexist_")
 
@@ -41,56 +41,56 @@ def test_dne():
 def test_add_and_remove_and_clear():
     product = get_default_product()
     supplier = get_default_supplier()
-    request = get_request_with_basket()
-    basket = request.basket
+    request = get_request_with_cart()
+    cart = request.cart
 
     with pytest.raises(ValidationError):
-        basket_commands.handle_add(request, basket, product_id=product.pk, quantity=-3)  # Ordering antimatter is not supported
+        cart_commands.handle_add(request, cart, product_id=product.pk, quantity=-3)  # Ordering antimatter is not supported
 
     # These will get merged into one line...
-    basket_commands.handle_add(request, basket, **{"product_id": product.pk, "quantity": 1, "supplier_id": supplier.pk})
-    basket_commands.handle_add(request, basket, **{"product_id": product.pk, "quantity": 2})
+    cart_commands.handle_add(request, cart, **{"product_id": product.pk, "quantity": 1, "supplier_id": supplier.pk})
+    cart_commands.handle_add(request, cart, **{"product_id": product.pk, "quantity": 2})
     # ... so there will be 3 products but one line
-    assert basket.product_count == 3
-    lines = basket.get_lines()
+    assert cart.product_count == 3
+    lines = cart.get_lines()
     assert len(lines) == 1
-    # ... and deleting that line will clear the basket...
-    basket_commands.handle_del(request, basket, lines[0].line_id)
-    assert basket.product_count == 0
+    # ... and deleting that line will clear the cart...
+    cart_commands.handle_del(request, cart, lines[0].line_id)
+    assert cart.product_count == 0
     # ... and adding another product will create a new line...
-    basket_commands.handle_add(request, basket, product_id=product.pk, quantity=1)
-    assert basket.product_count == 1
+    cart_commands.handle_add(request, cart, product_id=product.pk, quantity=1)
+    assert cart.product_count == 1
     # ... that can be cleared.
-    basket_commands.handle_clear(request, basket)
-    assert basket.product_count == 0
+    cart_commands.handle_clear(request, cart)
+    assert cart.product_count == 0
 
 @pytest.mark.django_db
 def test_ajax():
     product = get_default_product()
-    commands = get_basket_command_dispatcher(get_request_with_basket())
+    commands = get_cart_command_dispatcher(get_request_with_cart())
     commands.ajax = True
     rv = commands.handle("add", kwargs=dict(product_id=product.pk, quantity=-3))
     assert isinstance(rv, JsonResponse)
-    assert commands.basket.product_count == 0
+    assert commands.cart.product_count == 0
 
 @pytest.mark.django_db
 def test_nonajax():
     product = get_default_product()
-    commands = get_basket_command_dispatcher(get_request_with_basket())
+    commands = get_cart_command_dispatcher(get_request_with_cart())
     commands.ajax = False
     with pytest.raises(Exception):
         commands.handle("add", kwargs=dict(product_id=product.pk, quantity=-3))
 
 @pytest.mark.django_db
 def test_redirect():
-    commands = ReturnUrlBasketCommandDispatcher(request=get_request_with_basket())
+    commands = ReturnUrlCartCommandDispatcher(request=get_request_with_cart())
     commands.ajax = False
     assert isinstance(commands.handle("clear"), HttpResponseRedirect)
 
 @pytest.mark.django_db
 def test_variation():
-    request = get_request_with_basket()
-    basket = request.basket
+    request = get_request_with_cart()
+    cart = request.cart
     shop = get_default_shop()
     supplier = get_default_supplier()
     parent = create_product("BuVarParent", shop=shop, supplier=supplier)
@@ -98,16 +98,16 @@ def test_variation():
     child.link_to_parent(parent, variables={"test": "very"})
     attr = parent.variation_variables.get(identifier="test")
     val = attr.values.get(identifier="very")
-    basket_commands.handle_add_var(request, basket, 1, **{"var_%s" % attr.id: val.id})
-    assert basket.get_product_ids_and_quantities()[child.pk] == 1
+    cart_commands.handle_add_var(request, cart, 1, **{"var_%s" % attr.id: val.id})
+    assert cart.get_product_ids_and_quantities()[child.pk] == 1
     with pytest.raises(ValidationError):
-        basket_commands.handle_add_var(request, basket, 1, **{"var_%s" % attr.id: (val.id + 1)})
+        cart_commands.handle_add_var(request, cart, 1, **{"var_%s" % attr.id: (val.id + 1)})
 
 
 @pytest.mark.django_db
 def test_complex_variation():
-    request = get_request_with_basket()
-    basket = request.basket
+    request = get_request_with_cart()
+    cart = request.cart
     shop = get_default_shop()
     supplier = get_default_supplier()
 
@@ -127,44 +127,44 @@ def test_complex_variation():
     yellow_color_value = ProductVariationVariableValue.objects.get(variable=color_var, identifier="yellow")
     small_size_value = ProductVariationVariableValue.objects.get(variable=size_var, identifier="small")
 
-    # add to basket yellow + small
+    # add to cart yellow + small
     kwargs = {"var_%d" % color_var.pk: yellow_color_value.pk, "var_%d" % size_var.pk: small_size_value.pk}
 
-    basket_commands.handle_add_var(request, basket, 1, **kwargs)
-    assert basket.get_product_ids_and_quantities()[child.pk] == 1
+    cart_commands.handle_add_var(request, cart, 1, **kwargs)
+    assert cart.get_product_ids_and_quantities()[child.pk] == 1
 
     with pytest.raises(ValidationError):
         kwargs = {"var_%d" % color_var.pk: yellow_color_value.pk, "var_%d" % size_var.pk: small_size_value.pk + 1}
-        basket_commands.handle_add_var(request, basket, 1, **kwargs)
+        cart_commands.handle_add_var(request, cart, 1, **kwargs)
 
 
 @pytest.mark.django_db
-def test_basket_update():
-    request = get_request_with_basket()
-    basket = request.basket
+def test_cart_update():
+    request = get_request_with_cart()
+    cart = request.cart
     product = get_default_product()
-    basket_commands.handle_add(request, basket, product_id=product.pk, quantity=1)
-    assert basket.product_count == 1
-    line_id = basket.get_lines()[0].line_id
-    basket_commands.handle_update(request, basket, **{"q_%s" % line_id: "2"})
-    assert basket.product_count == 2
-    basket_commands.handle_update(request, basket, **{"delete_%s" % line_id: "1"})
-    assert basket.product_count == 0
+    cart_commands.handle_add(request, cart, product_id=product.pk, quantity=1)
+    assert cart.product_count == 1
+    line_id = cart.get_lines()[0].line_id
+    cart_commands.handle_update(request, cart, **{"q_%s" % line_id: "2"})
+    assert cart.product_count == 2
+    cart_commands.handle_update(request, cart, **{"delete_%s" % line_id: "1"})
+    assert cart.product_count == 0
 
 
 @pytest.mark.django_db
-def test_basket_update_errors():
-    request = get_request_with_basket()
-    basket = request.basket
+def test_cart_update_errors():
+    request = get_request_with_cart()
+    cart = request.cart
     product = get_default_product()
-    basket_commands.handle_add(request, basket, product_id=product.pk, quantity=1)
+    cart_commands.handle_add(request, cart, product_id=product.pk, quantity=1)
 
     # Hide product and now updating quantity should give errors
     shop_product = product.get_shop_instance(request.shop)
     shop_product.suppliers.clear()
 
-    line_id = basket.get_lines()[0].line_id
-    basket_commands.handle_update(request, basket, **{"q_%s" % line_id: "2"})
+    line_id = cart.get_lines()[0].line_id
+    cart_commands.handle_update(request, cart, **{"q_%s" % line_id: "2"})
     error_messages = messages.get_messages(request)
     # One warning is added to messages
     assert len(error_messages) == 1
@@ -173,7 +173,7 @@ def test_basket_update_errors():
     shop_product.visible = False
     shop_product.save()
 
-    basket_commands.handle_update(request, basket, **{"q_%s" % line_id: "2"})
+    cart_commands.handle_update(request, cart, **{"q_%s" % line_id: "2"})
 
     error_messages = messages.get_messages(request)
     # Two warnings is added to messages
@@ -183,19 +183,19 @@ def test_basket_update_errors():
 
 
 @pytest.mark.django_db
-def test_custom_basket_command():
+def test_custom_cart_command():
     ok = []
     def noop(**kwargs):
         ok.append(kwargs)
     def get_custom_command(command, **kwargs):
-        if command == "test_custom_basket_command":
+        if command == "test_custom_cart_command":
             return noop
-    old_n_receivers = len(get_basket_command_handler.receivers)
+    old_n_receivers = len(get_cart_command_handler.receivers)
     try:
-        get_basket_command_handler.connect(get_custom_command, dispatch_uid="test_custom_basket_command")
-        commands = get_basket_command_dispatcher(request=get_request_with_basket())
-        commands.handle("test_custom_basket_command")
+        get_cart_command_handler.connect(get_custom_command, dispatch_uid="test_custom_cart_command")
+        commands = get_cart_command_dispatcher(request=get_request_with_cart())
+        commands.handle("test_custom_cart_command")
         assert ok  # heh.
     finally:
-        get_basket_command_handler.disconnect(dispatch_uid="test_custom_basket_command")
-        assert old_n_receivers == len(get_basket_command_handler.receivers)
+        get_cart_command_handler.disconnect(dispatch_uid="test_custom_cart_command")
+        assert old_n_receivers == len(get_cart_command_handler.receivers)

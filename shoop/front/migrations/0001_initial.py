@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import shoop.core.fields
 from django.conf import settings
-import shoop.front.models.stored_basket
+import shoop.front.models.stored_cart
 
 
 class Migration(migrations.Migration):
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             name='StoredBasket',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('key', models.CharField(max_length=32, default=shoop.front.models.stored_basket.generate_key)),
+                ('key', models.CharField(max_length=32, default=shoop.front.models.stored_cart.generate_key)),
                 ('created_on', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('updated_on', models.DateTimeField(db_index=True, auto_now=True)),
                 ('persistent', models.BooleanField(db_index=True, default=False)),

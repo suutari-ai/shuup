@@ -19,11 +19,11 @@ msgstr ""
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-msgid "Abandoned Basket Value"
+msgid "Abandoned Cart Value"
 msgstr "Valor de Carrinhos Abandonados"
 
 #, python-brace-format
-msgid "Based on {b} baskets over the last {d} days"
+msgid "Based on {b} carts over the last {d} days"
 msgstr "Baseado em {b} carrinhos nos últimos {d} dias"
 
 #, python-format
@@ -42,18 +42,18 @@ msgid "This variation is not available."
 msgstr "Esta variação não está disponível."
 
 #, python-format
-msgid "Basket loading failed: Incompatible basket (%s)"
+msgid "Cart loading failed: Incompatible cart (%s)"
 msgstr "Falha ao carregar carrinho: Carrinho incompatível (%s)"
 
-msgid "Try to remove some products from the basket and order them separately."
+msgid "Try to remove some products from the cart and order them separately."
 msgstr "Tente remover alguns produtos do carrinho e comprá-los separadamente."
 
 #, python-format
-msgid "Products in basket cannot be shipped together. %s"
+msgid "Products in cart cannot be shipped together. %s"
 msgstr "Produtos no carrinho não podem ser enviados juntos. %s"
 
 #, python-format
-msgid "Products in basket have no common payment method. %s"
+msgid "Products in cart have no common payment method. %s"
 msgstr "Produtos no carrinho não têm formas de pagamento em comum. %s"
 
 #, python-format
@@ -81,7 +81,7 @@ msgstr "Comentário"
 msgid "Confirmation"
 msgstr "Confirmação"
 
-msgid "Empty Basket"
+msgid "Empty Cart"
 msgstr "Carrinho Vazio"
 
 msgid "shipping method"

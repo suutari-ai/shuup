@@ -1,9 +1,9 @@
 {% if request.is_ajax() %}
     <script type="text/javascript">
         $(document).ready(function() {
-            $("form.add-to-basket").on("submit", function(e) {
+            $("form.add-to-cart").on("submit", function(e) {
                 e.preventDefault();
-                addToBasket($(this));
+                addToCart($(this));
                 $(".product-preview-modal").modal("hide");
             });
         });
@@ -119,7 +119,7 @@
     </div>
 {% endmacro %}
 
-<form role="form" method="post" action="{{ url("shoop:basket") }}" class="add-to-basket">
+<form role="form" method="post" action="{{ url("shoop:cart") }}" class="add-to-cart">
     {% set return_path = return_url if return_url else request.path %}
     <input type="hidden" name="return" value="{{ return_path }}">
     {% if unorderability_reason %}

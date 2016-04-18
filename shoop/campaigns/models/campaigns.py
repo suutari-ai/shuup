@@ -120,13 +120,13 @@ class CatalogCampaign(Campaign):
         return matching
 
 
-class BasketCampaign(Campaign):
-    admin_url_suffix = "basket_campaigns"
+class CartCampaign(Campaign):
+    admin_url_suffix = "cart_campaigns"
 
-    basket_line_text = models.CharField(
-        max_length=120, verbose_name=_("basket line text"), help_text=_("This text will be shown in basket."))
+    cart_line_text = models.CharField(
+        max_length=120, verbose_name=_("cart line text"), help_text=_("This text will be shown in cart."))
 
-    conditions = models.ManyToManyField('BasketCondition', blank=True, related_name='campaign')
+    conditions = models.ManyToManyField('CartCondition', blank=True, related_name='campaign')
     coupon = models.OneToOneField('Coupon', null=True, blank=True, related_name='campaign')
 
     translations = TranslatedFields(
@@ -134,19 +134,19 @@ class BasketCampaign(Campaign):
     )
 
     def __str__(self):
-        return force_text(_("Basket Campaign: %(name)s" % dict(name=self.name)))
+        return force_text(_("Cart Campaign: %(name)s" % dict(name=self.name)))
 
     @classmethod
-    def get_matching(cls, basket, lines):
+    def get_matching(cls, cart, lines):
         matching = []
-        for campaign in cls.objects.filter(active=True, shop=basket.shop):
-            if campaign.rules_match(basket, lines):
+        for campaign in cls.objects.filter(active=True, shop=cart.shop):
+            if campaign.rules_match(cart, lines):
                 matching.append(campaign)
         return matching
 
-    def rules_match(self, basket, lines):
+    def rules_match(self, cart, lines):
         """
-        Check if basket rules match.
+        Check if cart rules match.
 
         They will not match if
         1) The campaign is not active
@@ -160,10 +160,10 @@ class BasketCampaign(Campaign):
         if self.coupon and not self.coupon.active:
             return False
 
-        matching_rules = [rule.matches(basket, lines) for rule in self.conditions.all()]
+        matching_rules = [rule.matches(cart, lines) for rule in self.conditions.all()]
 
         if self.coupon:
-            matching_rules.append((self.coupon.code in basket.codes))
+            matching_rules.append((self.coupon.code in cart.codes))
         return all(matching_rules)
 
 
@@ -229,7 +229,7 @@ class Coupon(models.Model):
 
     @property
     def attached(self):
-        return BasketCampaign.objects.filter(coupon=self).exists()
+        return CartCampaign.objects.filter(coupon=self).exists()
 
     def attach_to_campaign(self, campaign):
         if not self.attached:

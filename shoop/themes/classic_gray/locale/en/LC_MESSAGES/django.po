@@ -43,7 +43,7 @@ msgstr ""
 msgid "Product added to cart"
 msgstr ""
 
-msgid "There was an error adding the product to the basket"
+msgid "There was an error adding the product to the cart"
 msgstr ""
 
 msgid "Cart"
@@ -132,7 +132,7 @@ msgstr ""
 msgid "Qty"
 msgstr ""
 
-msgid "Remove product from basket"
+msgid "Remove product from cart"
 msgstr ""
 
 msgid "Have a coupon code? Enter it here"

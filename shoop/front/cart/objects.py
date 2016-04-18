@@ -20,15 +20,15 @@ from shoop.core.models import (
     OrderLineType, PaymentMethod, ShippingMethod, ShippingMode
 )
 from shoop.core.order_creator import OrderSource, SourceLine
-from shoop.front.basket.storage import BasketCompatibilityError, get_storage
+from shoop.front.cart.storage import CartCompatibilityError, get_storage
 from shoop.utils.numbers import parse_decimal_string
 from shoop.utils.objects import compare_partial_dicts
 
 
-class BasketLine(SourceLine):
+class CartLine(SourceLine):
     def __init__(self, source=None, **kwargs):
         self.__in_init = True
-        super(BasketLine, self).__init__(source, **kwargs)
+        super(CartLine, self).__init__(source, **kwargs)
         self.__in_init = False
 
     @property
@@ -67,9 +67,9 @@ class BasketLine(SourceLine):
             return
 
         if self.product and type != OrderLineType.PRODUCT:
-            raise ValueError("Can not set a line type for a basket line when it has a product set")
+            raise ValueError("Can not set a line type for a cart line when it has a product set")
         if type not in OrderLineType.as_dict():
-            raise ValueError("Invalid basket line type. Only values of OrderLineType are allowed.")
+            raise ValueError("Invalid cart line type. Only values of OrderLineType are allowed.")
         self.__dict__["type"] = type
 
     def set_quantity(self, quantity):
@@ -85,10 +85,10 @@ class BasketLine(SourceLine):
         return (self.type == OrderLineType.PRODUCT)
 
 
-class BaseBasket(OrderSource):
-    def __init__(self, request, basket_name="basket"):
-        super(BaseBasket, self).__init__(request.shop)
-        self.basket_name = basket_name
+class Cart(OrderSource):
+    def __init__(self, request, cart_name="cart"):
+        super(Cart, self).__init__(request.shop)
+        self.cart_name = cart_name
         self.request = request
         if request:
             self.ip_address = request.META.get("REMOTE_ADDR")
@@ -101,7 +101,7 @@ class BaseBasket(OrderSource):
 
     def _load(self):
         """
-        Get the currently persisted data for this basket.
+        Get the currently persisted data for this cart.
 
         This will only access the storage once per request in usual
         circumstances.
@@ -111,50 +111,50 @@ class BaseBasket(OrderSource):
         """
         if self._data is None:
             try:
-                self._data = self.storage.load(basket=self)
-            except BasketCompatibilityError as error:
-                msg = _("Basket loading failed: Incompatible basket (%s)")
+                self._data = self.storage.load(cart=self)
+            except CartCompatibilityError as error:
+                msg = _("Cart loading failed: Incompatible cart (%s)")
                 messages.error(self.request, msg % error)
-                self.storage.delete(basket=self)
-                self._data = self.storage.load(basket=self)
+                self.storage.delete(cart=self)
+                self._data = self.storage.load(cart=self)
             self.dirty = False
         return self._data
 
     def save(self):
         """
-        Persist any changes made into the basket to storage.
+        Persist any changes made into the cart to storage.
 
         One does not usually need to directly call this;
         :obj:`~shoop.front.middleware.ShoopFrontMiddleware` will usually
         take care of it.
         """
         self.clean_empty_lines()
-        self.storage.save(basket=self, data=self._data)
+        self.storage.save(cart=self, data=self._data)
         self.dirty = False
 
     def delete(self):
         """
-        Clear and delete the basket data.
+        Clear and delete the cart data.
         """
-        self.storage.delete(basket=self)
+        self.storage.delete(cart=self)
         self.uncache()
         self._data = None
         self.dirty = False
 
     def finalize(self):
         """
-        Mark the basket as "completed" (i.e. an order is created/a conversion made).
+        Mark the cart as "completed" (i.e. an order is created/a conversion made).
 
-        This will also clear the basket's data.
+        This will also clear the cart's data.
         """
-        self.storage.finalize(basket=self)
+        self.storage.finalize(cart=self)
         self.uncache()
         self._data = None
         self.dirty = False
 
     def clear_all(self):
         """
-        Clear all data for this basket.
+        Clear all data for this cart.
         """
         self._data = {}
         self.uncache()
@@ -196,7 +196,7 @@ class BaseBasket(OrderSource):
         return line
 
     def create_line(self, **kwargs):
-        return BasketLine(source=self, **kwargs)
+        return CartLine(source=self, **kwargs)
 
     @property
     def _codes(self):
@@ -208,26 +208,26 @@ class BaseBasket(OrderSource):
             self._load()["codes"] = value
 
     def add_code(self, code):
-        modified = super(BaseBasket, self).add_code(code)
+        modified = super(Cart, self).add_code(code)
         self.dirty = bool(self.dirty or modified)
         return modified
 
     def clear_codes(self):
-        modified = super(BaseBasket, self).clear_codes()
+        modified = super(Cart, self).clear_codes()
         self.dirty = bool(self.dirty or modified)
         return modified
 
     def remove_code(self, code):
-        modified = super(BaseBasket, self).remove_code(code)
+        modified = super(Cart, self).remove_code(code)
         self.dirty = bool(self.dirty or modified)
         return modified
 
     def get_lines(self):
-        return [BasketLine.from_dict(self, line) for line in self._data_lines]
+        return [CartLine.from_dict(self, line) for line in self._data_lines]
 
     def _initialize_product_line_data(self, product, supplier, shop, quantity=0):
         if product.variation_children.count():
-            raise ValueError("Attempting to add variation parent to basket")
+            raise ValueError("Attempting to add variation parent to cart")
 
         return {
             # TODO: FIXME: Make sure line_id's are unique (not random)
@@ -250,7 +250,7 @@ class BaseBasket(OrderSource):
         That is, figure out whether the given raw line data is similar enough to product_id
         and extra to coalesce quantity additions.
 
-        This is nice to override in a project-specific basket class.
+        This is nice to override in a project-specific cart class.
 
         :type current_line_data: dict
         :type product: int
@@ -271,8 +271,8 @@ class BaseBasket(OrderSource):
 
     def _find_product_line_data(self, product, supplier, shop, extra):
         """
-        Find the underlying basket data dict for a given product and line-specific extra data.
-        This uses _compare_line_for_addition internally, which is nice to override in a project-specific basket class.
+        Find the underlying cart data dict for a given product and line-specific extra data.
+        This uses _compare_line_for_addition internally, which is nice to override in a project-specific cart class.
 
         :param product: Product object
         :param extra: optional dict of extra data
@@ -318,7 +318,7 @@ class BaseBasket(OrderSource):
         return self.update_line(data, quantity=new_quantity, **extra)
 
     def update_line(self, data_line, **kwargs):
-        line = BasketLine.from_dict(self, data_line)
+        line = CartLine.from_dict(self, data_line)
         new_quantity = kwargs.pop("quantity", None)
         if new_quantity is not None:
             line.set_quantity(new_quantity)
@@ -373,22 +373,22 @@ class BaseBasket(OrderSource):
     orderable = property(_get_orderable)
 
     def get_validation_errors(self):
-        for error in super(BaseBasket, self).get_validation_errors():
+        for error in super(Cart, self).get_validation_errors():
             yield error
 
         shipping_methods = self.get_available_shipping_methods()
         payment_methods = self.get_available_payment_methods()
 
         advice = _(
-            "Try to remove some products from the basket "
+            "Try to remove some products from the cart "
             "and order them separately.")
 
         if self.has_shippable_lines() and not shipping_methods:
-            msg = _("Products in basket cannot be shipped together. %s")
+            msg = _("Products in cart cannot be shipped together. %s")
             yield ValidationError(msg % advice, code="no_common_shipping")
 
         if not payment_methods:
-            msg = _("Products in basket have no common payment method. %s")
+            msg = _("Products in cart have no common payment method. %s")
             yield ValidationError(msg % advice, code="no_common_payment")
 
     def get_product_ids_and_quantities(self):

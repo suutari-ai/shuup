@@ -17,7 +17,7 @@ from django.views.i18n import set_language
 from shoop.apps.provides import get_provide_objects
 from shoop.utils.i18n import javascript_catalog_all
 
-from .views.basket import BasketView
+from .views.cart import CartView
 from .views.category import CategoryView
 from .views.checkout import get_checkout_view
 from .views.index import IndexView
@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'^i18n.js$', javascript_catalog_all, name='js-catalog'),
     url(r'^checkout/$', checkout_view, name='checkout'),
     url(r'^checkout/(?P<phase>.+)/$', checkout_view, name='checkout'),
-    url(r'^basket/$', csrf_exempt(BasketView.as_view()), name='basket'),
+    url(r'^cart/$', csrf_exempt(CartView.as_view()), name='cart'),
     url(r'^order/payment/(?P<pk>.+?)/(?P<key>.+?)/$',
         csrf_exempt(ProcessPaymentView.as_view()),
         kwargs={"mode": "payment"},

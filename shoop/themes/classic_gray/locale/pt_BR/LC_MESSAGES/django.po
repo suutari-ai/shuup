@@ -64,7 +64,7 @@ msgstr "Contagem"
 msgid "Product added to cart"
 msgstr "Produto adicionado ao carrinho"
 
-msgid "There was an error adding the product to the basket"
+msgid "There was an error adding the product to the cart"
 msgstr "Houve um erro ao adicionar o produto no carrinho"
 
 msgid "Cart"
@@ -147,7 +147,7 @@ msgstr "Finalizar a compra"
 msgid "Qty"
 msgstr "Qtd."
 
-msgid "Remove product from basket"
+msgid "Remove product from cart"
 msgstr "Remover produto do carrinho"
 
 msgid "Checkout"

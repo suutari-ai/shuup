@@ -10,7 +10,7 @@ import pytest
 
 from django.utils.translation import activate
 
-from shoop.campaigns.admin_module.views import CatalogCampaignEditView, BasketCampaignEditView
+from shoop.campaigns.admin_module.views import CatalogCampaignEditView, CartCampaignEditView
 from shoop.campaigns.models.campaigns import CatalogCampaign, Coupon
 from shoop.testing.factories import get_default_shop, get_default_supplier, create_product
 from shoop.testing.utils import apply_request_middleware
@@ -87,10 +87,10 @@ def test_admin_catalog_campaign_edit_view(rf, admin_user):
 
 
 @pytest.mark.django_db
-def test_admin_basket_campaign_edit_view(rf, admin_user):
+def test_admin_cart_campaign_edit_view(rf, admin_user):
     activate("en")
     shop = get_default_shop()
-    view = BasketCampaignEditView(request=apply_request_middleware(rf.get("/"), user=admin_user))
+    view = CartCampaignEditView(request=apply_request_middleware(rf.get("/"), user=admin_user))
     form_class = view.get_form_class()
     form_kwargs = view.get_form_kwargs()
     form = form_class(**form_kwargs)

@@ -16,7 +16,7 @@ from shoop.testing.factories import (
     create_product, get_default_shop, get_default_supplier,
     get_initial_order_status
 )
-from shoop_tests.utils.basketish_order_source import BasketishOrderSource
+from shoop_tests.utils.cartish_order_source import CartishOrderSource
 
 
 @pytest.mark.django_db
@@ -38,7 +38,7 @@ def test_package():
 
     # Check that OrderCreator can deal with packages
 
-    source = BasketishOrderSource(get_default_shop())
+    source = CartishOrderSource(get_default_shop())
     source.add_line(
         type=OrderLineType.PRODUCT,
         product=package_product,

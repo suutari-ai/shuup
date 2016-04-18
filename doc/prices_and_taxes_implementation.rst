@@ -28,7 +28,7 @@ Types Used for Prices and Taxes
 `~shoop.core.pricing.Priceful`
 
   An interface for accessing the price information of a product, order
-  line, basket line, or whatever.  See :ref:`accessing-prices`.
+  line, cart line, or whatever.  See :ref:`accessing-prices`.
 
 `~shoop.core.pricing.PriceInfo`
 
@@ -52,7 +52,7 @@ Types Used for Prices and Taxes
 `~shoop.core.taxing.LineTax`
 
   An interface for describing a calculated tax of a line in order or
-  basket.  Has a reference to the line and to the applied tax and the
+  cart.  Has a reference to the line and to the applied tax and the
   calculated amount of tax. One line could have several taxes applied,
   each is presented with a separate `LineTax`.
 
@@ -60,7 +60,7 @@ Types Used for Prices and Taxes
 
   A container for a calculated tax of a
   `~shoop.core.order_creator.SourceLine` (or
-  `~shoop.front.basket.objects.BasketLine`).  Implements the `LineTax`
+  `~shoop.front.cart.objects.CartLine`).  Implements the `LineTax`
   interface.
 
 `~shoop.core.models.OrderLineTax`
@@ -141,6 +141,6 @@ Accessing Prices of Product or Line
 There is a `~shoop.core.pricing.Priceful` interface for accessing
 prices.  It is implemented by `~shoop.core.models.OrderLine` and
 `~shoop.core.order_creator.SourceLine`,
-`~shoop.front.basket.objects.BasketLine`, and
+`~shoop.front.cart.objects.CartLine`, and
 `~shoop.core.pricing.PriceInfo` which is returned e.g. by
 `~shoop.core.models.Product.get_price_info` method.

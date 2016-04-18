@@ -25,7 +25,7 @@ class CampaignAppConfig(AppConfig):
             "shoop.campaigns.modules:CatalogCampaignModule"
         ],
         "order_source_modifier_module": [
-            "shoop.campaigns.modules:BasketCampaignModule"
+            "shoop.campaigns.modules:CartCampaignModule"
         ],
         "admin_module": [
             "shoop.campaigns.admin_module:CampaignAdminModule",
@@ -39,12 +39,12 @@ class CampaignAppConfig(AppConfig):
             "shoop.campaigns.models.context_conditions:ContactGroupCondition",
             "shoop.campaigns.models.context_conditions:ContactCondition",
         ],
-        "campaign_basket_condition": [
-            "shoop.campaigns.models.basket_conditions:BasketTotalProductAmountCondition",
-            "shoop.campaigns.models.basket_conditions:BasketTotalAmountCondition",
-            "shoop.campaigns.models.basket_conditions:ProductsInBasketCondition",
-            "shoop.campaigns.models.basket_conditions:ContactGroupBasketCondition",
-            "shoop.campaigns.models.basket_conditions:ContactBasketCondition",
+        "campaign_cart_condition": [
+            "shoop.campaigns.models.cart_conditions:CartTotalProductAmountCondition",
+            "shoop.campaigns.models.cart_conditions:CartTotalAmountCondition",
+            "shoop.campaigns.models.cart_conditions:ProductsInCartCondition",
+            "shoop.campaigns.models.cart_conditions:ContactGroupCartCondition",
+            "shoop.campaigns.models.cart_conditions:ContactCartCondition",
         ]
     }
 

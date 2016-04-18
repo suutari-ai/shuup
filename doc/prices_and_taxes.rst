@@ -48,7 +48,7 @@ implement a new one.
 The responsibilities of a tax module are to calculate taxes for an order
 or for separate items (e.g. product, shipping or some other taxable
 item).  The most important function of a tax module is to take an order
-source (such as a basket), which has lines (with pre-tax prices or
+source (such as a cart), which has lines (with pre-tax prices or
 prices with tax included) and fill in the taxes for each line in the
 source.
 
@@ -63,9 +63,9 @@ setting is true, then on-demand calculation will be used.  Otherwise
 on-checkout calculation will be used.
 
 With on-checkout tax calculation mode Shoop calculates taxes for a
-basket in the confirmation phase of the checkout process or in the
+cart in the confirmation phase of the checkout process or in the
 confirmation phase of the order creating UI in the Shop Admin.  This
-means that taxes are not known for items in the basket, product listings
+means that taxes are not known for items in the cart, product listings
 or on the detail page of a product.  The reason for not calculating
 taxes before the confirm phase is that the active tax module might query
 tax information from an external source which might be prohibitively

@@ -12,6 +12,7 @@ Unreleased
 Core
 ~~~~
 
+- Rename basket to cart
 - Add new Service API and implement shipping and payments with it
 - Remove BaseMethodModule based API (``shoop.core.methods``)
 - Add management command to generate bought with relations
@@ -39,7 +40,7 @@ Core
 - Simplify ``PricingContext`` and require shop and customer for it
 - Add ``get_price_info`` etc. functions to ``shoop.core.pricing``
 - Add ``get_suppliable_products`` to ``shoop.core.models.Supplier``
-- Add "codes" API to OrderSource and BaseBasket
+- Add "codes" API to OrderSource and Cart
 - Reword doc/provides.rst
 
 Localization
@@ -49,6 +50,7 @@ Localization
 Admin
 ~~~~~
 
+- Rename basket to cart
 - Add ``admin_contact_group_form_part`` provider for ``ContactGroup`` admin
 - Redo shipping and payment method management
 - Add service provider management
@@ -65,13 +67,14 @@ Admin
 Front
 ~~~~~
 
+- Rename basket to cart
 - Remove ``get_method_validation_errors`` signal
 - Fix bug at ``get_visible_products`` filter when orderable_only is False
 - Set template price display options from the customer
-- Fix bug: BasketStorage.finalize() never called delete() correctly
-- Check product quantity already in basket while adding
+- Fix bug: CartStorage.finalize() never called delete() correctly
+- Check product quantity already in cart while adding
 - Move ``order_creator_finished`` signal under core
-- Process given coupon codes in basket
+- Process given coupon codes in cart
 - Process discounts from new campaign engine
 - Add ``get_visible_products`` template helper
 
@@ -90,8 +93,8 @@ Classic Gray Theme
 - Remove ``ProductCrossSellType.COMPUTED`` from cross-sells plugin
 - Update cross-sells plugin to use ``ProductCrossSellType.BOUGHT_WITH``
 - Render prices with the new price rendering template tags
-- Show error messages while adding products to basket
-- Add Coupon use possibility to basket page
+- Show error messages while adding products to cart
+- Add Coupon use possibility to cart page
 - Add option to only show orderable products to highlights plugin
 - Add Xtheme plugin to display social media links on shop front
 
@@ -126,6 +129,7 @@ Customer Group Pricing
 General/miscellaneous
 ~~~~~~~~~~~~~~~~~~~~~
 
+- Rename basket to cart
 - Add campaigns module
 
 Addons
@@ -205,7 +209,7 @@ Xtheme
 Classic Gray Theme
 ~~~~~~~~~~~~~~~~~~
 
-- Basket: Hide line base price when it's not positive
+- Cart: Hide line base price when it's not positive
 - Show product media at order history and product detail pages
 - Add language changer to navigation
 - Add possibility for other future brand colors
@@ -393,9 +397,9 @@ Released on 2015-07-03 12:30 +0300.
 
 - Add a basic REST API for reading/writing products and reading orders
 
-- Use the database to store shopping baskets by default
+- Use the database to store shopping carts by default
 
-- Implement pluggable shopping basket storage backends
+- Implement pluggable shopping cart storage backends
 
 - Implement basic contact group admin
 

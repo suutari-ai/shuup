@@ -65,7 +65,7 @@ msgstr ""
 msgid "Product added to cart"
 msgstr "已添加该产品至购物车"
 
-msgid "There was an error adding the product to the basket"
+msgid "There was an error adding the product to the cart"
 msgstr "添加产品至购物篮出错"
 
 msgid "Cart"
@@ -148,7 +148,7 @@ msgstr "去结账"
 msgid "Qty"
 msgstr "数量"
 
-msgid "Remove product from basket"
+msgid "Remove product from cart"
 msgstr "从购物篮中删除该产品"
 
 msgid "Checkout"

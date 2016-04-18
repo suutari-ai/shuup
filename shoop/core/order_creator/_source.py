@@ -90,9 +90,9 @@ class OrderSource(object):
     """
     A "provisional order" object.
 
-    Contains data that's not strictly about a basket's contents,
+    Contains data that's not strictly about a cart's contents,
     but is useful for things that need to calculate something based on the
-    basket's contents and extra data, such as shipping/billing addresses.
+    cart's contents and extra data, such as shipping/billing addresses.
 
     The core API of `OrderCreator` reads an `OrderSource`.
 

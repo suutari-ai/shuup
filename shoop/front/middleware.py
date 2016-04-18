@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from shoop.core.middleware import ExceptionMiddleware
 from shoop.core.models import Contact, get_person_contact, Shop
-from shoop.front.basket import get_basket
+from shoop.front.cart import get_cart
 
 __all__ = ["ProblemMiddleware", "ShoopFrontMiddleware"]
 
@@ -33,7 +33,7 @@ class ShoopFrontMiddleware(object):
 
       .. TODO:: Fallback to shop timezone?
 
-    * Make sure that basket is saved before response is returned to the
+    * Make sure that cart is saved before response is returned to the
       browser.
 
     Attributes set for requests:
@@ -55,15 +55,15 @@ class ShoopFrontMiddleware(object):
           ``request.person`` is a
           :class:`~shoop.core.models.PersonContact`.
 
-      ``request.basket`` : :class:`shoop.front.basket.objects.BaseBasket`
-          Shopping basket in use.
+      ``request.cart`` : :class:`shoop.front.cart.objects.Cart`
+          Shopping cart in use.
     """
 
     def process_request(self, request):
         self._set_shop(request)
         self._set_person(request)
         self._set_customer(request)
-        self._set_basket(request)
+        self._set_cart(request)
         self._set_timezone(request)
         self._set_price_display_options(request)
 
@@ -79,8 +79,8 @@ class ShoopFrontMiddleware(object):
     def _set_customer(self, request):
         request.customer = request.person
 
-    def _set_basket(self, request):
-        request.basket = get_basket(request)
+    def _set_cart(self, request):
+        request.cart = get_cart(request)
 
     def _set_timezone(self, request):
         if request.person.timezone:
@@ -93,8 +93,8 @@ class ShoopFrontMiddleware(object):
         customer.get_price_display_options().set_for_request(request)
 
     def process_response(self, request, response):
-        if hasattr(request, "basket") and request.basket.dirty:
-            request.basket.save()
+        if hasattr(request, "cart") and request.cart.dirty:
+            request.cart.save()
 
         return response
 

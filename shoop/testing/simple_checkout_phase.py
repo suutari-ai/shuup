@@ -34,4 +34,4 @@ class TestCheckoutPhase(CheckoutPhaseViewMixin, FormView):
 
     def process(self):
         data = self.storage.get('payment_with_checkout_phase', {})
-        self.request.basket.payment_data["promised_to_pay"] = data.get('will_pay')
+        self.request.cart.payment_data["promised_to_pay"] = data.get('will_pay')

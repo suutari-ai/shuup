@@ -8,64 +8,64 @@ import pytest
 
 from django.utils.encoding import force_text
 
-from shoop.campaigns.models.basket_conditions import (
-    BasketTotalAmountCondition, BasketTotalProductAmountCondition,
-    ProductsInBasketCondition
+from shoop.campaigns.models.cart_conditions import (
+    CartTotalAmountCondition, CartTotalProductAmountCondition,
+    ProductsInCartCondition
 )
-from shoop.front.basket import get_basket
+from shoop.front.cart import get_cart
 from shoop.testing.factories import get_default_supplier, create_product
 from shoop_tests.campaigns import initialize_test
 
 
 @pytest.mark.django_db
-def test_product_in_basket_condition(rf):
+def test_product_in_cart_condition(rf):
     request, shop, group = initialize_test(rf, False)
 
-    basket = get_basket(request)
+    cart = get_cart(request)
     supplier = get_default_supplier()
 
     product = create_product("Just-A-Product-Too", shop, default_price="200")
-    basket.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
+    cart.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
 
-    condition = ProductsInBasketCondition.objects.create()
+    condition = ProductsInCartCondition.objects.create()
     condition.values = [product]
     condition.save()
 
     assert condition.values.first() == product
 
-    assert condition.matches(basket, [])
+    assert condition.matches(cart, [])
 
 
 @pytest.mark.django_db
-def test_basket_total_amount_condition(rf):
+def test_cart_total_amount_condition(rf):
     request, shop, group = initialize_test(rf, False)
 
-    basket = get_basket(request)
+    cart = get_cart(request)
     supplier = get_default_supplier()
 
     product = create_product("Just-A-Product-Too", shop, default_price="200")
-    basket.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
+    cart.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
 
-    condition = BasketTotalAmountCondition.objects.create()
+    condition = CartTotalAmountCondition.objects.create()
     condition.value = 1
     condition.save()
     assert condition.value == 1
-    assert condition.matches(basket, [])
+    assert condition.matches(cart, [])
 
 
 @pytest.mark.django_db
-def test_basket_total_value_condition(rf):
+def test_cart_total_value_condition(rf):
     request, shop, group = initialize_test(rf, False)
 
-    basket = get_basket(request)
+    cart = get_cart(request)
     supplier = get_default_supplier()
 
     product = create_product("Just-A-Product-Too", shop, default_price="200")
-    basket.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
+    cart.add_product(supplier=supplier, shop=shop, product=product, quantity=1)
 
-    condition = BasketTotalProductAmountCondition.objects.create()
+    condition = CartTotalProductAmountCondition.objects.create()
     condition.value = 1
     condition.save()
     assert condition.value == 1
-    assert condition.matches(basket, [])
-    assert "basket has at least the product count entered here" in force_text(condition.description)
+    assert condition.matches(cart, [])
+    assert "cart has at least the product count entered here" in force_text(condition.description)

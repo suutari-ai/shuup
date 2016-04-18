@@ -19,11 +19,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "Generated-By: Babel 2.1.1\n"
 
-msgid "Abandoned Basket Value"
+msgid "Abandoned Cart Value"
 msgstr ""
 
 #, python-brace-format
-msgid "Based on {b} baskets over the last {d} days"
+msgid "Based on {b} carts over the last {d} days"
 msgstr ""
 
 #, python-format
@@ -42,18 +42,18 @@ msgid "This variation is not available."
 msgstr ""
 
 #, python-format
-msgid "Basket loading failed: Incompatible basket (%s)"
+msgid "Cart loading failed: Incompatible cart (%s)"
 msgstr ""
 
-msgid "Try to remove some products from the basket and order them separately."
-msgstr ""
-
-#, python-format
-msgid "Products in basket cannot be shipped together. %s"
+msgid "Try to remove some products from the cart and order them separately."
 msgstr ""
 
 #, python-format
-msgid "Products in basket have no common payment method. %s"
+msgid "Products in cart cannot be shipped together. %s"
+msgstr ""
+
+#, python-format
+msgid "Products in cart have no common payment method. %s"
 msgstr ""
 
 msgid "Tax number required for companies"
@@ -77,7 +77,7 @@ msgstr ""
 msgid "Confirmation"
 msgstr ""
 
-msgid "Empty Basket"
+msgid "Empty Cart"
 msgstr ""
 
 #, python-brace-format

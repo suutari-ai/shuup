@@ -19,7 +19,7 @@ from shoop.core.order_creator import OrderSource
 from shoop.core.pricing import (
     get_pricing_module, PriceInfo, PricingModule, TaxlessPrice
 )
-from shoop.front.basket.objects import BaseBasket
+from shoop.front.cart.objects import Cart
 
 PRICING_MODULE_SPEC = __name__ + ':DummyPricingModule'
 
@@ -160,7 +160,7 @@ def _get_template_engine_and_context():
         'prod': Product(sku='6.0745'),
         # TODO: Test also with variant products
         'sline': _get_source_line(request),
-        'bline': _get_basket_line(request),
+        'bline': _get_cart_line(request),
         'oline': _get_order_line(request),
     }
 
@@ -171,9 +171,9 @@ def _get_source_line(request):
     return _create_line(source, Product(sku='6.0745'))
 
 
-def _get_basket_line(request):
-    basket = BaseBasket(request)
-    return _create_line(basket, Product(sku='6.0745'))
+def _get_cart_line(request):
+    cart = Cart(request)
+    return _create_line(cart, Product(sku='6.0745'))
 
 
 def _create_line(source, product):

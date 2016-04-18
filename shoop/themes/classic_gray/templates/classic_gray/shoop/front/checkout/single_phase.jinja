@@ -4,12 +4,12 @@
 {% block content_title %}{% trans %}Shopping cart{% endtrans %}{% endblock %}
 
 {% block content %}
-    {% if basket.is_empty %}
+    {% if cart.is_empty %}
         <div class="alert alert-danger">
             {% trans %}Your shopping cart is empty.{% endtrans %}
         </div>
     {% else %}
-        {% include "shoop/front/basket/partials/table.jinja" %}
+        {% include "shoop/front/cart/partials/table.jinja" %}
 
         {% if errors %}
             <div class="alert alert-danger">

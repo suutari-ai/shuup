@@ -77,7 +77,7 @@ msgstr ""
 msgid "Product added to cart"
 msgstr "Tuote lisätty koriin"
 
-msgid "There was an error adding the product to the basket"
+msgid "There was an error adding the product to the cart"
 msgstr "Tuotteen lisääminen ostoskoriin epäonnistui"
 
 msgid "Cart"
@@ -162,7 +162,7 @@ msgstr "Jatka kassalle"
 msgid "Qty"
 msgstr "Kpl"
 
-msgid "Remove product from basket"
+msgid "Remove product from cart"
 msgstr "Poista tuote ostoskorista"
 
 msgid "Checkout"

@@ -13,10 +13,10 @@ from shoop.admin.toolbar import NewActionButton, Toolbar
 from shoop.admin.utils.picotable import ChoicesFilter, Column, TextFilter
 from shoop.admin.utils.views import CreateOrUpdateView, PicotableListView
 from shoop.campaigns.forms import (
-    BasketCampaignForm, CatalogCampaignForm, CouponForm
+    CartCampaignForm, CatalogCampaignForm, CouponForm
 )
 from shoop.campaigns.models.campaigns import (
-    BasketCampaign, CatalogCampaign, Coupon
+    CartCampaign, CatalogCampaign, Coupon
 )
 from shoop.utils.i18n import format_percent, get_current_babel_locale
 
@@ -97,8 +97,8 @@ class CatalogCampaignListView(CampaignListView):
         return context
 
 
-class BasketCampaignListView(CampaignListView):
-    model = BasketCampaign
+class CartCampaignListView(CampaignListView):
+    model = CartCampaign
 
     def __init__(self, **kwargs):
         new_columns = [
@@ -106,12 +106,12 @@ class BasketCampaignListView(CampaignListView):
             Column("coupon", _("Discount Code")),
         ]
         self.add_columns("name", new_columns)
-        super(BasketCampaignListView, self).__init__(**kwargs)
+        super(CartCampaignListView, self).__init__(**kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(CampaignListView, self).get_context_data(**kwargs)
         context["toolbar"] = Toolbar([
-            NewActionButton("shoop_admin:basket_campaigns.new", text=_("Create new Basket Campaign")),
+            NewActionButton("shoop_admin:cart_campaigns.new", text=_("Create new Cart Campaign")),
         ])
         return context
 
@@ -135,11 +135,11 @@ class CatalogCampaignEditView(_Breadcrumbed, CampaignEditView):
     parent_url = "shoop_admin:catalog_campaigns.list"
 
 
-class BasketCampaignEditView(_Breadcrumbed, CampaignEditView):
-    model = BasketCampaign
-    form_class = BasketCampaignForm
-    parent_name = _("Basket Campaign")
-    parent_url = "shoop_admin:basket_campaigns.list"
+class CartCampaignEditView(_Breadcrumbed, CampaignEditView):
+    model = CartCampaign
+    form_class = CartCampaignForm
+    parent_name = _("Cart Campaign")
+    parent_url = "shoop_admin:cart_campaigns.list"
 
 
 class CouponListView(PicotableListView):

@@ -2,11 +2,11 @@
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
         <i class="menu-icon fa fa-shopping-cart"></i>
         <span class="hidden-xs">{% trans %}Cart{% endtrans %}</span>
-        <span>({{ request.basket.product_count }})</span>
+        <span>({{ request.cart.product_count }})</span>
         <i class="dropdown-icon fa fa-angle-down"></i>
     </a>
     <div class="dropdown-menu cart">
-        {% if request.basket.get_lines() %}
+        {% if request.cart.get_lines() %}
             <table class="table">
                 <colgroup>
                     <col style="min-width: 180px;">
@@ -27,13 +27,13 @@
                         </th>
                         {% if show_prices() %}
                         <th class="text-right">
-                            {{ request.basket|total_price }}
+                            {{ request.cart|total_price }}
                         </th>
                         {% endif %}
                     </tr>
                 </tfoot>
                 <tbody>
-                    {% for line in request.basket.get_lines() %}
+                    {% for line in request.cart.get_lines() %}
                         <tr>
                             <td>
                                 {% set line_url = shoop.urls.get_url(line.product) %}
@@ -51,7 +51,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <a href="{{ url("shoop:basket") }}" class="btn btn-block btn-primary btn-view-cart">
+            <a href="{{ url("shoop:cart") }}" class="btn btn-block btn-primary btn-view-cart">
                 {% trans %}View cart{% endtrans %} <i class="fa fa-angle-double-right"></i>
             </a>
         {% else %}

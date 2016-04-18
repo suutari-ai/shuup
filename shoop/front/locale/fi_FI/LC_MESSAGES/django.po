@@ -31,11 +31,11 @@ msgstr ""
 "Generated-By: Babel 2.1.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Abandoned Basket Value"
+msgid "Abandoned Cart Value"
 msgstr "Hylättyjen ostoskorien arvo"
 
 #, python-brace-format
-msgid "Based on {b} baskets over the last {d} days"
+msgid "Based on {b} carts over the last {d} days"
 msgstr "Perustuen {b} koriin viimeisen {d} päivän aikana"
 
 #, python-format
@@ -54,18 +54,18 @@ msgid "This variation is not available."
 msgstr "Variaatio ei ole saatavilla."
 
 #, python-format
-msgid "Basket loading failed: Incompatible basket (%s)"
+msgid "Cart loading failed: Incompatible cart (%s)"
 msgstr "Korin lataaminen epäonnistui: epäyhteensopiva kori (%s)"
 
-msgid "Try to remove some products from the basket and order them separately."
+msgid "Try to remove some products from the cart and order them separately."
 msgstr "Voit koittaa poistaa tuotteita ostoskorista ja tilata ne erikseen."
 
 #, python-format
-msgid "Products in basket cannot be shipped together. %s"
+msgid "Products in cart cannot be shipped together. %s"
 msgstr "Korin tuotteita ei voi toimittaa yhdessä. %s"
 
 #, python-format
-msgid "Products in basket have no common payment method. %s"
+msgid "Products in cart have no common payment method. %s"
 msgstr "Korin tuotteilla ei ole yhteistä maksutapaa. %s"
 
 #, python-format
@@ -93,7 +93,7 @@ msgstr ""
 msgid "Confirmation"
 msgstr "Vahvistus"
 
-msgid "Empty Basket"
+msgid "Empty Cart"
 msgstr "Tyhjä ostoskori"
 
 #, fuzzy

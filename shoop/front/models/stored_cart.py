@@ -23,8 +23,8 @@ def generate_key():
     return get_random_string(32)
 
 
-class StoredBasket(MoneyPropped, models.Model):
-    # A combination of the PK and key is used to retrieve a basket for session situations.
+class StoredCart(MoneyPropped, models.Model):
+    # A combination of the PK and key is used to retrieve a cart for session situations.
     key = models.CharField(max_length=32, default=generate_key, verbose_name=_('key'))
 
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE, verbose_name=_('shop'))
@@ -32,19 +32,19 @@ class StoredBasket(MoneyPropped, models.Model):
     customer = models.ForeignKey(
         Contact, blank=True, null=True,
         on_delete=models.CASCADE,
-        related_name="customer_baskets",
+        related_name="customer_carts",
         verbose_name=_('customer')
     )
     orderer = models.ForeignKey(
         PersonContact, blank=True, null=True,
         on_delete=models.CASCADE,
-        related_name="orderer_baskets",
+        related_name="orderer_carts",
         verbose_name=_('orderer')
     )
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL, blank=True, null=True,
         on_delete=models.CASCADE,
-        related_name="baskets_created",
+        related_name="carts_created",
         verbose_name=_('creator')
     )
 

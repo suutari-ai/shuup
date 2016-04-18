@@ -60,7 +60,7 @@ rules for naming their settings.
     suffix `_SPEC` or `_SPECS` (if the setting is a list or mapping of
     those), e.g. `SHOOP_PRICING_MODULE_SPEC`.
  4. Setting names do NOT have to be prefixed with the application name.
-    For example, `SHOOP_BASKET_VIEW_SPEC` which is not prefixed with
+    For example, `SHOOP_CART_VIEW_SPEC` which is not prefixed with
     `SHOOP_FRONT` even though it is from `shoop.front` application.
  5. Setting names should be unique; if two applications define a setting
     with a same name, they cannot be enabled in the same installation.
