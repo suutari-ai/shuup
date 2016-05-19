@@ -5,11 +5,13 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 import abc
+from collections import defaultdict
 
 import six
 from django.conf import settings
 
 from shoop.apps.provides import load_module
+from shoop.core.pricing import TaxlessPrice
 
 from ._context import TaxingContext
 
@@ -87,10 +89,40 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
         :param lines: List of lines to add taxes for
         """
         context = self.get_context_from_order_source(source)
-        for line in lines:
+        lines_without_tax_class = []
+        taxed_lines = []
+        for (idx, line) in enumerate(lines):
             assert line.source == source
             if not line.parent_line_id:
-                line.taxes = self._get_line_taxes(context, line)
+                if line.tax_class is None:
+                    lines_without_tax_class.append(idx)
+                else:
+                    line.taxes = self._get_line_taxes(context, line)
+                    taxed_lines.append(line)
+
+        tax_distribution = _generate_tax_distribution(taxed_lines)
+
+        if tax_distribution:
+            from ._taxable import TaxableItem
+
+            class Item(TaxableItem):
+                tax_class = None
+                def __init__(self, tax_class):
+                    self.tax_class = tax_class
+
+            import pprint
+            pprint.pprint(tax_distribution)
+            print(sum(dict(tax_distribution).values()))
+
+
+            for idx in lines_without_tax_class:
+                line = lines[idx]
+                taxes = []
+                for (tax_class, factor) in tax_distribution:
+                    taxed_price = self.get_taxed_price_for(context, Item(tax_class), line.price * factor)
+                    taxes.extend(taxed_price.taxes)
+                print(taxes)
+                line.taxes = taxes
 
     def _get_line_taxes(self, context, line):
         """
@@ -122,3 +154,33 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
         :rtype: shoop.core.taxing.TaxedPrice
         """
         pass
+
+
+def _generate_tax_distribution(lines):
+    if not lines:
+        return []
+
+    taxless_zero = TaxlessPrice(lines[0].price.new(0).amount)
+
+    total_by_tax_class = defaultdict(lambda: taxless_zero)
+    total = taxless_zero
+
+    for (price, tax_class) in _get_taxless_prices_and_tax_classes(lines):
+        total_by_tax_class[tax_class] += price
+        total += price
+
+    return [
+        (tax_class, tax_class_total / total)
+        for (tax_class, tax_class_total) in total_by_tax_class.items()
+    ]
+
+
+def _get_taxless_prices_and_tax_classes(lines):
+    for line in lines:
+        if line.price.includes_tax:
+            zero = line.price.new(0).amount
+            tax_amount = sum((x.amount for x in line.taxes), zero)
+            taxless_price = TaxlessPrice(line.price.amount - tax_amount)
+        else:
+            taxless_price = line.price
+        yield (taxless_price, line.tax_class)
