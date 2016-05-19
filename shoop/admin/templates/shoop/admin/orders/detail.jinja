@@ -11,8 +11,9 @@
                     {{ info_row(_("Reference"), order.reference_number) }}
                     {{ info_row(_("Label"), order.label) }}
                     {{ info_row(_("Customer"), order.customer, url="auto") }}
-                    {{ info_row(_("Ordered by"), order.orderer, url="auto") }}
-                    {{ info_row(_("Creator"), order.creator, url="auto") }}
+                    {% if order.orderer != order.customer %}
+                        {{ info_row(_("Ordered by"), order.orderer, url="auto") }}
+                    {% endif %}
                     {{ info_row(_("Phone"), order.phone, "tel:" ~ order.phone) }}
                     {{ info_row(_("Email"), order.email, "mailto:" ~ order.email) }}
                     {{ info_row(_("Tax number"), order.tax_number) }}
@@ -28,6 +29,10 @@
                     {% if tracking_codes %}
                         {{ info_row(_("Tracking codes"), render_objects(tracking_codes)) }}
                     {% endif %}
+                </dl>
+                <hr>
+                <dl class="dl-horizontal">
+                    {{ info_row(_("Customer comment"), order.customer_comment|linebreaks) }}
                 </dl>
             {% endcall %}
 
@@ -59,6 +64,13 @@
                     {% include order_section.template with context %}
                 {% endcall %}
             {% endfor %}
+
+            {% call content_block(_("Originator Details"), "fa-hand-o-right") %}
+                <dl class="dl-horizontal">
+                    {{ info_row(_("Created by"), order.creator, url="auto") }}
+                    {{ info_row(_("Created from IP address"), order.ip_address) }}
+                </dl>
+            {% endcall %}
         </div>
     {% endcall %}
 {% endblock %}
