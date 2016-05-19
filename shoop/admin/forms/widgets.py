@@ -57,7 +57,7 @@ class BasePopupChoiceWidget(Widget):
         if not url:
             url = "#"
 
-        return mark_safe("<a class=\"browse-text\" href=\"%(url)s\" target=\"_blank\">%(text)s</a>&nbsp;" % {
+        return mark_safe("<a class=\"browse-text\" href=\"%(url)s\">%(text)s</a>&nbsp;" % {
             "text": escape(text),
             "url": escape(url),
         })
