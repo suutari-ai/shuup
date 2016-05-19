@@ -1,0 +1,30 @@
+Let's assume that the lines have pre-tax prices $40 and $60 with tax
+classes A and B and a discount line with taxful price -$10.
+And let percentages of tax classes be A=10% and B=20%.
+
+Solution P
+----------
+We can divide the -$10 to -$4 and -$6 taxful prices, so that the pretax
+division of the -$10 would be -$3.636 for A and -$5 for B.  Then the
+taxful price ratio would be 4:6 but pre-tax prices wouldn't be 4:6.
+
+Solution Q
+----------
+
+Other solution is to find the pre-tax prices x and y that will yield
+x*(1+A) + y*(1+B) = -$10 and x:y = 4:6.
+
+x = 4/6*y
+
+4/6*y*(1+A) + y*(1+B) = -$10
+y*(4/6*(1+A) + (1+B)) = -$10
+y = -$10 / (4/6*(1+A) + (1+B)) = -$5.172
+x = -$3.448
+
+and taxful prices would then be -$3.793 and -$6.206 (total -$10).
+
+
+Which
+-----
+
+Most probably Q is correct, but current implementation is P. Doh!
