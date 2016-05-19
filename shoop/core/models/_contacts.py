@@ -120,7 +120,12 @@ class Contact(PolymorphicShoopModel):
     merchant_notes = models.TextField(blank=True, verbose_name=_('merchant notes'))
 
     def __str__(self):
-        return self.full_name
+        if self.email:
+            return _("{full_name} <{email}>").format(
+                full_name=self.full_name, email=self.email).strip()
+        elif self.full_name:
+            return self.full_name
+        return super(Contact, self).__str__()
 
     class Meta:
         verbose_name = _('contact')
