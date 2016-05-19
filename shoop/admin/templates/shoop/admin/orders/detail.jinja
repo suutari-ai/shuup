@@ -10,9 +10,9 @@
                     {{ info_row(_("Order Date"), order.order_date|datetime) }}
                     {{ info_row(_("Reference"), order.reference_number) }}
                     {{ info_row(_("Label"), order.label) }}
-                    {{ info_row(_("Customer"), order.customer, "#") }}
-                    {{ info_row(_("Ordered by"), order.orderer, "#") }}
-                    {{ info_row(_("Creator"), order.creator, "#") }}
+                    {{ info_row(_("Customer"), order.customer, url="auto") }}
+                    {{ info_row(_("Ordered by"), order.orderer, url="auto") }}
+                    {{ info_row(_("Creator"), order.creator, url="auto") }}
                     {{ info_row(_("Phone"), order.phone, "tel:" ~ order.phone) }}
                     {{ info_row(_("Email"), order.email, "mailto:" ~ order.email) }}
                     {{ info_row(_("Tax number"), order.tax_number) }}
