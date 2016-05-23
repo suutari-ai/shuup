@@ -6,12 +6,12 @@
 # LICENSE file in the root directory of this source tree.
 import abc
 from collections import defaultdict
+from itertools import chain
 
 import six
 from django.conf import settings
 
 from shoop.apps.provides import load_module
-from shoop.core.pricing import TaxlessPrice
 
 from ._context import TaxingContext
 
@@ -103,26 +103,19 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
         tax_distribution = _generate_tax_distribution(taxed_lines)
 
         if tax_distribution:
-            from ._taxable import TaxableItem
-
-            class Item(TaxableItem):
-                tax_class = None
-                def __init__(self, tax_class):
-                    self.tax_class = tax_class
-
             import pprint
             pprint.pprint(tax_distribution)
             print(sum(dict(tax_distribution).values()))
 
+            def get_taxes(price, tax_class):
+                return self.get_taxed_price(context, price, tax_class).taxes
 
             for idx in lines_without_tax_class:
                 line = lines[idx]
-                taxes = []
-                for (tax_class, factor) in tax_distribution:
-                    taxed_price = self.get_taxed_price_for(context, Item(tax_class), line.price * factor)
-                    taxes.extend(taxed_price.taxes)
-                print(taxes)
-                line.taxes = taxes
+
+                line.taxes = list(chain.from_iterable(
+                    get_taxes(line.price * factor, tax_class)
+                    for (tax_class, factor) in tax_distribution))
 
     def _get_line_taxes(self, context, line):
         """
@@ -135,14 +128,13 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
         taxed_price = self.get_taxed_price_for(context, line, line.price)
         return taxed_price.taxes
 
-    @abc.abstractmethod
     def get_taxed_price_for(self, context, item, price):
         """
         Get TaxedPrice for taxable item.
 
         Taxable items could be products (`~shoop.core.models.Product`),
-        shipping and payment methods (`~shoop.core.models.Method`), and
-        lines (`~shoop.core.order_creator.SourceLine`).
+        services (`~shoop.core.models.Service`), or lines
+        (`~shoop.core.order_creator.SourceLine`).
 
         :param context: Taxing context to calculate in
         :type context: TaxingContext
@@ -153,34 +145,51 @@ class TaxModule(six.with_metaclass(abc.ABCMeta)):
 
         :rtype: shoop.core.taxing.TaxedPrice
         """
+        return self.get_taxed_price(context, price, item.tax_class)
+
+    @abc.abstractmethod
+    def get_taxed_price(self, context, price, tax_class):
+        """
+        Get TaxedPrice for price and tax class.
+
+        :param context: Taxing context to calculate in
+        :type context: TaxingContext
+        :param price: Price (taxful or taxless) to calculate taxes for
+        :type price: shoop.core.pricing.Price
+        :param tax_class: Tax class of the item to get taxes for
+        :type tax_class: shoop.core.models.TaxClass
+
+        :rtype: shoop.core.taxing.TaxedPrice
+        """
         pass
 
 
 def _generate_tax_distribution(lines):
+    """
+    Generate tax distribution from taxed lines.
+
+    :type lines: list[shoop.core.order_creator.SourceLine]
+    :param lines: List of lines to generate tax distribution for
+
+    :rtype: list[(shoop.core.models.TaxClass, decimal.Decimal)]
+    """
     if not lines:
         return []
 
-    taxless_zero = TaxlessPrice(lines[0].price.new(0).amount)
+    zero = lines[0].price.new(0)
 
-    total_by_tax_class = defaultdict(lambda: taxless_zero)
-    total = taxless_zero
+    total_by_tax_class = defaultdict(lambda: zero)
+    total = zero
 
-    for (price, tax_class) in _get_taxless_prices_and_tax_classes(lines):
-        total_by_tax_class[tax_class] += price
-        total += price
+    for line in lines:
+        total_by_tax_class[line.tax_class] += line.price
+        total += line.price
+
+    if not total:
+        # Can't calculate proportions, if total is zero
+        return []
 
     return [
         (tax_class, tax_class_total / total)
         for (tax_class, tax_class_total) in total_by_tax_class.items()
     ]
-
-
-def _get_taxless_prices_and_tax_classes(lines):
-    for line in lines:
-        if line.price.includes_tax:
-            zero = line.price.new(0).amount
-            tax_amount = sum((x.amount for x in line.taxes), zero)
-            taxless_price = TaxlessPrice(line.price.amount - tax_amount)
-        else:
-            taxless_price = line.price
-        yield (taxless_price, line.tax_class)
