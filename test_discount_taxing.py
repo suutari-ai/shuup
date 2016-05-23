@@ -112,6 +112,17 @@ def test_discount_taxing():
             line.text,
         ))
 
+        for line_tax in line.taxes:
+            assert isinstance(line_tax, shoop.core.taxing.LineTax)
+            print(60 * ' ' + 'Tax %d / %10s: tax=%10.4f base=%10.4f  (%6.3f)' % (
+                line_tax.tax.pk,
+                line_tax.name,
+                line_tax.amount,
+                line_tax.base_amount,
+                line_tax.rate * 100 if line_tax.rate else 0,
+            ))
+
+
 def main():
     from django.utils import translation
     translation.activate('en')
