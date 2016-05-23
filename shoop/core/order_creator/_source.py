@@ -108,8 +108,8 @@ class OrderSource(object):
         self.prices_include_tax = shop.prices_include_tax
         self.display_currency = shop.currency
         self.display_currency_rate = 1
-        self.shipping_address = None
-        self.billing_address = None
+        self._shipping_address = None
+        self._billing_address = None
         self._customer = None
         self._orderer = None
         self._creator = None
@@ -135,6 +135,8 @@ class OrderSource(object):
         self._processed_lines_cache = None
 
     def update(self, **values):
+        if values:
+            self.uncache()
         for key, value in values.items():
             if not hasattr(self, key):
                 raise ValueError("Can't update %r with key %r, it's not a pre-existing attribute" % (self, key))
@@ -181,6 +183,24 @@ class OrderSource(object):
     taxless_total_discount_or_none = taxless_total_discount.or_none
 
     total_price_of_products = _PriceSum("price", "get_product_lines")
+
+    @property
+    def shipping_address(self):
+        return self._shipping_address
+
+    @shipping_address.setter
+    def shipping_address(self, value):
+        self._shipping_address = value
+        self.uncache()
+
+    @property
+    def billing_address(self):
+        return self._billing_address
+
+    @billing_address.setter
+    def billing_address(self, value):
+        self._billing_address = value
+        self.uncache()
 
     @property
     def customer(self):
