@@ -6,11 +6,47 @@
 # This source code is licensed under the AGPLv3 license found in the
 # LICENSE file in the root directory of this source tree.
 
+from collections import defaultdict
+
 from shoop.core.pricing import TaxfulPrice, TaxlessPrice
 from shoop.utils.money import Money
 
 from ._line_tax import SourceLineTax
 from ._price import TaxedPrice
+
+
+def generate_tax_distribution(lines):
+    """
+    Generate tax distribution from taxed lines.
+
+    :type lines: list[shoop.core.order_creator.SourceLine]
+    :param lines: List of lines to generate tax distribution for
+
+    :rtype: list[(shoop.core.models.TaxClass, decimal.Decimal)]
+    :return:
+      List of tax classes with a proportion, or empty list if total
+      price is zero.  Sum of proportions is 1.
+    """
+    if not lines:
+        return []
+
+    zero = lines[0].price.new(0)
+
+    total_by_tax_class = defaultdict(lambda: zero)
+    total = zero
+
+    for line in lines:
+        total_by_tax_class[line.tax_class] += line.price
+        total += line.price
+
+    if not total:
+        # Can't calculate proportions, if total is zero
+        return []
+
+    return [
+        (tax_class, tax_class_total / total)
+        for (tax_class, tax_class_total) in total_by_tax_class.items()
+    ]
 
 
 def stacked_value_added_taxes(price, taxes):

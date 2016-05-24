@@ -423,17 +423,3 @@ class BaseBasket(OrderSource):
             in PaymentMethod.objects.available(shop=self.shop, products=self.product_ids)
             if m.is_available_for(self)
         ]
-
-    def has_shippable_lines(self):
-        for line in self.get_lines():
-            if line.product:
-                if line.product.shipping_mode == ShippingMode.SHIPPED:
-                    return True
-
-    @property
-    def product_ids(self):
-        return set(l.product.id for l in self.get_lines() if l.product)
-
-    @property
-    def is_empty(self):
-        return not bool(self.get_lines())

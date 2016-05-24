@@ -45,7 +45,7 @@ class TaxSummary(list):
                     tax_id=None, tax_code='', tax_name=_("Untaxed"),
                     tax_rate=Decimal(0), based_on=untaxed.amount,
                     tax_amount=zero_amount))
-        return cls(sorted(lines, key=(lambda x: (x.tax_rate or 0))))
+        return cls(sorted(lines, key=(lambda x: (-x.tax_rate or 0))))
 
     def __repr__(self):
         super_repr = super(TaxSummary, self).__repr__()
