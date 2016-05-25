@@ -26,6 +26,19 @@ class TaxedPrice(object):
        (`list[shoop.core.taxing.LineTax]`)
        List of taxes applied to the price.
     """
+
+    @classmethod
+    def from_price_and_taxes(cls, price, taxes):
+        zero = price.new(0).amount
+        tax_amount = sum((x.amount for x in taxes), zero)
+        if price.includes_tax:
+            taxful = price
+            taxless = TaxlessPrice(price.amount - tax_amount)
+        else:
+            taxful = TaxfulPrice(price.amount + tax_amount)
+            taxless = price
+        return cls(taxful, taxless, taxes)
+
     def __init__(self, taxful, taxless, taxes=None):
         """
         Initialize from given prices and taxes.
