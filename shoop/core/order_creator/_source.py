@@ -19,7 +19,7 @@ from six import iteritems
 from shoop.core import taxing
 from shoop.core.models import (
     AnonymousContact, OrderStatus, PaymentMethod, Product, ShippingMethod,
-    Shop, Supplier, TaxClass
+    ShippingMode, Shop, Supplier, TaxClass
 )
 from shoop.core.pricing import Price, Priceful, TaxfulPrice, TaxlessPrice
 from shoop.core.taxing import should_calculate_taxes_automatically, TaxableItem
