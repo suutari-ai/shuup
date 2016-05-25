@@ -30,68 +30,110 @@ def teardown_module(module):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
-def test_discount_taxing_1prod(taxes):
+def test_1prod(taxes):
     source = create_order_source(
         prices_include_tax=(taxes == 'taxful'),
         line_data=[
             'product: P1      |price: 200.00|qty: 1|discount:  0.00|tax: A',
-            'discount: SALE   |price: -20.00|qty: 1|discount: 20.00',
-        ],
-        tax_rates={'A': '0.25'})
+            'discount: SALE   |price: -20.00|qty: 1|discount: 20.00'],
+        tax_rates={'A': ['0.25']})
     source.calculate_taxes()
 
     assert source.total_price.value == 180
     assert get_price_by_tax_class(source) == {'TC-A': 200, '': -20}
 
     if taxes == 'taxful':
-        #    Name  Rate    Base amount     Tax amount         Taxful
+        #    Name    Rate    Base amount     Tax amount         Taxful
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.25  144.000000000   36.000000000  180.000000000']
+            'Tax-A   0.25  144.000000000   36.000000000  180.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25  -16.000000000   -4.000000000  -20.000000000']]
+            'Tax-A   0.25  -16.000000000   -4.000000000  -20.000000000']]
     else:
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.25  180.000000000   45.000000000  225.000000000']
+            'Tax-A   0.25  180.000000000   45.000000000  225.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25  -20.000000000   -5.000000000  -25.000000000']]
+            'Tax-A   0.25  -20.000000000   -5.000000000  -25.000000000']]
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
-def test_discount_taxing_2prods(taxes):
+def test_2prods(taxes):
     source = create_order_source(
         prices_include_tax=(taxes == 'taxful'),
         line_data=[
             'product: P1      |price:  10.00|qty: 1|discount:  0.00|tax: A',
             'product: P2      |price:  20.00|qty: 1|discount:  0.00|tax: B',
-            'discount: SALE   |price:  -3.00|qty: 1|discount:  3.00',
-        ],
-        tax_rates={'A': '0.25', 'B': '0.20'})
+            'discount: SALE   |price:  -3.00|qty: 1|discount:  3.00'],
+        tax_rates={'A': ['0.25'], 'B': ['0.20']})
     source.calculate_taxes()
 
     assert source.total_price.value == 27
     assert get_price_by_tax_class(source) == {'TC-A': 10, 'TC-B': 20, '': -3}
 
     if taxes == 'taxful':
-        #    Name  Rate    Base amount     Tax amount         Taxful
+        #    Name    Rate    Base amount     Tax amount         Taxful
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.25    7.200000000    1.800000000    9.000000000',
-            'Tax-B 0.20   15.000000000    3.000000000   18.000000000']
+            'Tax-A   0.25    7.200000000    1.800000000    9.000000000',
+            'Tax-B   0.20   15.000000000    3.000000000   18.000000000',
+            'Total   0.22   22.200000000    4.800000000   27.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25   -0.800000000   -0.200000000   -1.000000000',
-            'Tax-B 0.20   -1.666666667   -0.333333333   -2.000000000']]
+            'Tax-A   0.25   -0.800000000   -0.200000000   -1.000000000',
+            'Tax-B   0.20   -1.666666667   -0.333333333   -2.000000000']]
     else:
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.25    9.000000000    2.250000000   11.250000000',
-            'Tax-B 0.20   18.000000000    3.600000000   21.600000000']
+            'Tax-A   0.25    9.000000000    2.250000000   11.250000000',
+            'Tax-B   0.20   18.000000000    3.600000000   21.600000000',
+            'Total   0.22   27.000000000    5.850000000   32.850000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25   -1.000000000   -0.250000000   -1.250000000',
-            'Tax-B 0.20   -2.000000000   -0.400000000   -2.400000000']]
+            'Tax-A   0.25   -1.000000000   -0.250000000   -1.250000000',
+            'Tax-B   0.20   -2.000000000   -0.400000000   -2.400000000']]
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
-def test_discount_taxing_3prods_with_services(taxes):
+def test_2prods_2taxrates(taxes):
+    source = create_order_source(
+        prices_include_tax=(taxes == 'taxful'),
+        line_data=[
+            'product: P1      |price:  10.00|qty: 1|discount:  0.00|tax: A',
+            'product: P2      |price:  20.00|qty: 1|discount:  0.00|tax: B',
+            'discount: SALE   |price:  -3.00|qty: 1|discount:  3.00'],
+        tax_rates={'A': ['0.20', '0.05'], 'B': ['0.15', '0.05']})
+    source.calculate_taxes()
+
+    assert source.total_price.value == 27
+    assert get_price_by_tax_class(source) == {'TC-A': 10, 'TC-B': 20, '': -3}
+
+    if taxes == 'taxful':
+        #    Name    Rate    Base amount     Tax amount         Taxful
+        assert get_pretty_tax_summary(source) == [
+            'Tax-A-1 0.20    7.200000000    1.440000000    8.640000000',
+            'Tax-B-1 0.15   15.000000000    2.250000000   17.250000000',
+            'Tax-A-2 0.05    7.200000000    0.360000000    7.560000000',
+            'Tax-B-2 0.05   15.000000000    0.750000000   15.750000000',
+            'Total   0.22   22.200000000    4.800000000   27.000000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [[
+            'Tax-A-1 0.20   -0.800000000   -0.160000000   -0.960000000',
+            'Tax-A-2 0.05   -0.800000000   -0.040000000   -0.840000000',
+            'Tax-B-1 0.15   -1.666666667   -0.250000000   -1.916666667',
+            'Tax-B-2 0.05   -1.666666667   -0.083333333   -1.750000000']]
+    else:
+        assert get_pretty_tax_summary(source) == [
+            'Tax-A-1 0.20    9.000000000    1.800000000   10.800000000',
+            'Tax-B-1 0.15   18.000000000    2.700000000   20.700000000',
+            'Tax-A-2 0.05    9.000000000    0.450000000    9.450000000',
+            'Tax-B-2 0.05   18.000000000    0.900000000   18.900000000',
+            'Total   0.22   27.000000000    5.850000000   32.850000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [[
+            'Tax-A-1 0.20   -1.000000000   -0.200000000   -1.200000000',
+            'Tax-A-2 0.05   -1.000000000   -0.050000000   -1.050000000',
+            'Tax-B-1 0.15   -2.000000000   -0.300000000   -2.300000000',
+            'Tax-B-2 0.05   -2.000000000   -0.100000000   -2.100000000']]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
+def test_3prods_with_services(taxes):
     source = create_order_source(
         prices_include_tax=(taxes == 'taxful'),
         line_data=[
@@ -100,9 +142,8 @@ def test_discount_taxing_3prods_with_services(taxes):
             'product: P3      |price:  60.00|qty: 6|discount: 12.00|tax: C',
             'payment: Invoice |price:   2.50|qty: 1|discount:  0.00|tax: A',
             'shipping: Ship   |price:   7.50|qty: 1|discount:  0.00|tax: A',
-            'discount: SALE   |price: -30.00|qty: 1|discount: 30.00',
-        ],
-        tax_rates={'A': '0.25', 'B': '0.15', 'C': '0.30'})
+            'discount: SALE   |price: -30.00|qty: 1|discount: 30.00'],
+        tax_rates={'A': ['0.25'], 'B': ['0.15'], 'C': ['0.30']})
     source.calculate_taxes()
 
     assert source.total_price.value == 90
@@ -110,70 +151,207 @@ def test_discount_taxing_3prods_with_services(taxes):
         'TC-A': 20, 'TC-B': 40, 'TC-C': 60, '': -30}
 
     if taxes == 'taxful':
-        #    Name  Rate    Base amount     Tax amount         Taxful
+        #    Name    Rate    Base amount     Tax amount         Taxful
         assert get_pretty_tax_summary(source) == [
-            'Tax-C 0.30   34.615384615   10.384615385   45.000000000',
-            'Tax-A 0.25   12.000000000    3.000000000   15.000000000',
-            'Tax-B 0.15   26.086956522    3.913043478   30.000000000',
-        ]
+            'Tax-C   0.30   34.615384615   10.384615385   45.000000000',
+            'Tax-A   0.25   12.000000000    3.000000000   15.000000000',
+            'Tax-B   0.15   26.086956522    3.913043478   30.000000000',
+            'Total   0.24   72.702341137   17.297658863   90.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25   -4.000000000   -1.000000000   -5.000000000',
-            'Tax-B 0.15   -8.695652174   -1.304347826  -10.000000000',
-            'Tax-C 0.30  -11.538461538   -3.461538462  -15.000000000',
-        ]]
+            'Tax-A   0.25   -4.000000000   -1.000000000   -5.000000000',
+            'Tax-B   0.15   -8.695652174   -1.304347826  -10.000000000',
+            'Tax-C   0.30  -11.538461538   -3.461538462  -15.000000000']]
     else:
         assert get_pretty_tax_summary(source) == [
-            'Tax-C 0.30   45.000000000   13.500000000   58.500000000',
-            'Tax-A 0.25   15.000000000    3.750000000   18.750000000',
-            'Tax-B 0.15   30.000000000    4.500000000   34.500000000',
-        ]
+            'Tax-C   0.30   45.000000000   13.500000000   58.500000000',
+            'Tax-A   0.25   15.000000000    3.750000000   18.750000000',
+            'Tax-B   0.15   30.000000000    4.500000000   34.500000000',
+            'Total   0.24   90.000000000   21.750000000  111.750000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.25   -5.000000000   -1.250000000   -6.250000000',
-            'Tax-B 0.15  -10.000000000   -1.500000000  -11.500000000',
-            'Tax-C 0.30  -15.000000000   -4.500000000  -19.500000000',
-        ]]
+            'Tax-A   0.25   -5.000000000   -1.250000000   -6.250000000',
+            'Tax-B   0.15  -10.000000000   -1.500000000  -11.500000000',
+            'Tax-C   0.30  -15.000000000   -4.500000000  -19.500000000']]
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
-def test_discount_taxing_all_discounted(taxes):
+def test_3prods_services_2discounts(taxes):
     source = create_order_source(
         prices_include_tax=(taxes == 'taxful'),
         line_data=[
-            'product: P1      |price:  10.00|qty: 1|discount:  0.00|tax: A',
-            'product: P2      |price:  20.00|qty: 1|discount:  0.00|tax: B',
-            'discount: SALE   |price: -30.00|qty: 1|discount: 30.00',
-        ],
-        tax_rates={'A': '0.20', 'B': '0.10'})
+            'product: P1      |price:  24.00|qty: 2|discount:  0.00|tax: A',
+            'product: P2      |price: 100.00|qty: 8|discount:  0.00|tax: B',
+            'product: P3      |price:  80.00|qty: 5|discount:  5.00|tax: C',
+            'payment: Invoice |price:   6.25|qty: 1|discount:  0.00|tax: B',
+            'shipping: Ship   |price:  18.75|qty: 1|discount:  2.50|tax: B',
+            'discount: SALE1  |price: -22.90|qty: 1|discount: 22.90',
+            'discount: SALE2  |price: -11.45|qty: 1|discount: 11.45'],
+        tax_rates={'A': ['0.25'], 'B': ['0.20'], 'C': ['0.50']})
+    source.calculate_taxes()
+
+    assert source.total_price.value == Decimal('194.65')
+    assert get_price_by_tax_class(source) == {
+        'TC-A': 24, 'TC-B': 125, 'TC-C': 80, '': Decimal('-34.35')}
+
+    if taxes == 'taxful':
+        #    Name    Rate    Base amount     Tax amount         Taxful
+        assert get_pretty_tax_summary(source) == [
+            'Tax-C   0.50   45.333333333   22.666666667   68.000000000',
+            'Tax-A   0.25   16.320000000    4.080000000   20.400000000',
+            'Tax-B   0.20   88.541666667   17.708333333  106.250000000',
+            'Total   0.30  150.195000000   44.455000000  194.650000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [
+            ['Tax-A   0.25   -1.920000000   -0.480000000   -2.400000000',
+             'Tax-B   0.20  -10.416666667   -2.083333333  -12.500000000',
+             'Tax-C   0.50   -5.333333333   -2.666666667   -8.000000000'],
+            ['Tax-A   0.25   -0.960000000   -0.240000000   -1.200000000',
+             'Tax-B   0.20   -5.208333333   -1.041666667   -6.250000000',
+             'Tax-C   0.50   -2.666666667   -1.333333333   -4.000000000']]
+    else:
+        assert get_pretty_tax_summary(source) == [
+            'Tax-C   0.50   68.000000000   34.000000000  102.000000000',
+            'Tax-A   0.25   20.400000000    5.100000000   25.500000000',
+            'Tax-B   0.20  106.250000000   21.250000000  127.500000000',
+            'Total   0.31  194.650000000   60.350000000  255.000000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [
+            ['Tax-A   0.25   -2.400000000   -0.600000000   -3.000000000',
+             'Tax-B   0.20  -12.500000000   -2.500000000  -15.000000000',
+             'Tax-C   0.50   -8.000000000   -4.000000000  -12.000000000'],
+            ['Tax-A   0.25   -1.200000000   -0.300000000   -1.500000000',
+             'Tax-B   0.20   -6.250000000   -1.250000000   -7.500000000',
+             'Tax-C   0.50   -4.000000000   -2.000000000   -6.000000000']]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
+def test_3prods_services_2discounts2(taxes):
+    source = create_order_source(
+        prices_include_tax=(taxes == 'taxful'),
+        line_data=[
+            'product: P1      |price:  30.00|qty: 2|discount:  0.00|tax: A',
+            'product: P2      |price: 120.00|qty: 8|discount:  0.00|tax: B',
+            'product: P3      |price: 120.00|qty: 5|discount:  5.00|tax: C',
+            'payment: Invoice |price:   7.50|qty: 1|discount:  0.00|tax: B',
+            'shipping: Ship   |price:  22.50|qty: 1|discount:  2.50|tax: B',
+            'discount: SALE1  |price: -30.00|qty: 1|discount: 30.00',
+            'discount: SALE2  |price: -15.00|qty: 1|discount: 15.00'],
+        tax_rates={'A': ['0.25'], 'B': ['0.20'], 'C': ['0.50']})
+    source.calculate_taxes()
+
+    assert source.total_price.value == 255
+    assert get_price_by_tax_class(source) == {
+        'TC-A': 30, 'TC-B': 150, 'TC-C': 120, '': -45}
+
+    if taxes == 'taxful':
+        #    Name    Rate    Base amount     Tax amount         Taxful
+        assert get_pretty_tax_summary(source) == [
+            'Tax-C   0.50   68.000000000   34.000000000  102.000000000',
+            'Tax-A   0.25   20.400000000    5.100000000   25.500000000',
+            'Tax-B   0.20  106.250000000   21.250000000  127.500000000',
+            'Total   0.31  194.650000000   60.350000000  255.000000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [
+            ['Tax-A   0.25   -2.400000000   -0.600000000   -3.000000000',
+             'Tax-B   0.20  -12.500000000   -2.500000000  -15.000000000',
+             'Tax-C   0.50   -8.000000000   -4.000000000  -12.000000000'],
+            ['Tax-A   0.25   -1.200000000   -0.300000000   -1.500000000',
+             'Tax-B   0.20   -6.250000000   -1.250000000   -7.500000000',
+             'Tax-C   0.50   -4.000000000   -2.000000000   -6.000000000']]
+    else:
+        assert get_pretty_tax_summary(source) == [
+            'Tax-C   0.50  102.000000000   51.000000000  153.000000000',
+            'Tax-A   0.25   25.500000000    6.375000000   31.875000000',
+            'Tax-B   0.20  127.500000000   25.500000000  153.000000000',
+            'Total   0.32  255.000000000   82.875000000  337.875000000']
+        assert get_pretty_line_taxes_of_discount_lines(source) == [
+            ['Tax-A   0.25   -3.000000000   -0.750000000   -3.750000000',
+             'Tax-B   0.20  -15.000000000   -3.000000000  -18.000000000',
+             'Tax-C   0.50  -12.000000000   -6.000000000  -18.000000000'],
+            ['Tax-A   0.25   -1.500000000   -0.375000000   -1.875000000',
+             'Tax-B   0.20   -7.500000000   -1.500000000   -9.000000000',
+             'Tax-C   0.50   -6.000000000   -3.000000000   -9.000000000']]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
+def test_all_discounted(taxes):
+    source = create_order_source(
+        prices_include_tax=(taxes == 'taxful'),
+        line_data=[
+            'product: P1      |price:  30.00|qty: 1|discount:  0.00|tax: A',
+            'product: P2      |price:  60.00|qty: 1|discount:  0.00|tax: B',
+            'discount: SALE   |price: -90.00|qty: 1|discount: 90.00'],
+        tax_rates={'A': ['0.20'], 'B': ['0.10']})
     source.calculate_taxes()
 
     assert source.total_price.value == 0
-    assert get_price_by_tax_class(source) == {'TC-A': 10, 'TC-B': 20, '': -30}
+    assert get_price_by_tax_class(source) == {'TC-A': 30, 'TC-B': 60, '': -90}
 
     if taxes == 'taxful':
-        #    Name  Rate    Base amount     Tax amount         Taxful
+        #    Name    Rate    Base amount     Tax amount         Taxful
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.20    0.000000000    0.000000000    0.000000000',
-            'Tax-B 0.10    0.000000000    0.000000000    0.000000000',
-        ]
+            'Tax-A   0.20    0.000000000    0.000000000    0.000000000',
+            'Tax-B   0.10    0.000000000    0.000000000    0.000000000',
+            'Total   0.00    0.000000000    0.000000000    0.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.20   -8.333333333   -1.666666667  -10.000000000',
-            'Tax-B 0.10  -18.181818182   -1.818181818  -20.000000000',
-        ]]
+            'Tax-A   0.20  -25.000000000   -5.000000000  -30.000000000',
+            'Tax-B   0.10  -54.545454545   -5.454545455  -60.000000000']]
     else:
         assert get_pretty_tax_summary(source) == [
-            'Tax-A 0.20    0.000000000    0.000000000    0.000000000',
-            'Tax-B 0.10    0.000000000    0.000000000    0.000000000',
-        ]
+            'Tax-A   0.20    0.000000000    0.000000000    0.000000000',
+            'Tax-B   0.10    0.000000000    0.000000000    0.000000000',
+            'Total   0.00    0.000000000    0.000000000    0.000000000']
         assert get_pretty_line_taxes_of_discount_lines(source) == [[
-            'Tax-A 0.20  -10.000000000   -2.000000000  -12.000000000',
-            'Tax-B 0.10  -20.000000000   -2.000000000  -22.000000000',
-        ]]
+            'Tax-A   0.20  -30.000000000   -6.000000000  -36.000000000',
+            'Tax-B   0.10  -60.000000000   -6.000000000  -66.000000000']]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
+def test_zero_priced_products(taxes):
+    source = create_order_source(
+        prices_include_tax=(taxes == 'taxful'),
+        line_data=[
+            'product: P1      |price:   0.00|qty: 1|discount:  0.00|tax: A',
+            'product: P2      |price:   0.00|qty: 1|discount:  0.00|tax: B',
+            'discount: Foobar |price:  10.00|qty: 1|discount:-10.00'],
+        tax_rates={'A': ['0.25'], 'B': ['0.20']})
+    source.calculate_taxes()
+
+    assert source.total_price.value == 10
+    assert get_price_by_tax_class(source) == {'TC-A': 0, 'TC-B': 0, '': 10}
+
+    #    Name    Rate    Base amount     Tax amount         Taxful
+    assert get_pretty_tax_summary(source) == [
+        'Tax-A   0.25    0.000000000    0.000000000    0.000000000',
+        'Tax-B   0.20    0.000000000    0.000000000    0.000000000',
+        'Untaxed 0.00   10.000000000    0.000000000   10.000000000',
+        'Total   0.00   10.000000000    0.000000000   10.000000000']
+    assert get_pretty_line_taxes_of_discount_lines(source) == [[]]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("taxes", ['taxful', 'taxless'])
+def test_no_products(taxes):
+    source = create_order_source(
+        prices_include_tax=(taxes == 'taxful'),
+        line_data=[
+            'discount: Foobar |price:  50.00|qty: 1|discount:-50.00',
+            'discount: SALE   |price: -10.00|qty: 1|discount: 10.00'],
+        tax_rates={})
+    source.calculate_taxes()
+
+    assert source.total_price.value == 40
+    assert get_price_by_tax_class(source) == {'': 40}
+
+    #    Name    Rate    Base amount     Tax amount         Taxful
+    assert get_pretty_tax_summary(source) == [
+        'Untaxed 0.00   40.000000000    0.000000000   40.000000000']
+    assert get_pretty_line_taxes_of_discount_lines(source) == [[], []]
+
 
 # ================================================================
-# Test data creating
+# Creating test data
 # ================================================================
-
 
 class Line(object):
     def __init__(self, price, quantity=1, discount=0, **kwargs):
@@ -189,14 +367,6 @@ class Line(object):
 
     @classmethod
     def from_text(cls, text):
-        """
-            'product: P1      |price:  10.00|qty: 2|disc:  2.00|tax: A',
-            'product: P2      |price:  40.00|qty: 8|disc:  0.00|tax: B',
-            'product: P3      |price:  60.00|qty: 6|disc: 12.00|tax: C',
-            'payment: Invoice |price:   2.50|qty: 1|disc:  0.00|tax: A',
-            'shipping: Ship   |price:   7.50|qty: 1|disc:  0.00|tax: A',
-            'discount: SALE   |price: -30.00|qty: 1|disc: 30.00',
-        """
         preparsed = (item.split(':') for item in text.split('|'))
         data = {x[0].strip(): x[1].strip() for x in preparsed}
         mappings = [
@@ -234,18 +404,22 @@ def create_order_source(prices_include_tax, line_data, tax_rates):
 
 def create_assigned_tax_classes(tax_rates):
     return {
-        tax_name: create_assigned_tax_class(tax_name, tax_rate)
-        for (tax_name, tax_rate) in tax_rates.items()
+        tax_name: create_assigned_tax_class(tax_name, rates_to_assign)
+        for (tax_name, rates_to_assign) in tax_rates.items()
     }
 
 
-def create_assigned_tax_class(name, tax_rate):
+def create_assigned_tax_class(name, rates_to_assign):
     """
-    Create a tax class and assign a tax for it with a tax rule.
+    Create a tax class and assign taxes for it with tax rules.
     """
     tax_class = TaxClass.objects.create(name='TC-%s' % name)
-    tax = Tax.objects.create(rate=tax_rate, name='Tax-%s' % name)
-    TaxRule.objects.create(tax=tax).tax_classes.add(tax_class)
+    for (n, tax_rate) in enumerate(rates_to_assign, 1):
+        tax_name = (
+            'Tax-%s' % name if len(rates_to_assign) == 1 else
+            'Tax-%s-%d' % (name, n))
+        tax = Tax.objects.create(rate=tax_rate, name=tax_name)
+        TaxRule.objects.create(tax=tax).tax_classes.add(tax_class)
     return tax_class
 
 
@@ -306,9 +480,8 @@ def fill_order_source(source, lines, products, services):
 
 
 # ================================================================
-# Formatting results
+# Getting and formatting results
 # ================================================================
-
 
 def get_price_by_tax_class(source):
     price_by_tax_class = defaultdict(Decimal)
@@ -319,12 +492,25 @@ def get_price_by_tax_class(source):
 
 
 TAX_DISTRIBUTION_LINE_FORMAT = (
-    '{n:5s} {r:4.2f} {ba:14.9f} {a:14.9f} {t:14.9f}')
+    '{n:7s} {r:4.2f} {ba:14.9f} {a:14.9f} {t:14.9f}')
 
 
 def get_pretty_tax_summary(source):
     summary = get_tax_summary(source)
-    return [prettify_tax_summary_line(line) for line in summary]
+    lines = [
+        TAX_DISTRIBUTION_LINE_FORMAT.format(
+            n=line.tax_name, r=line.tax_rate,
+            ba=line.based_on, a=line.tax_amount, t=line.taxful)
+        for line in summary]
+    total_base = source.taxless_total_price.value
+    total_taxful = source.taxful_total_price.value
+    total_tax_amount = sum(x.tax_amount.value for x in summary)
+    total_line = TAX_DISTRIBUTION_LINE_FORMAT.format(
+        n="Total",
+        r=((total_tax_amount / total_base)
+           if abs(total_base) > 0.0001 else 0),
+        ba=total_base, a=total_tax_amount, t=total_taxful)
+    return lines + ([total_line] if len(summary) > 1 else [])
 
 
 def get_tax_summary(source):
@@ -345,18 +531,6 @@ def get_tax_summary(source):
     return TaxSummary.from_line_taxes(all_line_taxes, untaxed)
 
 
-def prettify_tax_summary_line(line):
-    """
-    Format tax summary line as pretty string.
-
-    :type line: shoop.core.taxing._tax_summary.TaxSummaryLine
-    :rtype: str
-    """
-    return TAX_DISTRIBUTION_LINE_FORMAT.format(
-        n=line.tax_name, r=line.tax_rate,
-        ba=line.based_on, a=line.tax_amount, t=line.taxful)
-
-
 def get_pretty_line_taxes_of_discount_lines(source):
     return [
         prettify_line_taxes(line)
@@ -366,18 +540,8 @@ def get_pretty_line_taxes_of_discount_lines(source):
 
 def prettify_line_taxes(line):
     return [
-        prettify_line_tax(line_tax)
+        TAX_DISTRIBUTION_LINE_FORMAT.format(
+            n=line_tax.name, r=line_tax.rate,
+            ba=line_tax.base_amount, a=line_tax.amount,
+            t=(line_tax.base_amount + line_tax.amount))
         for line_tax in sorted(line.taxes, key=(lambda x: x.name))]
-
-
-def prettify_line_tax(line_tax):
-    """
-    Format line tax as pretty string.
-
-    :type line_tax: shoop.core.taxing.LineTax
-    :rtype: str
-    """
-    return TAX_DISTRIBUTION_LINE_FORMAT.format(
-        n=line_tax.name, r=line_tax.rate,
-        ba=line_tax.base_amount, a=line_tax.amount,
-        t=(line_tax.base_amount + line_tax.amount))
