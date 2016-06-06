@@ -89,15 +89,16 @@ class BasketCampaignModule(OrderSourceModifierModule):
             yield get_discount_line(best_discount_campaign, best_discount, price_so_far)
 
     def _get_campaign_line(self, campaign, highest_discount, order_source):
-        text = campaign.public_name
-
-        if campaign.coupon:
-            text += " (%s %s)" % (_("Coupon Code:"), campaign.coupon.code)
+        text = (
+            _("{campaign_name} (Coupon Code: {code})").format(
+                campaign_name=campaign.public_name,
+                code=campaign.coupon.code
+            ) if campaign.coupon else campaign.public_name)
         return order_source.create_line(
             line_id="discount_%s" % str(random.randint(0, 0x7FFFFFFF)),
             type=OrderLineType.DISCOUNT,
             quantity=1,
-            discount_amount=campaign.shop.create_price(highest_discount),
+            base_unit_price=-campaign.shop.create_price(highest_discount),
             text=text
         )
 
