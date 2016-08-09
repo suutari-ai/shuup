@@ -3,6 +3,7 @@ language: python
 cache:
   directories:
     - "$HOME/.cache/pip"
+    - "$HOME/.cache/shuup/build_resources"
 env:
   - TOX_ENV=sanity
   - TOX_ENV=flake8
@@ -16,6 +17,8 @@ matrix:
       env: TOX_ENV=py34-nomigrations
     - python: 3.5
       env: TOX_ENV=py35-nomigrations
+    - python: 3.5
+      env: TOX_ENV=py35-nomigrations-nocoverage-browser
 install:
   - pip install -U pip
   - pip install tox
