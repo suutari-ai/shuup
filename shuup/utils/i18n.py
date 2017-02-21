@@ -10,7 +10,7 @@ import babel
 import babel.numbers
 from babel import UnknownLocaleError
 from babel.dates import format_datetime
-from babel.numbers import format_currency
+from babel.numbers import format_currency, format_decimal
 from django.apps import apps
 from django.utils import translation
 from django.utils.lru_cache import lru_cache
@@ -56,6 +56,10 @@ def get_current_babel_locale(fallback="en-US-POSIX"):
                 "Failed to get current babel locale (lang=%s)" %
                 (translation.get_language(),))
     return locale
+
+
+def format_number(value):
+    return format_decimal(value, locale=get_current_babel_locale())
 
 
 def format_percent(value, digits=0):

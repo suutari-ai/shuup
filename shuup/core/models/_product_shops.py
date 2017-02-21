@@ -401,7 +401,9 @@ class ShopProduct(MoneyPropped, models.Model):
         """
         if self.purchase_multiple:
             return self.purchase_multiple
-        return self.product.sales_unit.quantity_step
+        if self.product.sales_unit:
+            return self.product.sales_unit.quantity_step
+        return 1
 
     @property
     def rounded_minimum_purchase_quantity(self):
@@ -416,7 +418,28 @@ class ShopProduct(MoneyPropped, models.Model):
                 value="{{ shop_product.rounded_minimum_purchase_quantity }}">
 
         """
+        if not self.product.sales_unit:
+            return self.minimum_purchase_quantity
         return self.product.sales_unit.round(self.minimum_purchase_quantity)
+
+    @property
+    def display_unit(self):
+        if not self.product.sales_unit:
+            return ''
+        return self.product.sales_unit.display_short_name
+
+    @property
+    def display_quantity_step(self):
+        if not self.product.sales_unit:
+            return (self.purchase_multiple or 1)
+        return self.quantity_step * self.product.sales_unit.display_factor
+
+    @property
+    def display_quantity_minimun(self):
+        unit = self.product.sales_unit
+        if not unit:
+            return self.minimum_purchase_quantity
+        return self.product.minimum_purchase_quantity * unit.display_factor #XXX: Should this be rounded?
 
     @property
     def images(self):
