@@ -5,18 +5,20 @@
 #
 # This source code is licensed under the OSL-3.0 license found in the
 # LICENSE file in the root directory of this source tree.
-from __future__ import with_statement
+from __future__ import unicode_literals
 
 from decimal import Decimal
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import pgettext, ugettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields
 
 from shuup.core.fields import InternalIdentifierField
+from shuup.utils.i18n import format_number
 from shuup.utils.numbers import bankers_round, parse_decimal_string
+
 
 __all__ = ("SalesUnit",)
 
@@ -47,6 +49,37 @@ class SalesUnit(TranslatableModel):
         return self.safe_translation_getter("name", default=self.identifier) or ""
 
     @property
+    def base_quantity(self):  # TODO: base_quantity = QuantityField(...)
+        if self.short_name == "kg":  # test kg -> 100 g conversion
+            return Decimal('0.1')  # 0.1 kg (i.e. 100 g)
+        return 1  # default value for the field
+
+    @property
+    def display_short_name(self):  # TODO: display_short_name = CharField(...)
+        if self.short_name == "kg":  # test kg -> 100 g conversion
+            return "g"
+        return ''  # default value for the field
+
+    @property
+    def display_factor(self):  # TODO: display_factor = QuantityField(...)
+        if self.short_name == "kg":  # test kg -> 100 g conversion
+            return 1000  # 1000 g = 1 kg
+        return 1  # default value for the field
+
+    @property
+    def display_decimals(self):  # TODO: display_decimals = PositiveSmallIntegerField(...)
+        if self.short_name == "kg":  # test kg -> 100 g conversion
+            return 0
+        return 0  # default value for the field
+
+    @property
+    def display_unit_text(self):
+        unit_text = self.display_short_name or self.short_name
+        if unit_text:
+            return pgettext("short for pieces", "pcs")
+        return unit_text
+
+    @property
     def allow_fractions(self):
         return self.decimals > 0
 
@@ -68,3 +101,13 @@ class SalesUnit(TranslatableModel):
 
     def round(self, value):
         return bankers_round(parse_decimal_string(value), self.decimals)
+
+    def render_quantity(self, quantity):
+        rounded = self.to_display(quantity)
+        return pgettext('display value with unit', "{value}{unit}").format(
+            value=format_number(rounded),
+            unit=self.display_unit_text)
+
+    def to_display(self, quantity):
+        converted = quantity * self.display_factor
+        return bankers_round(converted, self.display_decimals)
