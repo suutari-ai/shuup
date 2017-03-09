@@ -22,6 +22,13 @@ def foobar(n):
     if j != k:
         print('larger than 5')
 
+
+    if bytes == str:
+        # This will be ran only on Python 2, testing that...
+        assert 3 / 2 == 1
+    else:
+        assert 3 / 2 == 1.5
+
     if n > 0:
         return n ** 2
     elif n < 0:
