@@ -22,7 +22,7 @@ matrix:
 install:
   - pip install -U pip setuptools
   - pip install tox
-  #- pip install coveralls
+  - pip install coveralls
   - pip install codecov
 #before_install:
   #- "nvm install 4"
@@ -35,5 +35,5 @@ install:
 script:
   - tox
 after_success:
-  #- coveralls
+  - coveralls
   - codecov
