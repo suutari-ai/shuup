@@ -1,6 +1,13 @@
 def foobar(n):
     """
     A foobar function, just for testing code coverage.
+
+    >>> foobar(0)
+    12345
+
+    >>> foobar(1)
+    0
+    1
     """
 
     j = 0
@@ -12,8 +19,8 @@ def foobar(n):
             print(i)
         j += 1
 
-    if j == k:
-        print('hello')
+    if j != k:
+        print('larger than 5')
 
     if n > 0:
         return n ** 2
