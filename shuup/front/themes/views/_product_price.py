@@ -5,6 +5,8 @@
 #
 # This source code is licensed under the OSL-3.0 license found in the
 # LICENSE file in the root directory of this source tree.
+import decimal
+
 from shuup.core.models import ProductVariationResult
 from shuup.front.views.product import ProductDetailView
 
@@ -25,7 +27,7 @@ class ProductPriceView(ProductDetailView):
         if not product:
             return False
         shop_product = product.get_shop_instance(self.request.shop)
-        qty = int(self.request.GET.get("quantity", 1))
+        qty = decimal.Decimal(self.request.GET.get("quantity", 1))
         if not shop_product.is_orderable(None, self.request.customer, qty):
             return False
         return True

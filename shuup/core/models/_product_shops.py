@@ -26,6 +26,7 @@ from shuup.utils.properties import MoneyPropped, PriceProperty
 
 from ._product_media import ProductMediaKind
 from ._products import ProductMode, ProductVisibility, StockBehavior
+from ._units import PiecesSalesUnit
 
 mark_safe_lazy = lazy(mark_safe, six.text_type)
 
@@ -402,9 +403,8 @@ class ShopProduct(MoneyPropped, models.Model):
         Example:
             <input type="number" step="{{ shop_product.quantity_step }}">
         """
-        if self.purchase_multiple:
-            return self.purchase_multiple
-        return self.product.sales_unit.quantity_step
+        step = self.purchase_multiple or self._unit.quantity_step
+        return self._unit.round(step)
 
     @property
     def rounded_minimum_purchase_quantity(self):
@@ -419,7 +419,34 @@ class ShopProduct(MoneyPropped, models.Model):
                 value="{{ shop_product.rounded_minimum_purchase_quantity }}">
 
         """
-        return self.product.sales_unit.round(self.minimum_purchase_quantity)
+        return self._unit.round(self.minimum_purchase_quantity)
+
+    def render_quantity(self, quantity):
+        return self._unit.render_quantity(quantity)
+
+    def get_display_quantity(self, quantity):
+        return self._unit.to_display(quantity)
+
+    @property
+    def display_unit_symbol(self):
+        return self._unit.display_unit_symbol
+
+    @property
+    def display_quantity_step(self):
+        return self._unit.to_display(self.quantity_step)
+
+    @property
+    def display_quantity_minimum(self):
+        return self._unit.to_display(self.minimum_purchase_quantity)
+
+    @property
+    def _unit(self):
+        """
+        Unit of this product.
+
+        :rtype: shuup.core.models.SalesUnit
+        """
+        return self.product.sales_unit or PiecesSalesUnit()
 
     @property
     def images(self):

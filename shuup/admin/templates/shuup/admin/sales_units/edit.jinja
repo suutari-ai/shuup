@@ -4,8 +4,11 @@
 
 {% block content %}
     {% call single_section_form("sales_unit_form", form) %}
-        {{ language_dependent_content_tabs(form, ["name", "short_name"]) }}
+        {{ language_dependent_content_tabs(form, ["name", "symbol", "display_symbol"]) }}
         <div class="form-divider"></div>
         {{ bs3.field(form.decimals) }}
+        {{ bs3.field(form.display_multiplier) }}
+        {{ bs3.field(form.display_decimals) }}
+        {{ bs3.field(form.base_quantity) }}
     {% endcall %}
 {% endblock %}

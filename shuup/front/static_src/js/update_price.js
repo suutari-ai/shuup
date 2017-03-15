@@ -8,7 +8,7 @@
  */
 window.updatePrice = function updatePrice(productId) {
     var $quantity = $("#product-quantity-" + productId);
-    if ($quantity.length === 0 || !$quantity.is(":valid")) {
+    if ($quantity.length === 0) {
         return;
     }
 
@@ -40,3 +40,16 @@ window.updatePrice = function updatePrice(productId) {
         $(priceDiv).replaceWith($content.find(priceDiv));
     });
 };
+
+
+// TODO: Move this to display_quantity.js /////////////////////////////////////////////////////////////////////////////////////////
+
+window.updateQuantity = function updateQuantity(productId, displayFactor) {
+    var $dquantity = $("#product-dquantity-" + productId);
+    if ($dquantity.length === 0 || !$dquantity.is(":valid")) {
+        return;
+    }
+    var $quantity = $("#product-quantity-" + productId);
+    $quantity.val($dquantity.val() / displayFactor);
+    updatePrice(productId);
+}
