@@ -853,7 +853,7 @@ msgstr ""
 "Hyvitettävä tili. Hyvittääksesi vapaan määrän, valitse 'Hyvitä vapaa määrä'."
 
 msgid "Quantity"
-msgstr "Lukumäärä"
+msgstr "Määrä"
 
 msgid "The number of units to refund."
 msgstr "Hyvitettävien yksiköiden määrä."
@@ -1260,8 +1260,8 @@ msgstr "Avoimia tilauksia"
 msgid "Sales Units"
 msgstr "Myyntiyksiköt"
 
-msgid "Short Name"
-msgstr "Lyhyt nimi"
+msgid "Symbol"
+msgstr "Symboli"
 
 msgid "Allowed decimals"
 msgstr "Sallitut desimaalit"

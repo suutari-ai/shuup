@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-02-21 07:50+0000\n"
+"POT-Creation-Date: 2017-03-15 09:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -2069,6 +2069,11 @@ msgstr ""
 msgid "Company Customers"
 msgstr ""
 
+#, python-brace-format
+msgctxt "Display value with unit symbol (with or without space)"
+msgid "{value}{symbol}"
+msgstr ""
+
 msgid "allowed decimal places"
 msgstr ""
 
@@ -2083,7 +2088,7 @@ msgid ""
 "Sales units can be set for each product through the product editor view."
 msgstr ""
 
-msgid "short name"
+msgid "symbol"
 msgstr ""
 
 msgid ""
@@ -2092,6 +2097,50 @@ msgid ""
 msgstr ""
 
 msgid "sales units"
+msgstr ""
+
+msgid "Value must be positive and non-zero"
+msgstr ""
+
+msgid "display multiplier"
+msgstr ""
+
+msgid ""
+"Amount of display units in one internal unit.  E.g. if internal unit is \"kg"
+"\" and display unit is \"g\", this should be 1000."
+msgstr ""
+
+msgid ""
+"The number of decimal places to use for values in the display unit.  The "
+"internal values are still rounded based on settings of the internal unit."
+msgstr ""
+
+msgid "comparison quantity"
+msgstr ""
+
+msgid ""
+"Quantity to use when displaying unit prices.  E.g. if the display unit is g "
+"and the comparison quantity is 100, then unit prices are shown per 100g, "
+"like \"$2.95 per 100g\"."
+msgstr ""
+
+msgid "Name of the display unit, e.g. \"grams\"."
+msgstr ""
+
+msgid "An abbreviated name of the display unit, e.g. \"g\"."
+msgstr ""
+
+msgid "display unit"
+msgstr ""
+
+msgid "display units"
+msgstr ""
+
+msgid "Pieces"
+msgstr ""
+
+msgctxt "Symbol for pieces unit"
+msgid "pc."
 msgstr ""
 
 msgid "No Choice"

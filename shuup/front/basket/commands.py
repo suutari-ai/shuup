@@ -97,7 +97,7 @@ def handle_add(request, basket, product_id, quantity=1, supplier_id=None, **kwar
     basket.add_product(**add_product_kwargs)
 
     return {
-        'ok': basket.product_count,
+        'ok': basket.smart_product_count,
         'added': quantity
     }
 

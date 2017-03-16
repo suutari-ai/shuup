@@ -28,6 +28,7 @@ from shuup.core.models import (
 )
 from shuup.core.pricing import Price, Priceful, TaxfulPrice, TaxlessPrice
 from shuup.core.taxing import should_calculate_taxes_automatically, TaxableItem
+from shuup.core.utils.line_unit_mixin import LineWithUnit
 from shuup.utils.decorators import non_reentrant
 from shuup.utils.i18n import format_money, is_existing_language
 from shuup.utils.money import Money
@@ -368,11 +369,44 @@ class OrderSource(object):
     @property
     def product_count(self):
         """
-        Get the total number of products in this OrderSource.
+        Get the sum of product quantities in this order source.
 
-        :rtype: decimal.Decimal|int
+        Note: It is a bit silly to sum different units together.  Check
+        `smart_product_count` and `product_line_count` for other
+        options.
+
+        :rtype: decimal.Decimal
         """
         return sum([line.quantity for line in self.get_product_lines()])
+
+    @property
+    def smart_product_count(self):
+        """
+        Get the total number of separate products in this order source.
+
+        Quantities of lines, which have countable products, will be
+        summed and then number of lines with non-countable product units
+        will be added to that.  E.g. smart product count for a basket
+        containing 5 chocolate bars, 2 t-shirts and 2.5 kg of cocoa beans
+        would be 5 + 2 + 1 = 8.
+
+        :rtype: int
+        """
+        def count_in_line(line):
+            truncated_qty = int(line.quantity)
+            if not line.unit.is_countable or truncated_qty != line.quantity:
+                return 1  # Non-contables or non-integral values counted as 1
+            return truncated_qty
+        return sum(count_in_line(line) for line in self.get_product_lines())
+
+    @property
+    def product_line_count(self):
+        """
+        Get the total number product lines in this order source
+
+        :rtype: int
+        """
+        return len(self.get_product_lines())
 
     def get_final_lines(self, with_taxes=False):
         """
@@ -554,7 +588,7 @@ class LineSource(Enum):
     DISCOUNT_MODULE = 4
 
 
-class SourceLine(TaxableItem, Priceful):
+class SourceLine(TaxableItem, Priceful, LineWithUnit):
     """
     Line of OrderSource.
 
