@@ -8,7 +8,7 @@
                         <th>{% trans %}SKU{% endtrans %}</th>
                         <th>{% trans %}Text{% endtrans %}</th>
                         <th class="text-right">{% trans %}Taxless Unit Price{% endtrans %}</th>
-                        <th class="text-right">{% trans %}Quantity{% endtrans %}</th>
+                        <th class="text-right">{% trans %}Amount{% endtrans %}</th>
                         <th class="text-right">{% trans %}Taxless Discount{% endtrans %}</th>
                         <th class="text-right">{% trans %}Taxless Discount Percentage{% endtrans %}</th>
                         <th class="text-right">{% trans %}Tax{% endtrans %}</th>
@@ -29,7 +29,7 @@
                         <td>{{ line.sku }}</td>
                         <td>{{ line.text }}</td>
                         <td class="text-right">{{ line.taxless_base_unit_price|money }}</td>
-                        <td class="text-right">{{ line.quantity|number }}</td>
+                        <td class="text-right">{{ line.unit.display_quantity(line.quantity) }}</td>
                         <td class="text-right">{% if line.taxless_discount_amount %}{{ line.taxless_discount_amount|money }}{% else %}-{% endif %}</td>
                         <td class="text-right">{% if line.taxless_discount_amount %}{{ line|discount_percent }}{% else %}-{% endif %}</td>
                         <td class="text-right">{{ line.tax_rate|percent }}</td>

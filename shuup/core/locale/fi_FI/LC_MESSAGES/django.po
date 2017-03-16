@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Shuup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-03 09:37+0000\n"
+"POT-Creation-Date: 2017-03-15 09:25+0000\n"
 "PO-Revision-Date: 2017-03-01 13:49+0000\n"
 "Last-Translator: Tuomas Suutari <tuomas.suutari@shoop.io>\n"
 "Language-Team: Finnish (Finland) (http://www.transifex.com/shuup/shuup/"
@@ -2266,6 +2266,11 @@ msgstr "Yksityisasiakkaat"
 msgid "Company Customers"
 msgstr "Yritysasiakkaat"
 
+#, python-brace-format
+msgctxt "Display value with unit symbol (with or without space)"
+msgid "{value}{symbol}"
+msgstr "{value} {symbol}"
+
 msgid "allowed decimal places"
 msgstr "sallitut desimaalipaikat"
 
@@ -2286,8 +2291,8 @@ msgstr ""
 "Myyntiyksiköt voidaan asettaa jokaiselle tuotteelle erikseen "
 "tuotemuokkaimesta."
 
-msgid "short name"
-msgstr "lyhyt nimi"
+msgid "symbol"
+msgstr "symboli"
 
 msgid ""
 "An abbreviated name for this sales unit that is shown throughout admin and "
@@ -2298,6 +2303,56 @@ msgstr ""
 
 msgid "sales units"
 msgstr "myyntiyksiköt"
+
+msgid "Value must be positive and non-zero"
+msgstr ""
+
+#, fuzzy
+#| msgid "purchase multiple"
+msgid "display multiplier"
+msgstr "tilausmonikerta"
+
+msgid ""
+"Amount of display units in one internal unit.  E.g. if internal unit is \"kg"
+"\" and display unit is \"g\", this should be 1000."
+msgstr ""
+
+msgid ""
+"The number of decimal places to use for values in the display unit.  The "
+"internal values are still rounded based on settings of the internal unit."
+msgstr ""
+
+msgid "comparison quantity"
+msgstr ""
+
+msgid ""
+"Quantity to use when displaying unit prices.  E.g. if the display unit is g "
+"and the comparison quantity is 100, then unit prices are shown per 100g, "
+"like \"$2.95 per 100g\"."
+msgstr ""
+
+msgid "Name of the display unit, e.g. \"grams\"."
+msgstr ""
+
+msgid "An abbreviated name of the display unit, e.g. \"g\"."
+msgstr ""
+
+#, fuzzy
+#| msgid "display currency"
+msgid "display unit"
+msgstr "esitettävä valuutta"
+
+#, fuzzy
+#| msgid "display currency"
+msgid "display units"
+msgstr "esitettävä valuutta"
+
+msgid "Pieces"
+msgstr ""
+
+msgctxt "Symbol for pieces unit"
+msgid "pc."
+msgstr "kpl"
 
 msgid "No Choice"
 msgstr "ei valintaa"

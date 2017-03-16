@@ -28,6 +28,7 @@ from shuup.core.models import (
 )
 from shuup.core.pricing import Price, Priceful, TaxfulPrice, TaxlessPrice
 from shuup.core.taxing import should_calculate_taxes_automatically, TaxableItem
+from shuup.core.utils.line_unit_mixin import LineWithUnit
 from shuup.utils.decorators import non_reentrant
 from shuup.utils.i18n import format_money, is_existing_language
 from shuup.utils.money import Money
@@ -372,7 +373,11 @@ class OrderSource(object):
 
         :rtype: decimal.Decimal|int
         """
-        return sum([line.quantity for line in self.get_product_lines()])
+        def count_in_line(line):
+            if line.unit.get_display_symbol():
+                return 1  # Lines which have an unit, will be counted as 1
+            return line.quantity
+        return sum(count_in_line(line) for line in self.get_product_lines())
 
     def get_final_lines(self, with_taxes=False):
         """
@@ -554,7 +559,7 @@ class LineSource(Enum):
     DISCOUNT_MODULE = 4
 
 
-class SourceLine(TaxableItem, Priceful):
+class SourceLine(TaxableItem, Priceful, LineWithUnit):
     """
     Line of OrderSource.
 

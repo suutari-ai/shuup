@@ -67,7 +67,7 @@
                     <th></th>
                     <th class="text-left">{% trans %}Product{% endtrans %}</th>
                     <th class="text-right">{% trans %}Price{% endtrans %}</th>
-                    <th class="text-right">{% trans %}Quantity{% endtrans %}</th>
+                    <th class="text-right">{% trans %}Amount{% endtrans %}</th>
                     <th class="text-right">{% trans %}Total{% endtrans %}</th>
                 </tr>
             </thead>
@@ -112,6 +112,9 @@
                         </td>
                         <td class="text-right">
                             {{ line.taxful_discounted_unit_price|money }}
+                            {% if line.unit.get_display_symbol() %}
+                                / {{ line.unit.symbol }}
+                            {% endif %}
                             {% if line.tax_amount %}
                                 <br>
                                 <small class="text-muted">
@@ -126,7 +129,7 @@
                             {% endif %}
                         </td>
                         <td class="text-right">
-                            {{ line.quantity|number }}
+                            {{ line.unit.display_quantity(line.quantity) }}
                         </td>
                         <td class="text-right">
                             <span class="line-total">{{ line.taxful_price|money }}</span>
