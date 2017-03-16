@@ -27,7 +27,7 @@ class ProductPriceView(ProductDetailView):
         if not product:
             return False
         shop_product = product.get_shop_instance(self.request.shop)
-        qty = decimal.Decimal(self.request.GET.get("quantity", 1))
+        qty = self._get_quantity()
         if not shop_product.is_orderable(None, self.request.customer, qty):
             return False
         return True
@@ -37,8 +37,21 @@ class ProductPriceView(ProductDetailView):
         if not context["product"] or not self.is_orderable():
             self.template_name = "shuup/front/product/detail_order_section_no_product.jinja"
             return context
-        context["quantity"] = context["product"].sales_unit.round(self.request.GET.get("quantity"))
+        context["quantity"] = context["product"].sales_unit.round(self._get_quantity())
         return context
+
+    def _get_quantity(self):
+        qty = self.request.GET.get("quantity")
+        print(qty)
+        print(type(qty))
+        dqty = self.request.GET.get("dquantity")
+        print(dqty)
+        print(type(dqty))
+        if qty is not None:
+            return decimal.Decimal(qty)
+        else:
+            shop_product = self.object.get_shop_instance(self.request.shop)
+            return shop_product.unit.from_display(decimal.Decimal(dqty))
 
     def get_variation_variables(self):
         return dict(

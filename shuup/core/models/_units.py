@@ -259,7 +259,8 @@ class UnitInterface(object):
         Convert quantity from internal unit to display unit.
         """
         rounded = _round_to_digits(Decimal(quantity), self.internal_unit.decimals)
-        return rounded / self.display_unit.ratio
+        value = rounded / self.display_unit.ratio
+        return _round_to_digits(value, self.display_unit.decimals)
 
     def from_display(self, display_quantity):
         """

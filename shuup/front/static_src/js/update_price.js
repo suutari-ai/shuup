@@ -8,14 +8,16 @@
  */
 window.updatePrice = function updatePrice(productId) {
     var $quantity = $("#product-quantity-" + productId);
-    if ($quantity.length === 0) {
+    var $dquantity = $("#product-dquantity-" + productId);
+    if ($quantity.length === 0 && $dquantity.length === 0) {
         return;
     }
 
     var data = {
         // In case productId is not available try to fallback to first input with correct name
         id: productId ? productId : $("input[name=product_id]").val(),
-        quantity: $quantity.val()
+        quantity: $quantity.val(),
+        dquantity: $dquantity.val()
     };
 
     var $simpleVariationSelect = $("#product-variations-" + productId);
@@ -40,16 +42,3 @@ window.updatePrice = function updatePrice(productId) {
         $(priceDiv).replaceWith($content.find(priceDiv));
     });
 };
-
-
-// TODO: Move this to display_quantity.js /////////////////////////////////////////////////////////////////////////////////////////
-
-window.updateQuantity = function updateQuantity(productId, displayRatio) {
-    var $dquantity = $("#product-dquantity-" + productId);
-    if ($dquantity.length === 0 || !$dquantity.is(":valid")) {
-        return;
-    }
-    var $quantity = $("#product-quantity-" + productId);
-    $quantity.val($dquantity.val() / displayRatio);
-    updatePrice(productId);
-}
