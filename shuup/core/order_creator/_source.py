@@ -145,6 +145,7 @@ class OrderSource(object):
 
         self._taxes_calculated = False
         self._processed_lines_cache = None
+        self._object_cache = {}
 
     def update(self, **values):
         for key, value in values.items():
@@ -573,6 +574,13 @@ class OrderSource(object):
         product_lines = self.get_product_lines()
         return ((sum(l.product.gross_weight * l.quantity for l in product_lines)) if product_lines else 0)
 
+    def _get_object(self, model, pk):
+        obj = self._object_cache.get((model, pk))
+        if not obj:
+            obj = model.objects.get(pk=pk)
+            self._object_cache[(model, pk)] = obj
+        return obj
+
 
 def _collect_lines_from_signal(signal_results):
     for (receiver, response) in signal_results:
@@ -602,6 +610,7 @@ class SourceLine(TaxableItem, Priceful, LineWithUnit):
     _FIELDS = [
         "line_id", "parent_line_id", "type",
         "shop", "product", "supplier", "tax_class",
+#XXX        "sales_unit", "display_unit",
         "quantity", "base_unit_price", "discount_amount",
         "sku", "text",
         "require_verification", "accounting_identifier",
@@ -612,6 +621,8 @@ class SourceLine(TaxableItem, Priceful, LineWithUnit):
         "product": Product,
         "supplier": Supplier,
         "tax_class": TaxClass,
+#XXX        "sales_unit": SalesUnit,
+#XXX        "display_unit": DisplayUnit,
     }
     _PRICE_FIELDS = set(["base_unit_price", "discount_amount"])
 
@@ -785,7 +796,7 @@ class SourceLine(TaxableItem, Priceful, LineWithUnit):
         for (name, model) in cls._OBJECT_FIELDS.items():
             id = result.pop(name + "_id", None)
             if id:
-                result[name] = model.objects.get(id=id)
+                result[name] = source._get_object(model, id)
 
         for name in cls._PRICE_FIELDS:
             value = result.get(name)

@@ -42,16 +42,13 @@ class ProductPriceView(ProductDetailView):
 
     def _get_quantity(self):
         qty = self.request.GET.get("quantity")
-        print(qty)
-        print(type(qty))
-        dqty = self.request.GET.get("dquantity")
-        print(dqty)
-        print(type(dqty))
-        if qty is not None:
-            return decimal.Decimal(qty)
+        unit_type = self.request.GET.get('unitType', 'internal')
+        print(unit_type)
+        if unit_type == 'internal' or qty is None:
+            return decimal.Decimal(qty or 0)
         else:
             shop_product = self.object.get_shop_instance(self.request.shop)
-            return shop_product.unit.from_display(decimal.Decimal(dqty))
+            return shop_product.unit.from_display(decimal.Decimal(qty))
 
     def get_variation_variables(self):
         return dict(

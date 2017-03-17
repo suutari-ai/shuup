@@ -41,7 +41,7 @@
                     <tr>
                         <td>{% if thumbnail %}<img src="{{ thumbnail }}" alt="{{ product.name }}">{% endif %}</td>
                         <td><a href="{{ shuup.urls.model_url(line.product) }}">{{ product.name }}</a></td>
-                        <td class="text-right">{{ unit.display_quantity(line.quantity) }}</td>
+                        <td class="text-right">{{ unit.render_quantity(line.quantity) }}</td>
                         {% if show_prices() %}
                         <td class="text-right">{{ line.product|price }}</td>
                         {% endif %}

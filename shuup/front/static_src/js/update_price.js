@@ -8,8 +8,7 @@
  */
 window.updatePrice = function updatePrice(productId) {
     var $quantity = $("#product-quantity-" + productId);
-    var $dquantity = $("#product-dquantity-" + productId);
-    if ($quantity.length === 0 && $dquantity.length === 0) {
+    if ($quantity.length === 0) {
         return;
     }
 
@@ -17,7 +16,7 @@ window.updatePrice = function updatePrice(productId) {
         // In case productId is not available try to fallback to first input with correct name
         id: productId ? productId : $("input[name=product_id]").val(),
         quantity: $quantity.val(),
-        dquantity: $dquantity.val()
+        unitType: $("#product-unit-type-" + productId).val()
     };
 
     var $simpleVariationSelect = $("#product-variations-" + productId);

@@ -14,13 +14,15 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.encoding import force_text, python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.translation import pgettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import pgettext
 from parler.models import TranslatedFields
 
-from ._base import TranslatableShuupModel
 from shuup.core.fields import InternalIdentifierField, QuantityField
 from shuup.utils.i18n import format_number
 from shuup.utils.numbers import bankers_round, parse_decimal_string
+
+from ._base import TranslatableShuupModel
 
 
 @python_2_unicode_compatible
@@ -53,7 +55,7 @@ class SalesUnit(TranslatableShuupModel):
         warnings.warn(
             "unit.short_name is deprecated, use unit.symbol instead",
             DeprecationWarning)
-        return self.internal_unit.symbol
+        return self.symbol
 
     @property
     def allow_fractions(self):
@@ -187,66 +189,93 @@ class UnitInterface(object):
     Provides methods for rounding, rendering and converting product
     quantities in display unit or internal unit.
     """
-    def __init__(self, internal_unit, display_unit=None):
+    def __init__(self, internal_unit=None, display_unit=None):
         """
         Initialize unit interface.
 
-        :type internal_unit: SalesUnit
-        :type display_unit: DisplayUnit
+        :type internal_unit: SalesUnit|PiecesSalesUnit
+        :type display_unit: DisplayUnit|SalesUnitAsDisplayUnit
         """
-        self.internal_unit = internal_unit
-        self.display_unit = display_unit or internal_unit.display_unit
+        if display_unit:
+            self.internal_unit = display_unit.internal_unit
+            self.display_unit = display_unit
+        else:
+            self.internal_unit = internal_unit or PiecesSalesUnit()
+            self.display_unit = self.internal_unit.display_unit
+        assert self.display_unit.internal_unit == self.internal_unit
 
     @property
     def symbol(self):
         """
-        Symbol of the internal unit.
-        """
-        return self.internal_unit.symbol
-
-    @property
-    def display_symbol(self):
-        """
         Symbol of the display unit.
+
+        :rtype: str
         """
         return self.display_unit.symbol or PiecesSalesUnit.symbol
 
-    def get_display_symbol(self, allow_empty=True):
+    def get_symbol(self, allow_empty=True):
         """
         Get symbol of the display unit or empty if it is not needed.
+
+        :rtype: str
         """
         if allow_empty and self.is_countable and (
                 self.display_unit.comparison_value == 1):
             return ''
-        return self.display_symbol
+        return self.symbol
+
+    @property
+    def internal_symbol(self):
+        """
+        Symbol of the internal unit.
+
+        :rtype: str
+        """
+        return self.internal_unit.symbol
 
     @property
     def is_countable(self):
         """
         Get countability of the display unit.
+
+        :rtype: bool
         """
         return self.display_unit.is_countable
 
-    def display_quantity(self, quantity, force_symbol=False):
+    def render_quantity(self, quantity, force_symbol=False):
         """
-        Render quantity (in internal unit) in the display unit.
+        Render (internal unit) quantity in the display unit.
 
-        The value converted from internal to display unit and then it's
-        localized and display unit symbol added if needed (or forced).
+        The value converted from the internal unit to the display unit
+        and then localized.  The display unit symbol is added if needed.
+
+        :type quantity: Decimal
+        :param quantity: Quantity to render, in internal unit
+        :type force_symbol: bool
+        :param force_symbol: Make sure that the symbol is rendered
+        :rtype: str
+        :return: Rendered quantity in display unit.
         """
         display_quantity = self.to_display(quantity)
         value = format_number(display_quantity, self.display_unit.decimals)
-        symbol = self.get_display_symbol(allow_empty=(not force_symbol))
+        symbol = self.get_symbol(allow_empty=(not force_symbol))
         if not symbol:
             return value
         return _get_value_symbol_template().format(value=value, symbol=symbol)
 
-    def render_internal(self, quantity, force_symbol=False):
+    def render_quantity_internal(self, quantity, force_symbol=False):
         """
         Render quantity (in internal unit) in the internal unit.
 
-        The value is localized and internal unit symbol is added if
-        needed (or forced).
+        The value is localized and the internal unit symbol is added if
+        needed.
+
+        :type quantity: Decimal
+        :param quantity: Quantity to render, in internal unit
+        :type force_symbol: bool
+        :param force_symbol: Make sure that the symbol is rendered
+        :rtype: str
+        :return: Rendered quantity in internal unit.
         """
         value = format_number(quantity, self.internal_unit.decimals)
         if not force_symbol and self.is_countable:
@@ -257,6 +286,11 @@ class UnitInterface(object):
     def to_display(self, quantity):
         """
         Convert quantity from internal unit to display unit.
+
+        :type quantity: Decimal
+        :param quantity: Quantity to convert, in internal unit
+        :rtype: Decimal
+        :return: Converted quantity, in display unit
         """
         rounded = _round_to_digits(Decimal(quantity), self.internal_unit.decimals)
         value = rounded / self.display_unit.ratio
@@ -265,33 +299,44 @@ class UnitInterface(object):
     def from_display(self, display_quantity):
         """
         Convert quantity from display unit to internal unit.
+
+        :type quantity: Decimal
+        :param quantity: Quantity to convert, in display unit
+        :rtype: Decimal
+        :return: Converted quantity, in internal unit
         """
         converted = Decimal(display_quantity) * self.display_unit.ratio
         return _round_to_digits(converted, self.internal_unit.decimals)
 
-    def get_display_per_values(self, force_symbol=False):
+    def get_per_values(self, force_symbol=False):
         """
         Get "per" quantity and "per" text according to the display unit.
 
         Useful when rendering unit prices, e.g.::
 
-          (per_qty, per_text) = unit.get_display_per_values(force_symbol=True)
+          (per_qty, per_text) = unit.get_per_values(force_symbol=True)
           price = product.get_price(quantity=per_qty)
           unit_price_text = _("{price} per {per_text}").format(
               price=price, per_text=per_text)
+
+        :rtype: (Decimal, str)
+        :return:
+          Quantity (in internal unit) and text to use as the unit in
+          unit prices
         """
-        if not self.get_display_symbol(allow_empty=(not force_symbol)):
-            return (1, '')
+        symbol = self.get_symbol(allow_empty=(not force_symbol))
+        without_value = (self.display_unit.comparison_value == 1)
         per_qty = self.comparison_quantity
-        per_text = (
-            self.display_symbol if (self.display_unit.comparison_value == 1)
-            else self.display_quantity(per_qty))
+        per_text = (symbol if without_value else self.render_quantity(per_qty))
         return (per_qty, per_text)
 
     @property
     def comparison_quantity(self):
         """
-        Quantity (in internal unit) as the unit in unit prices.
+        Quantity (in internal unit) to use as the unit in unit prices.
+
+        :rtype: Decimal
+        :return: Quantity, in internal unit
         """
         return self.from_display(self.display_unit.comparison_value)
 

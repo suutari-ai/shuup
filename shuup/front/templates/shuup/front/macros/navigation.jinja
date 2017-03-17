@@ -186,7 +186,7 @@
                                 <tr>
                                     <td>
                                         {% set line_url = shuup.urls.model_url(line.product) %}
-                                        {{ line.unit.display_quantity(line.quantity) }} &times;
+                                        {{ line.unit.render_quantity(line.quantity) }} &times;
                                         {% if line_url %}
                                             <a href="{{ line_url }}">{{ line.text }}</a>
                                         {% else %}

@@ -179,9 +179,9 @@ class ShopProduct(MoneyPropped, models.Model):
         super(ShopProduct, self).clean(*args, **kwargs)
         if self.display_unit:
             if self.display_unit.internal_unit != self.product.sales_unit:
-                raise ValidationError(_(
+                raise ValidationError({'display_unit': _(
                     "Invalid display unit: Internal unit "
-                    "does not match with the product"))
+                    "does not match with the product")})
 
     def is_list_visible(self):
         """
@@ -351,23 +351,23 @@ class ShopProduct(MoneyPropped, models.Model):
             p = (quantity // purchase_multiple)
             smaller_p = max(purchase_multiple, p * purchase_multiple)
             larger_p = max(purchase_multiple, (p + 1) * purchase_multiple)
-            display_qty = self.unit.display_quantity
+            render_qty = self.unit.render_quantity
             if larger_p == smaller_p:
                 #TODO:Check fi_FI and sv_SE translations of this
                 message = _(
                     "The product can only be ordered in multiples of "
                     "{package_size}, for example {amount}").format(
-                        package_size=display_qty(purchase_multiple),
-                        amount=display_qty(smaller_p))
+                        package_size=render_qty(purchase_multiple),
+                        amount=render_qty(smaller_p))
             else:
                 #TODO:Check fi_FI and sv_SE translations of this
                 message = _(
                     "The product can only be ordered in multiples of "
                     "{package_size}, for example {smaller_amount} or "
                     "{larger_amount}").format(
-                        package_size=display_qty(purchase_multiple),
-                        smaller_amount=display_qty(smaller_p),
-                        larger_amount=display_qty(larger_p))
+                        package_size=render_qty(purchase_multiple),
+                        smaller_amount=render_qty(smaller_p),
+                        larger_amount=render_qty(larger_p))
             yield ValidationError(message, code="invalid_purchase_multiple")
 
         for receiver, response in get_orderability_errors.send(

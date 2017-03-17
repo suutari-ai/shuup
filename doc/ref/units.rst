@@ -1,55 +1,100 @@
-Units in Shuup
-==============
+Product Units in Shuup
+======================
 
-``product.sales_unit``
-  Sales unit object of a `Product`. Could be ``None``.
+Commonly web shops sell products which are prepackaged units and their
+quantities is measured in pieces.  However it is sometimes needed to be
+able to sell products in non-integral quantities, like kilograms or
+ounces.  This is where the unit system of Shuup is useful.
 
-``sales_unit.name``
-  Name of `SalesUnit`.  Usually shown only in Admin when managing units
-  or when selecting unit for a product.
+Each product has a sales unit which determines how quantities of the
+product are represented and if non-integral quantities are allowed.
+However it is possible that the sales unit has an attached display unit
+which overrides the representation part.  This allows, for example, the
+internal quantities to be stored in kilograms but be displayed as grams
+to the customer.
 
-``sales_unit.symbol``
-  Abbreviation of the unit.
+``Product.sales_unit``
+    Sales unit of a `~shuup.core.models.Product`.  Usually a
+    `~shuup.core.models.SalesUnit` object, but can also be ``None``.
+    Thin is the internal unit which is used to *store* the quantities,
+    like quantities in the order lines or stock amounts.  Quantities
+    shown to the customer should not use the sales unit, but rather a
+    *display unit*, see ShopProduct.display_unit_ and or
+    SalesUnit.display_unit_.
 
-``sales_unit.decimals``
-  Number of decimals to use for values in this unit.
+``SalesUnit.name``
+    Name of `~shuup.core.models.SalesUnit`.  Usually shown only in Admin
+    when managing units or when selecting sales unit for a product.
 
-``sales_unit.display_abbr``
-  
+``SalesUnit.symbol``
+    Symbol used when rendering values of the sales unit.
 
-``sales_unit.display_decimals``
-  X
+``SalesUnit.decimals``
+    Number of decimals to use for values in this unit.
 
-``sales_unit.display_multiplier``
-  X
+.. _SalesUnit.display_unit:
 
-``sales_unit.base_quantity``
-  X
+``SalesUnit.display_unit``
+    The default display unit of a sales unit.  Can be a
+    `~shuup.core.models.DisplayUnit` object or if there is no default
+    display unit for the sales unit, then this is as a proxy object with
+    the same interface.
 
-``sales_unit.base_quantity_text``
-  X
+.. _ShopProduct.display_unit:
 
-``sales_unit.display_abbr_text``
-  X
+``ShopProduct.display_unit``
+    Display unit of a shop product, a `~shuup.core.models.DisplayUnit`
+    object or ``None``.
 
-``sales_unit.base_quantity``
-  X
+``ShopProduct.unit``
+    The unit of the shop product as `~shuup.core.models.UnitInterface`.
 
+``ShopProduct.display_quantity_step``
+    Quantity step of the shop product in the display unit.
 
-shop_product.render_quantity(quantity)
+``ShopProduct..display_quantity_minimum``
+    Quantity minimum of the shop product in the display unit.
 
-shop_product.get_display_quantity(quantity)
+``DisplayUnit.name``
+    Name of the display unit.
 
-shop_product.display_abbr
+``DisplayUnit.symbol``
+    Symbol of the display unit, used when rendering quantity values in
+    the display unit.
 
-shop_product.display_quantity_step
+``DisplayUnit.internal_unit``
+    The `~shuup.core.models.SalesUnit` object which acts as the internal
+    unit for the display unit.
 
-shop_product.display_quantity_minimum
+``DisplayUnit.ratio``
+    Ratio between the display unit and its internal unit.  E.g. if
+    internal unit is a kilogram and display unit is gram, then this
+    should be 0.001.
 
+``DisplayUnit.decimals``
+    Number of decimals to use when representing quantity values in the
+    display unit.
 
+``DisplayUnit.comparison_value``
+    Value to use for comparison purposes.  E.g. if the display unit is a
+    gram with symbol "g" and this is 100, then the unit prices should be
+    rendered as "$5.95 per 100g".
 
-``shop_product.display_unit_symbol``
+``DisplayUnit.is_countable``
+    Boolean which should be true for units with integral values.  Values
+    of countable units can be shown without the symbol occasionally.
+    Usually wanted if the unit is a Piece, i.e. showing just "$5,95"
+    rather than "$5,95 per pc.".
 
-``shop_product.display_quantity_step``
+``DisplayUnit.default``
+    Use this display unit as the default display unit for its internal
+    unit.  If there is several default display units for an internal
+    unit, then its undetermined which will be used.
 
-``shop_product.display_quantity_minimum``
+``UnitInterface``
+    Interface for unit related information and functionality.  Bound to
+    a single display unit and its internal unit.  Can be used for
+    rendering and converting product quantities in the display unit or
+    in the internal unit.  Or for accessing data of either unit.  See
+    the API documentation of `~shuup.core.models.UnitInterface` for
+    details.

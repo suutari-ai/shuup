@@ -52,7 +52,7 @@ Inheritance order for product macors:
 {% macro render_product_price(product, show_units=True) %}
   {% if show_prices() %}
         {%- set unit = product.get_shop_instance(request.shop).unit -%}
-        {%- set (per_qty, per_text) = unit.get_display_per_values(show_units) -%}
+        {%- set (per_qty, per_text) = unit.get_per_values(show_units) -%}
         <div class="price-line">
             <span class="lead">
                 {%- if product.is_variation_parent() -%}
