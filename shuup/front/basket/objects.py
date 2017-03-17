@@ -226,9 +226,11 @@ class BaseBasket(OrderSource):
 
     def _cache_lines(self):
         lines = [BasketLine.from_dict(self, line) for line in self._data_lines]
+        lines_map = {}
         orderable_counter = Counter()
         orderable_lines = []
         for line in lines:
+            lines_map[line.line_id] = line
             if line.type != OrderLineType.PRODUCT:
                 orderable_lines.append(line)
             else:
@@ -256,6 +258,7 @@ class BaseBasket(OrderSource):
                         orderable_counter[product.id] += line.quantity
         self._orderable_lines_cache = orderable_lines
         self._unorderable_lines_cache = [line for line in lines if line not in orderable_lines]
+        self._lines_map = lines_map
         self._lines_cached = True
 
     @property
@@ -402,6 +405,10 @@ class BaseBasket(OrderSource):
             self.clean_empty_lines()
             return True
         return False
+
+    def get_line(self, line_id):
+        self.get_lines()  # Populate self._lines_map
+        return self._lines_map.get(line_id)
 
     def find_line_by_line_id(self, line_id):
         for line in self._data_lines:

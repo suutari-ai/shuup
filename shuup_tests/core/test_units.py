@@ -1,0 +1,205 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from decimal import Decimal
+
+import pytest
+from django.utils import translation
+from django.utils.translation.trans_real import translation as get_trans
+
+from shuup.core.models._units import (
+    DisplayUnit, SalesUnit, SalesUnitAsDisplayUnit, UnitInterface
+)
+
+
+def nbsp(x):
+    """
+    Convert space to non-breaking space.
+    """
+    return x.replace(" ", "\xa0")
+
+
+def test_unit_interface_smoke():
+    gram = get_g_in_kg_unit(decimals=4, display_decimals=1)
+    assert gram.symbol == 'g'
+    assert gram.internal_symbol == 'kg'
+    assert gram.to_display(Decimal('0.01')) == 10
+    assert gram.from_display(10) == Decimal('0.01')
+    assert gram.render_quantity(Decimal('0.01')) == '10.0g'
+    assert gram.comparison_quantity == Decimal('0.1')
+
+
+def test_unit_interface_to_display():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
+    assert gram3.to_display(Decimal('0.01')) == 10
+    assert gram3.to_display(Decimal('0.001')) == 1
+    assert gram3.to_display(Decimal('0.0005')) == 1
+    assert gram3.to_display(Decimal('0.000499')) == 0
+    assert gram3.to_display(Decimal('-1')) == -1000
+    assert gram3.to_display(Decimal('-0.1234')) == -123
+    assert gram3.to_display(Decimal('-0.1235')) == -124
+
+
+def test_unit_interface_to_display_small_display_prec():
+    gram6 = get_g_in_kg_unit(decimals=6, display_decimals=1)
+    assert gram6.to_display(Decimal('0.01')) == 10
+    assert gram6.to_display(Decimal('0.001')) == 1
+    assert gram6.to_display(Decimal('0.0005')) == Decimal('0.5')
+    assert gram6.to_display(Decimal('0.000499')) == Decimal('0.5')
+    assert gram6.to_display(Decimal('0.0001234')) == Decimal('0.1')
+    assert gram6.to_display(Decimal('0.0001235')) == Decimal('0.1')
+    assert gram6.to_display(Decimal('12.3456789')) == Decimal('12345.7')
+
+
+def test_unit_interface_to_display_float():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
+    assert gram3.to_display(0.01) == 10
+
+
+def test_unit_interface_to_display_str():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
+    assert gram3.to_display('0.01') == 10
+
+
+def test_unit_interface_from_display():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
+    assert gram3.from_display(1234) == Decimal('1.234')
+    assert gram3.from_display(Decimal('123.456')) == Decimal('0.123')
+    assert gram3.from_display(Decimal('123.5')) == Decimal('0.124')
+    assert gram3.from_display(Decimal('124.5')) == Decimal('0.125')
+
+
+def test_unit_interface_from_display_small_display_prec():
+    gram6 = get_g_in_kg_unit(decimals=6, display_decimals=1)
+    assert gram6.from_display(123) == Decimal('0.123')
+    assert gram6.from_display(Decimal('123.456')) == Decimal('0.123456')
+    assert gram6.from_display(Decimal('123.4565')) == Decimal('0.123457')
+
+
+def test_unit_interface_from_display_float():
+    gram6 = get_g_in_kg_unit(decimals=6, display_decimals=3)
+    assert gram6.from_display(123.456) == Decimal('0.123456')
+
+
+def test_unit_interface_from_display_str():
+    gram6 = get_g_in_kg_unit(decimals=6, display_decimals=3)
+    assert gram6.from_display('123.456') == Decimal('0.123456')
+
+
+def test_unit_interface_render_quantity():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
+    with translation.override(None):
+        assert gram3.render_quantity(123) == '123000g'
+        assert gram3.render_quantity(0.123) == '123g'
+        assert gram3.render_quantity('0.0521') == '52g'
+        assert gram3.render_quantity('0.0525') == '53g'
+        assert gram3.render_quantity('0.0535') == '54g'
+
+
+def test_unit_interface_display_quantity_small_display_prec():
+    gram6 = get_g_in_kg_unit(decimals=6, display_decimals=1)
+    with translation.override(None):
+        assert gram6.render_quantity(Decimal('12.3456789')) == '12345.7g'
+
+
+def test_unit_interface_display_quantity_translations():
+    # Let's override some translations, just to be sure
+    for lang in ['en', 'pt-br', 'hi', 'hy']:
+        get_trans(lang).merge(ValueSymbolTranslationWithoutSpace)
+    for lang in ['fi']:
+        get_trans(lang).merge(ValueSymbolTranslationWithSpace)
+
+    gram = get_g_in_kg_unit(decimals=7, display_decimals=4)
+    qty = Decimal('4321.1234567')
+    with translation.override(None):
+        assert gram.render_quantity(qty) == '4321123.4567g'
+    with translation.override('en'):
+        assert gram.render_quantity(qty) == '4,321,123.4567g'
+    with translation.override('fi'):
+        assert gram.render_quantity(qty) == nbsp('4 321 123,4567 g')
+    with translation.override('pt-br'):
+        assert gram.render_quantity(qty) == '4.321.123,4567g'
+    with translation.override('hi'):
+        assert gram.render_quantity(qty) == '43,21,123.4567g'
+    with translation.override('hy'):
+        assert gram.render_quantity(qty) == '4321123,4567g'
+
+
+trans_key = (
+    'Display value with unit symbol (with or without space)'
+    '\x04'  # Gettext context separator
+    '{value}{symbol}')
+
+
+class ValueSymbolTranslationWithSpace(object):
+    _catalog = {trans_key: nbsp('{value} {symbol}')}
+
+
+class ValueSymbolTranslationWithoutSpace(object):
+    _catalog = {trans_key: '{value}{symbol}'}
+
+
+def get_g_in_kg_unit(decimals, display_decimals, comparison=100):
+    unit = UnitInterface(Kilogram(decimals=decimals))
+    unit.display_unit = DisplayUnit(
+        ratio=Decimal('0.001'),
+        decimals=display_decimals,
+        symbol='g',
+        comparison_value=comparison,
+    )
+    return unit
+
+
+class Kilogram(object):
+    def __init__(self, decimals):
+        self.name = "Kilograms"
+        self.symbol = 'kg'
+        self.decimals = decimals
+        self.display_unit = SalesUnitAsDisplayUnit(self)
+
+
+def test_sales_unit_as_display_unit():
+    sales_unit = SalesUnit(decimals=3)
+    display_unit = SalesUnitAsDisplayUnit(sales_unit)
+    assert display_unit.internal_unit == sales_unit
+    assert display_unit.ratio == 1
+    assert display_unit.decimals == sales_unit.decimals
+    assert display_unit.comparison_value == 1
+    assert display_unit.is_countable is False
+    assert display_unit.default is False
+
+    # Name and symbol should be "lazy" to allow language switch
+    sales_unit.set_current_language('en')
+    sales_unit.symbol = "Kg"
+    sales_unit.name = "Kilogram"
+    assert display_unit.name == sales_unit.name
+    assert display_unit.symbol == sales_unit.symbol
+    sales_unit.set_current_language('fi')
+    sales_unit.name = "kilogramma"
+    sales_unit.symbol = "kg"
+    assert display_unit.name == sales_unit.name
+    assert display_unit.symbol == sales_unit.symbol
+
+
+def test_sales_unit_as_display_unit_is_countable():
+    each = SalesUnit(decimals=0, symbol='ea.')
+    kg = SalesUnit(decimals=3, symbol='kg')
+    assert SalesUnitAsDisplayUnit(each).is_countable is True
+    assert SalesUnitAsDisplayUnit(kg).is_countable is False
+
+
+def test_kg_in_oz():
+    kg_oz = UnitInterface(Kilogram(decimals=9))
+    kg_oz.display_unit = DisplayUnit(
+        ratio=Decimal('0.028349523'),
+        decimals=3, symbol='oz')
+    assert kg_oz.comparison_quantity == Decimal('0.028349523')
+    assert kg_oz.render_quantity('0.028349523') == '1.000oz'
+    assert kg_oz.render_quantity(1) == '35.274oz'
+    assert kg_oz.render_quantity(0.001) == '0.035oz'
+    assert kg_oz.from_display(Decimal('0.001')) == Decimal('0.000028350')
+    assert kg_oz.to_display(Decimal('0.000028350')) == approx('0.001')
+
+
+def approx(value):
+    return pytest.approx(Decimal(value), abs=Decimal('0.1')**7)

@@ -53,23 +53,31 @@
             {% endif %}
             <div class="quantity">
                 {% if product %}
+                    {% set unit = shop_product.unit %}
                     {% if line.can_change_quantity %}
                     <div class="input-group">
-                        <div class="input-group-addon">
-                            {% trans %}Qty{% endtrans %}
-                        </div>
                         <input
-                            id="qty_{{ line.line_id }}"
+                            id="dqty_{{ line.line_id }}"
                             type="number"
-                            name="q_{{ line.line_id }}"
+                            name="dq_{{ line.line_id }}"
                             size="2"
                             class="line_quantity form-control"
-                            step="{{ shop_product.quantity_step }}"
-                            value="{{ line.quantity }}"
-                            min="{{ shop_product.rounded_minimum_purchase_quantity }}">
+                            step="{{ shop_product.display_quantity_step }}"
+                            value="{{ unit.to_display(line.quantity) }}"
+                            min="{{ shop_product.display_quantity_minimum }}">
+                        <div class="input-group-addon sales-unit">
+                            {{ unit.symbol }}
+                        </div>
+                        {# <input #}
+                        {#     id="qty_{{ line.line_id }}" #}
+                        {#     type="hidden" #}
+                        {#     name="q_{{ line.line_id }}" #}
+                        {#     value="{{ line.quantity }}"> #}
                     </div>
                     {% else %}
-                        <div class="">{{ _("Quantity") }}: {{ line.quantity }}</div>
+                        <div class="">
+                            {{ shop_product.unit.render_quantity(line.quantity) }}
+                        </div>
                     {% endif %}
                 {% endif %}
             </div>
@@ -229,6 +237,12 @@
 {% endmacro %}
 
 {% macro update_quantity_js() %}
+    {# $("#update_basket_form .quantity :input[id^='dqty_']").change(function() { #}
+    {#     $dqty = $(this); #}
+    {#     $qty = $("#qty_" + this.id.substr(5)); #}
+    {#     var factor = this.dataset.displayFactor; #}
+    {#     $qty.val($dqty.val() / factor); #}
+    {# }); #}
     $("#update_basket_form .quantity :input").change(function() {
         $("#update_basket_form").submit();
     });
