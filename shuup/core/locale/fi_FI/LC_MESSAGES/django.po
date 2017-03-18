@@ -1381,21 +1381,20 @@ msgstr "%s ei toimita tuotetta."
 msgid "Product has no sellable children"
 msgstr "Tuotteella ei ole myytäviä lapsia"
 
-#, python-format
+#, python-brace-format
 msgid ""
-"The product can only be ordered in multiples of %(package_size)s, for "
-"example %(smaller_p)s %(unit)s."
+"The product can only be ordered in multiples of {package_size}, for example "
+"{amount}"
 msgstr ""
-"Tuotetta voi tilata vain %(package_size)s kerrannaisina (esim. %(smaller_p)s "
-"%(unit)s)."
+"Tuotetta voi tilata vain {package_size} kerrannaisina (esim. {amount})."
 
-#, python-format
+#, python-brace-format
 msgid ""
-"The product can only be ordered in multiples of %(package_size)s, for "
-"example %(smaller_p)s or %(larger_p)s %(unit)s."
+"The product can only be ordered in multiples of {package_size}, for example "
+"{smaller_amount} or {larger_amount}"
 msgstr ""
-"Tuotetta voi tilata vain %(package_size)s kerrannaisina (esim. %(smaller_p)s "
-"tai %(larger_p)s %(unit)s)."
+"Tuotetta voi tilata vain {package_size} kerrannaisina (esim. "
+"{smaller_amount} tai {larger_amount})."
 
 msgid "variation variable"
 msgstr "variaatiomuuttuja"
@@ -2279,11 +2278,6 @@ msgstr "Yksityisasiakkaat"
 msgid "Company Customers"
 msgstr "Yritysasiakkaat"
 
-#, python-brace-format
-msgctxt "Display value with unit symbol (with or without space)"
-msgid "{value}{symbol}"
-msgstr "{value} {symbol}"
-
 msgid "allowed decimal places"
 msgstr "sallitut desimaalipaikat"
 
@@ -2320,29 +2314,38 @@ msgstr "myyntiyksiköt"
 msgid "Value must be positive and non-zero"
 msgstr ""
 
-#, fuzzy
-#| msgid "purchase multiple"
-msgid "display multiplier"
-msgstr "tilausmonikerta"
+msgid "internal unit"
+msgstr "sisäinen yksikkö"
+
+msgid "The sales unit that this display unit is linked to."
+msgstr "Myyntiyksikkö, johon tämä näyttöyksikkö on liitetty"
+
+msgid "ratio"
+msgstr "mittasuhde"
 
 msgid ""
-"Amount of display units in one internal unit.  E.g. if internal unit is \"kg"
-"\" and display unit is \"g\", this should be 1000."
+"Size of the display unit in internal unit.  E.g. if internal unit is "
+"kilogram and display unit is gram, ratio is 0.001."
 msgstr ""
+"Näyttöyksikön koko sisäisessä yksikössä. Esim. jos sisäinen yksikkö "
+"on kilogramma ja näyttöyksikkö on gramma, niin mittasuhde on 0,001."
 
 msgid ""
 "The number of decimal places to use for values in the display unit.  The "
 "internal values are still rounded based on settings of the internal unit."
 msgstr ""
 
-msgid "comparison quantity"
-msgstr ""
+msgid "comparison value"
+msgstr "vertailuarvo"
 
 msgid ""
-"Quantity to use when displaying unit prices.  E.g. if the display unit is g "
-"and the comparison quantity is 100, then unit prices are shown per 100g, "
-"like \"$2.95 per 100g\"."
+"Value to use when displaying unit prices.  E.g. if the display unit is g and "
+"the comparison value is 100, then unit prices are shown per 100g, like: "
+"$2.95 per 100g."
 msgstr ""
+"Yksikköhintojen näyttämisessä käytettävä arvo. Esim. jos näyttöyksikkö on g"
+"ja vertailuarvo on 100, niin yksikköhinnat näytetään 100 g kohden, kuten: "
+"2,95 € / 100 g."
 
 msgid "Name of the display unit, e.g. \"grams\"."
 msgstr ""
@@ -2355,10 +2358,8 @@ msgstr ""
 msgid "display unit"
 msgstr "esitettävä valuutta"
 
-#, fuzzy
-#| msgid "display currency"
 msgid "display units"
-msgstr "esitettävä valuutta"
+msgstr "näyttöyksiköt"
 
 msgid "Pieces"
 msgstr ""
@@ -2366,6 +2367,11 @@ msgstr ""
 msgctxt "Symbol for pieces unit"
 msgid "pc."
 msgstr "kpl"
+
+#, python-brace-format
+msgctxt "Display value with unit symbol (with or without space)"
+msgid "{value}{symbol}"
+msgstr "{value} {symbol}"
 
 msgid "No Choice"
 msgstr "ei valintaa"
