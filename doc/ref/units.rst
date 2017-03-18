@@ -80,11 +80,11 @@ to the customer.
     gram with symbol "g" and this is 100, then the unit prices should be
     rendered as "$5.95 per 100g".
 
-``DisplayUnit.is_countable``
-    Boolean which should be true for units with integral values.  Values
-    of countable units can be shown without the symbol occasionally.
-    Usually wanted if the unit is a Piece, i.e. showing just "$5,95"
-    rather than "$5,95 per pc.".
+``DisplayUnit.allow_bare_number``
+    If this boolean is true, then values of this unit can be shown
+    without the symbol occasionally.  Usually wanted if the unit is a
+    Piece, i.e. showing just "$5,95" in product listings rather than
+    "$5,95 per pc.".
 
 ``DisplayUnit.default``
     Use this display unit as the default display unit for its internal

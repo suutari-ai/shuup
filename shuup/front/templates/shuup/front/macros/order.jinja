@@ -112,7 +112,7 @@
                         </td>
                         <td class="text-right">
                             {{ line.taxful_discounted_unit_price|money }}
-                            {% if not line.unit.is_countable %}
+                            {% if line.unit.to_display(1) != 1 %}
                                 / {{ line.unit.internal_symbol }}
                             {% endif %}
                             {% if line.tax_amount %}

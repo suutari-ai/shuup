@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('comparison_value', shuup.core.fields.QuantityField(
                     default=1, max_digits=36, decimal_places=9, validators=[
                         shuup.core.models._units.validate_positive_not_zero])),
-                ('is_countable', models.BooleanField(default=False)),
+                ('allow_bare_number', models.BooleanField(default=False)),
                 ('default', models.BooleanField(default=False)),
             ],
             options={

@@ -165,7 +165,7 @@ def test_sales_unit_as_display_unit():
     assert display_unit.ratio == 1
     assert display_unit.decimals == sales_unit.decimals
     assert display_unit.comparison_value == 1
-    assert display_unit.is_countable is False
+    assert display_unit.allow_bare_number is False
     assert display_unit.default is False
 
     # Name and symbol should be "lazy" to allow language switch
@@ -181,11 +181,11 @@ def test_sales_unit_as_display_unit():
     assert display_unit.symbol == sales_unit.symbol
 
 
-def test_sales_unit_as_display_unit_is_countable():
+def test_sales_unit_as_display_unit_allow_bare_number():
     each = SalesUnit(decimals=0, symbol='ea.')
     kg = SalesUnit(decimals=3, symbol='kg')
-    assert SalesUnitAsDisplayUnit(each).is_countable is True
-    assert SalesUnitAsDisplayUnit(kg).is_countable is False
+    assert SalesUnitAsDisplayUnit(each).allow_bare_number is True
+    assert SalesUnitAsDisplayUnit(kg).allow_bare_number is False
 
 
 def test_kg_in_oz():

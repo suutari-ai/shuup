@@ -389,12 +389,19 @@ class OrderSource(object):
         containing 5 chocolate bars, 2 t-shirts and 2.5 kg of cocoa beans
         would be 5 + 2 + 1 = 8.
 
+        Definition of "countable" here: If product has an unit that
+        allows presenting its quantities as a bare number (see
+        `~shuup.core.models.UnitInteface.allow_bare_number`) and its
+        quantity is an integral number, we assume that the unit is
+        similar to "Pieces" unit and those products being countable.
+        Other units are assumed to be non-countable.
+
         :rtype: int
         """
         def count_in_line(line):
             truncated_qty = int(line.quantity)
-            if not line.unit.is_countable or truncated_qty != line.quantity:
-                return 1  # Non-contables or non-integral values counted as 1
+            if not line.unit.allow_bare_number or truncated_qty != line.quantity:
+                return 1  # Non-countables or non-integral values counted as 1
             return truncated_qty
         return sum(count_in_line(line) for line in self.get_product_lines())
 

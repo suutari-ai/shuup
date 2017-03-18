@@ -118,13 +118,13 @@ class DisplayUnit(TranslatableShuupModel):
             "Value to use when displaying unit prices.  E.g. if the "
             "display unit is g and the comparison value is 100, then "
             "unit prices are shown per 100g, like: $2.95 per 100g."))
-    is_countable = models.BooleanField(
-        default=False, verbose_name=_(
-            "countable"),
+    allow_bare_number = models.BooleanField(
+        default=False, verbose_name=_("allow bare number"),
         help_text=_(
-            "Values of countable units can be shown without the symbol "
-            "occasionally.  Usually wanted if the unit is a Piece, "
-            "i.e. showing just $5 rather than $5 per pc."))
+            "If true, values of this unit can be shown without the "
+            "symbol occasionally.  Usually wanted if the unit is a "
+            "piece, so that product listings can show just '$5' "
+            "rather than '$5 per pc.'"))
     default = models.BooleanField(
         default=False, verbose_name=_("use by default"), help_text=_(
             "Use this display unit by default when displaying "
@@ -150,7 +150,7 @@ class SalesUnitAsDisplayUnit(object):
         self.ratio = Decimal(1)
         self.decimals = sales_unit.decimals
         self.comparison_value = Decimal(1)
-        self.is_countable = (sales_unit.decimals == 0)
+        self.allow_bare_number = (sales_unit.decimals == 0)
         self.default = False
 
     name = property(lambda self: self.internal_unit.name)
@@ -219,7 +219,7 @@ class UnitInterface(object):
 
         :rtype: str
         """
-        if allow_empty and self.is_countable and (
+        if allow_empty and self.allow_bare_number and (
                 self.display_unit.comparison_value == 1):
             return ''
         return self.symbol
@@ -234,13 +234,13 @@ class UnitInterface(object):
         return self.internal_unit.symbol
 
     @property
-    def is_countable(self):
+    def allow_bare_number(self):
         """
-        Get countability of the display unit.
+        Allow showing values without the unit symbol.
 
         :rtype: bool
         """
-        return self.display_unit.is_countable
+        return self.display_unit.allow_bare_number
 
     def render_quantity(self, quantity, force_symbol=False):
         """
@@ -278,7 +278,7 @@ class UnitInterface(object):
         :return: Rendered quantity in internal unit.
         """
         value = format_number(quantity, self.internal_unit.decimals)
-        if not force_symbol and self.is_countable:
+        if not force_symbol and self.allow_bare_number:
             return value
         symbol = self.internal_unit.symbol
         return _get_value_symbol_template().format(value=value, symbol=symbol)
