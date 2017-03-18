@@ -25,6 +25,15 @@ def test_sales_unit_decimals():
     assert SalesUnit(decimals=0).round("1.5") == Decimal("2")
 
 
+def test_sales_unit_short_name():
+    # test the deprecated compatibility property
+    assert SalesUnit(symbol='g').short_name == 'g'
+    assert SalesUnit(short_name='g').symbol == 'g'
+    unit = SalesUnit()
+    unit.short_name = 'g'
+    assert unit.symbol == 'g'
+
+
 @pytest.mark.django_db
 @override_settings(**{"LANGUAGES": (("en", "en"), ("fi", "fi"))})
 def test_sales_unit_str():

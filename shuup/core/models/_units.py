@@ -47,6 +47,14 @@ class SalesUnit(TranslatableShuupModel):
         verbose_name = _('sales unit')
         verbose_name_plural = _('sales units')
 
+    def __init__(self, short_name=None, *args, **kwargs):
+        if short_name is not None:
+            warnings.warn(
+                "unit.short_name is deprecated, use unit.symbol instead",
+                DeprecationWarning)
+            kwargs.setdefault('symbol', short_name)
+        super(SalesUnit, self).__init__(*args, **kwargs)
+
     def __str__(self):
         return self.safe_translation_getter("name", default=self.identifier) or ""
 
@@ -56,6 +64,13 @@ class SalesUnit(TranslatableShuupModel):
             "unit.short_name is deprecated, use unit.symbol instead",
             DeprecationWarning)
         return self.symbol
+
+    @short_name.setter
+    def short_name(self, value):
+        warnings.warn(
+            "unit.short_name is deprecated, use unit.symbol instead",
+            DeprecationWarning)
+        self.symbol = value
 
     @property
     def allow_fractions(self):
@@ -267,8 +282,8 @@ class UnitInterface(object):
         """
         Render quantity (in internal unit) in the internal unit.
 
-        The value is localized and the internal unit symbol is added if
-        needed.
+        The value is rounded, localized and the internal unit symbol is
+        added if needed.
 
         :type quantity: Decimal
         :param quantity: Quantity to render, in internal unit
@@ -277,13 +292,15 @@ class UnitInterface(object):
         :rtype: str
         :return: Rendered quantity in internal unit.
         """
-        value = format_number(quantity, self.internal_unit.decimals)
+        rounded = _round_to_digits(
+            Decimal(quantity), self.internal_unit.decimals, ROUND_HALF_UP)
+        value = format_number(rounded, self.internal_unit.decimals)
         if not force_symbol and self.allow_bare_number:
             return value
         symbol = self.internal_unit.symbol
         return _get_value_symbol_template().format(value=value, symbol=symbol)
 
-    def to_display(self, quantity):
+    def to_display(self, quantity, rounding=ROUND_HALF_UP):
         """
         Convert quantity from internal unit to display unit.
 
@@ -292,11 +309,10 @@ class UnitInterface(object):
         :rtype: Decimal
         :return: Converted quantity, in display unit
         """
-        rounded = _round_to_digits(Decimal(quantity), self.internal_unit.decimals)
-        value = rounded / self.display_unit.ratio
-        return _round_to_digits(value, self.display_unit.decimals)
+        value = Decimal(quantity) / self.display_unit.ratio
+        return _round_to_digits(value, self.display_unit.decimals, rounding)
 
-    def from_display(self, display_quantity):
+    def from_display(self, display_quantity, rounding=ROUND_HALF_UP):
         """
         Convert quantity from display unit to internal unit.
 
@@ -305,8 +321,8 @@ class UnitInterface(object):
         :rtype: Decimal
         :return: Converted quantity, in internal unit
         """
-        converted = Decimal(display_quantity) * self.display_unit.ratio
-        return _round_to_digits(converted, self.internal_unit.decimals)
+        value = Decimal(display_quantity) * self.display_unit.ratio
+        return _round_to_digits(value, self.internal_unit.decimals, rounding)
 
     def get_per_values(self, force_symbol=False):
         """

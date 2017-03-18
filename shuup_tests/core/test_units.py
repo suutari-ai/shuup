@@ -7,9 +7,9 @@ import pytest
 from django.utils import translation
 from django.utils.translation.trans_real import translation as get_trans
 
-from shuup.core.models._units import (
-    DisplayUnit, SalesUnit, SalesUnitAsDisplayUnit, UnitInterface
-)
+from shuup.core.models import (
+    DisplayUnit, SalesUnit, PiecesSalesUnit, UnitInterface)
+from shuup.core.models._units import SalesUnitAsDisplayUnit
 
 
 def nbsp(x):
@@ -88,21 +88,34 @@ def test_unit_interface_from_display_str():
 
 def test_unit_interface_render_quantity():
     gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
-    with translation.override(None):
-        assert gram3.render_quantity(123) == '123000g'
+    with translation.override('en'):
+        assert gram3.render_quantity(123) == '123,000g'
+        assert gram3.render_quantity(1234567) == '1,234,567,000g'
         assert gram3.render_quantity(0.123) == '123g'
         assert gram3.render_quantity('0.0521') == '52g'
         assert gram3.render_quantity('0.0525') == '53g'
         assert gram3.render_quantity('0.0535') == '54g'
 
 
-def test_unit_interface_display_quantity_small_display_prec():
+def test_unit_interface_render_quantity_pieces():
+    pcs = UnitInterface(PiecesSalesUnit())
+    with translation.override('en'):
+        assert pcs.render_quantity(123) == '123'
+        assert pcs.render_quantity(1234567) == '1,234,567'
+        assert pcs.render_quantity(0.123) == '0'
+        assert pcs.render_quantity('52.1') == '52'
+        assert pcs.render_quantity('52.5') == '53'
+        assert pcs.render_quantity('53.5') == '54'
+        assert pcs.render_quantity(123, force_symbol=True) == '123pc.'
+
+
+def test_unit_interface_render_quantity_small_display_prec():
     gram6 = get_g_in_kg_unit(decimals=6, display_decimals=1)
     with translation.override(None):
         assert gram6.render_quantity(Decimal('12.3456789')) == '12345.7g'
 
 
-def test_unit_interface_display_quantity_translations():
+def test_unit_interface_render_quantity_translations():
     # Let's override some translations, just to be sure
     for lang in ['en', 'pt-br', 'hi', 'hy']:
         get_trans(lang).merge(ValueSymbolTranslationWithoutSpace)
@@ -137,6 +150,39 @@ class ValueSymbolTranslationWithSpace(object):
 
 class ValueSymbolTranslationWithoutSpace(object):
     _catalog = {trans_key: '{value}{symbol}'}
+
+
+def test_unit_interface_render_quantity_internal_kg():
+    gram3 = get_g_in_kg_unit(decimals=3, display_decimals=1)
+    with translation.override('en'):
+        assert gram3.render_quantity_internal(123) == '123.000kg'
+        assert gram3.render_quantity_internal(1234567) == '1,234,567.000kg'
+        assert gram3.render_quantity_internal(0.123) == '0.123kg'
+        assert gram3.render_quantity_internal('0.0521') == '0.052kg'
+        assert gram3.render_quantity_internal('0.0525') == '0.053kg'
+        assert gram3.render_quantity_internal('0.0535') == '0.054kg'
+
+
+def test_unit_interface_render_quantity_internal_pieces():
+    pcs = UnitInterface(PiecesSalesUnit())
+    with translation.override('en'):
+        assert pcs.render_quantity_internal(123) == '123'
+        assert pcs.render_quantity_internal(1234567) == '1,234,567'
+        assert pcs.render_quantity_internal(0.123) == '0'
+        assert pcs.render_quantity_internal('52.1') == '52'
+        assert pcs.render_quantity_internal('52.5') == '53'
+        assert pcs.render_quantity_internal('53.5') == '54'
+        assert pcs.render_quantity_internal(123, force_symbol=True) == '123pc.'
+
+
+def test_unit_interface_get_per_values():
+    pcs = UnitInterface(PiecesSalesUnit())
+    gram = get_g_in_kg_unit(decimals=3, display_decimals=1)
+    gram.display_unit.comparison_value = 100
+    with translation.override('en'):
+        assert pcs.get_per_values() == (1, '')
+        assert pcs.get_per_values(force_symbol=True) == (1, 'pc.')
+        assert gram.get_per_values() == (Decimal('0.1'), '100.0g')
 
 
 def get_g_in_kg_unit(decimals, display_decimals, comparison=100):
