@@ -101,7 +101,7 @@ class DisplayUnit(TranslatableShuupModel):
         default=1, validators=[validate_positive_not_zero],
         verbose_name=_("ratio"),
         help_text=_(
-            "Amount of internal units in a display unit.  E.g. if "
+            "Size of the display unit in internal unit.  E.g. if "
             "internal unit is kilogram and display unit is gram, "
             "ratio is 0.001."))
     decimals = models.PositiveSmallIntegerField(

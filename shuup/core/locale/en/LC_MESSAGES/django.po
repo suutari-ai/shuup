@@ -2118,7 +2118,7 @@ msgid "ratio"
 msgstr ""
 
 msgid ""
-"Amount of internal units in a display unit.  E.g. if internal unit is "
+"Size of the display unit in internal unit.  E.g. if internal unit is "
 "kilogram and display unit is gram, ratio is 0.001."
 msgstr ""
 
