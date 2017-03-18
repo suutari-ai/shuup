@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Shuup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-18 08:31+0000\n"
+"POT-Creation-Date: 2017-03-18 09:48+0000\n"
 "PO-Revision-Date: 2017-03-01 13:53+0000\n"
 "Last-Translator: Tuomas Suutari <tuomas.suutari@shoop.io>\n"
 "Language-Team: Finnish (Finland) (http://www.transifex.com/shuup/shuup/"
@@ -946,6 +946,9 @@ msgstr "Tiedostot"
 
 msgid "Product"
 msgstr "Tuote"
+
+msgid "Unit Price"
+msgstr "Yksikköhinta"
 
 msgid "Quantity"
 msgstr "Määrä"
