@@ -2142,7 +2142,7 @@ msgstr ""
 msgid ""
 "If true, values of this unit can be shown without the symbol occasionally.  "
 "Usually wanted if the unit is a piece, so that product listings can show "
-"just '$5' rather than '$5 per pc.'"
+"just '$5.95' rather than '$5.95 per pc.'."
 msgstr ""
 
 msgid "use by default"

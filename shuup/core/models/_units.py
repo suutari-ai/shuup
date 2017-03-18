@@ -123,8 +123,8 @@ class DisplayUnit(TranslatableShuupModel):
         help_text=_(
             "If true, values of this unit can be shown without the "
             "symbol occasionally.  Usually wanted if the unit is a "
-            "piece, so that product listings can show just '$5' "
-            "rather than '$5 per pc.'"))
+            "piece, so that product listings can show just '$5.95' "
+            "rather than '$5.95 per pc.'."))
     default = models.BooleanField(
         default=False, verbose_name=_("use by default"), help_text=_(
             "Use this display unit by default when displaying "
