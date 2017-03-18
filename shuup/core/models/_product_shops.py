@@ -175,13 +175,14 @@ class ShopProduct(MoneyPropped, models.Model):
         for supplier in self.suppliers.all():
             supplier.module.update_stock(product_id=self.product.id)
 
-    def clean(self, *args, **kwargs):
-        super(ShopProduct, self).clean(*args, **kwargs)
+    def clean(self):
+        super(ShopProduct, self).clean()
         if self.display_unit:
             if self.display_unit.internal_unit != self.product.sales_unit:
                 raise ValidationError({'display_unit': _(
-                    "Invalid display unit: Internal unit "
-                    "does not match with the product")})
+                    "Invalid display unit: Internal unit of "
+                    "the selected display unit does not match "
+                    "with the sales unit of the product")})
 
     def is_list_visible(self):
         """
