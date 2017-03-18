@@ -73,7 +73,7 @@ class BasketUpdateMethods(object):
         new_display_quantity = parse_decimal_string(value)
         if new_display_quantity is None:
             return False
-        basket_line = self.basket.get_line(line['line_id'])
+        basket_line = self.basket.get_basket_line(line['line_id'])
         if basket_line and basket_line.product:
             unit = basket_line.shop_product.unit
             new_quantity = unit.from_display(new_display_quantity)
