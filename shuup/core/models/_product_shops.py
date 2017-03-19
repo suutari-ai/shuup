@@ -354,14 +354,12 @@ class ShopProduct(MoneyPropped, models.Model):
             larger_p = max(purchase_multiple, (p + 1) * purchase_multiple)
             render_qty = self.unit.render_quantity
             if larger_p == smaller_p:
-                #TODO:Check fi_FI and sv_SE translations of this
                 message = _(
                     "The product can only be ordered in multiples of "
                     "{package_size}, for example {amount}").format(
                         package_size=render_qty(purchase_multiple),
                         amount=render_qty(smaller_p))
             else:
-                #TODO:Check fi_FI and sv_SE translations of this
                 message = _(
                     "The product can only be ordered in multiples of "
                     "{package_size}, for example {smaller_amount} or "
