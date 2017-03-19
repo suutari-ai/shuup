@@ -2290,6 +2290,9 @@ msgstr ""
 "suuremmaksi kuin nolla, mikäli tuotteita tällä myyntiyksiköllä voi myydä "
 "osittain."
 
+msgid "sales units"
+msgstr "myyntiyksiköt"
+
 msgid ""
 "The sales unit name to use for products (For example, 'pieces' or 'units'). "
 "Sales units can be set for each product through the product editor view."
@@ -2307,9 +2310,6 @@ msgid ""
 msgstr ""
 "Lyhennetty nimi tälle myyntiyksikölle, joka näytetään hallinnassa ja "
 "tilauksilla."
-
-msgid "sales units"
-msgstr "myyntiyksiköt"
 
 msgid "Value must be positive and non-zero"
 msgstr ""
