@@ -53,6 +53,33 @@ def test_unit_interface_init_from_display_unit():
     assert unit.internal_unit == sales_unit
 
 
+@pytest.mark.django_db
+def test_unit_interface_init_with_non_default_display_unit():
+    sales_unit = SalesUnit.objects.create(name="Test", symbol="tst")
+    default_du = DisplayUnit.objects.create(
+        name="Default Display Unit", symbol="ddu",
+        internal_unit=sales_unit, default=True)
+    non_default_du = DisplayUnit.objects.create(
+        name="Non-default Display Unit", symbol="ndu",
+        internal_unit=sales_unit, default=False)
+    assert sales_unit.display_unit == default_du
+    unit = UnitInterface(sales_unit, non_default_du)
+    assert unit.internal_unit == sales_unit
+    assert unit.display_unit == non_default_du
+    assert unit.internal_unit.display_unit == default_du
+
+
+def test_unit_interface_init_unit_compatibility_check():
+    su1 = SalesUnit(identifier="SU1", symbol="su1")
+    su2 = SalesUnit(identifier="SU2", symbol="su2")
+    du = DisplayUnit(name="DU", symbol="du", internal_unit=su1)
+    UnitInterface(su1, du)  # OK
+    with pytest.raises(AssertionError) as exc_info:
+        UnitInterface(su2, du)
+    assert str(exc_info.value) == (
+        "Incompatible units: <SalesUnit:None-SU2>, <DisplayUnit:None>")
+
+
 def test_unit_interface_display_precision():
     sales_unit = SalesUnit(symbol="t")
     assert UnitInterface(display_unit=DisplayUnit(

@@ -230,6 +230,9 @@ class UnitInterface(object):
         :type internal_unit: SalesUnit|PiecesSalesUnit
         :type display_unit: DisplayUnit|SalesUnitAsDisplayUnit
         """
+        assert internal_unit is None or display_unit is None or (
+            display_unit.internal_unit == internal_unit), (
+                "Incompatible units: %r, %r" % (internal_unit, display_unit))
         if display_unit:
             self.internal_unit = display_unit.internal_unit
             self.display_unit = display_unit
