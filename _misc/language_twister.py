@@ -10,12 +10,11 @@ import re
 import sys
 
 from babel.messages.pofile import read_po
-from six import print_
-
 from rope.base.codeanalyze import ChangeCollector
 from rope.base.project import Project
 from rope.refactor.restructure import Restructure
 from rope.refactor.similarfinder import CodeTemplate
+from six import print_
 
 safe_double_quote_re = re.compile(r"^[\w ]+$", re.UNICODE)
 
