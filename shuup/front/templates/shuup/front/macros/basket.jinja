@@ -232,12 +232,6 @@
 {% endmacro %}
 
 {% macro update_quantity_js() %}
-    {# $("#update_basket_form .quantity :input[id^='dqty_']").change(function() { #}
-    {#     $dqty = $(this); #}
-    {#     $qty = $("#qty_" + this.id.substr(5)); #}
-    {#     var factor = this.dataset.displayFactor; #}
-    {#     $qty.val($dqty.val() / factor); #}
-    {# }); #}
     $("#update_basket_form .quantity :input").change(function() {
         $("#update_basket_form").submit();
     });
