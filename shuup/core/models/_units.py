@@ -93,6 +93,17 @@ class SalesUnit(_ShortNameToSymbol, TranslatableShuupModel):
 
     @property
     def display_unit(self):
+        """
+        Default display unit of this sales unit.
+
+        Get a `DisplayUnit` object, which has this sales unit as its
+        internal unit and is marked as a default, or if there is no
+        default display unit for this sales unit, then a proxy object.
+        The proxy object has the same display unit interface and mirrors
+        the properties of the sales unit, such as symbol and decimals.
+
+        :rtype: DisplayUnit
+        """
         default_display_unit = self.display_units.filter(default=True).first()
         return default_display_unit or SalesUnitAsDisplayUnit(self)
 
@@ -178,8 +189,12 @@ class DisplayUnit(TranslatableShuupModel):
 
 
 @python_2_unicode_compatible
-class SalesUnitAsDisplayUnit(object):
+class SalesUnitAsDisplayUnit(DisplayUnit):
+    class Meta:
+        abstract = True
+
     def __init__(self, sales_unit):
+        super(SalesUnitAsDisplayUnit, self).__init__()
         self.internal_unit = sales_unit
         self.ratio = Decimal(1)
         self.decimals = sales_unit.decimals
@@ -187,6 +202,10 @@ class SalesUnitAsDisplayUnit(object):
         self.allow_bare_number = (sales_unit.decimals == 0)
         self.default = False
 
+    def _get_pk_val(self, meta=None):
+        return None
+
+    pk = property(_get_pk_val)
     name = property(lambda self: self.internal_unit.name)
     symbol = property(lambda self: self.internal_unit.symbol)
 
@@ -195,18 +214,25 @@ class SalesUnitAsDisplayUnit(object):
 
 
 @python_2_unicode_compatible
-class PiecesSalesUnit(object):
+class PiecesSalesUnit(SalesUnit):
     """
     Object representing Pieces sales unit.
 
     Has same API as SalesUnit, but isn't a real model.
     """
+    class Meta:
+        abstract = True
 
-    identifier = '_internal_pieces_unit'
+    def __init__(self):
+        super(PiecesSalesUnit, self).__init__(
+            identifier='_internal_pieces_unit', decimals=0)
 
+    def _get_pk_val(self, meta=None):
+        return None
+
+    pk = property(_get_pk_val)
     name = _("Pieces")
     symbol = pgettext("Symbol for pieces unit", "pc.")
-    decimals = 0
 
     @property
     def display_unit(self):
@@ -227,8 +253,8 @@ class UnitInterface(object):
         """
         Initialize unit interface.
 
-        :type internal_unit: SalesUnit|PiecesSalesUnit
-        :type display_unit: DisplayUnit|SalesUnitAsDisplayUnit
+        :type internal_unit: SalesUnit
+        :type display_unit: DisplayUnit
         """
         assert internal_unit is None or display_unit is None or (
             display_unit.internal_unit == internal_unit), (

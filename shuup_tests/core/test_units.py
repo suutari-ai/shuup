@@ -253,22 +253,16 @@ def test_unit_interface_get_per_values():
 
 
 def get_g_in_kg_unit(decimals, display_decimals, comparison=100):
-    unit = UnitInterface(Kilogram(decimals=decimals))
-    unit.display_unit = DisplayUnit(
-        ratio=Decimal('0.001'),
-        decimals=display_decimals,
-        symbol='g',
-        comparison_value=comparison,
-    )
-    return unit
+    return UnitInterface(display_unit=DisplayUnit(
+            internal_unit=get_kilogram_sales_unit(decimals=decimals),
+            ratio=Decimal('0.001'),
+            decimals=display_decimals,
+            symbol='g',
+            comparison_value=comparison))
 
 
-class Kilogram(object):
-    def __init__(self, decimals):
-        self.name = "Kilograms"
-        self.symbol = 'kg'
-        self.decimals = decimals
-        self.display_unit = SalesUnitAsDisplayUnit(self)
+def get_kilogram_sales_unit(decimals):
+    return SalesUnit(name="Kilograms", symbol='kg', decimals=decimals)
 
 
 def test_sales_unit_as_display_unit():
@@ -280,6 +274,8 @@ def test_sales_unit_as_display_unit():
     assert display_unit.comparison_value == 1
     assert display_unit.allow_bare_number is False
     assert display_unit.default is False
+    assert display_unit.pk is None
+    assert display_unit == display_unit
 
     # Name and symbol should be "lazy" to allow language switch
     sales_unit.set_current_language('en')
@@ -315,10 +311,10 @@ def test_pieces_sales_unit():
 
 
 def test_kg_in_oz():
-    kg_oz = UnitInterface(Kilogram(decimals=9))
-    kg_oz.display_unit = DisplayUnit(
+    kg_oz = UnitInterface(display_unit=DisplayUnit(
+        internal_unit=get_kilogram_sales_unit(decimals=9),
         ratio=Decimal('0.028349523'),
-        decimals=3, symbol='oz')
+        decimals=3, symbol='oz'))
     assert kg_oz.comparison_quantity == Decimal('0.028349523')
     assert kg_oz.render_quantity('0.028349523') == '1.000oz'
     assert kg_oz.render_quantity(1) == '35.274oz'
