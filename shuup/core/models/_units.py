@@ -290,8 +290,9 @@ class UnitInterface(object):
         """
         Render (internal unit) quantity in the display unit.
 
-        The value converted from the internal unit to the display unit
-        and then localized.  The display unit symbol is added if needed.
+        The value is converted from the internal unit to the display
+        unit and then localized.  The display unit symbol is added if
+        needed.
 
         :type quantity: Decimal
         :param quantity: Quantity to render, in internal unit

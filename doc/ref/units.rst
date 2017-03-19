@@ -2,21 +2,22 @@ Product Units in Shuup
 ======================
 
 Commonly web shops sell products which are prepackaged units and their
-quantities is measured in pieces.  However it is sometimes needed to be
+quantities are measured in pieces.  However it is sometimes needed to be
 able to sell products in non-integral quantities, like kilograms or
-ounces.  This is where the unit system of Shuup is useful.
+ounces.  In Shuup, this can be handled with sales units and display
+units.
 
-Each product has a sales unit which determines how quantities of the
-product are represented and if non-integral quantities are allowed.
-However it is possible that the sales unit has an attached display unit
-which overrides the representation part.  This allows, for example, the
-internal quantities to be stored in kilograms but be displayed as grams
-to the customer.
+Each product in Shuup has a sales unit which determines how quantities
+of the product are represented and if non-integral quantities are
+allowed.  However it is possible that the sales unit has an attached
+display unit which overrides the representation part.  This allows, for
+example, the internal quantities to be stored in kilograms but be
+displayed as grams to the customer.
 
 ``Product.sales_unit``
     Sales unit of a `~shuup.core.models.Product`.  Usually a
     `~shuup.core.models.SalesUnit` object, but can also be ``None``.
-    Thin is the internal unit which is used to *store* the quantities,
+    This is the internal unit which is used to *store* the quantities,
     like quantities in the order lines or stock amounts.  Quantities
     shown to the customer should not use the sales unit, but rather a
     *display unit*, see ShopProduct.display_unit_ and or
@@ -35,10 +36,13 @@ to the customer.
 .. _SalesUnit.display_unit:
 
 ``SalesUnit.display_unit``
-    The default display unit of a sales unit.  Can be a
-    `~shuup.core.models.DisplayUnit` object or if there is no default
-    display unit for the sales unit, then this is as a proxy object with
-    the same interface.
+    The default display unit of the sales unit.  This property returns a
+    `~shuup.core.models.DisplayUnit` object, which has the sales unit as
+    its internal unit and is marked as a default, or if there is no
+    default display unit for the sales unit, then this will return a
+    proxy object.  The proxy object has the same display unit interface
+    and mirrors the properties of the sales unit, such as symbol and
+    decimals.
 
 .. _ShopProduct.display_unit:
 
@@ -96,5 +100,5 @@ to the customer.
     a single display unit and its internal unit.  Can be used for
     rendering and converting product quantities in the display unit or
     in the internal unit.  Or for accessing data of either unit.  See
-    the API documentation of `~shuup.core.models.UnitInterface` for
+    the API documentation of the `~shuup.core.models.UnitInterface` for
     details.
