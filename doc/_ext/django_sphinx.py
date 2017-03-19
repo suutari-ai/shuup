@@ -4,70 +4,66 @@ import inspect
 
 from django.apps import apps
 from django.db import models
-from django.utils.html import strip_tags
 from django.utils.encoding import force_text
+from django.utils.html import strip_tags
+from parler.models import TranslatedFieldsModel
 
 
 def setup(app):
-    # Make sure we have loaded models, otherwise related fields may end up
-    # as strings
-    models.get_models()
-
+    models.get_models()  # Load models
     app.connect('autodoc-process-docstring', process_docstring)
 
 
 def process_docstring(app, what, name, obj, options, lines):
-    # Only look at objects that inherit from Django's base model class
     if inspect.isclass(obj) and issubclass(obj, models.Model):
         latelines = ['']
         _process_model(obj, lines, latelines)
         lines.extend(latelines)
-
-    # Return the extended docstring
     return lines
 
 
 def _process_model(model, lines, latelines):
-    # Grab the field list from the meta class
-    fields = model._meta.get_fields()
-    for field in fields:
+    for field in model._meta.get_fields():
         _process_model_field(field, lines, latelines)
+    _process_model_translations(model, lines, latelines)
 
 
-def _process_model_field(field, lines, latelines):
+def _process_model_translations(model, lines, latelines):
+    for trans_model in _get_translation_models(model):
+        for field in trans_model._meta.get_fields():
+            if field.name in ['id', 'language_code', 'master']:
+                continue
+            _process_model_field(field, lines, latelines, is_translation=True)
+
+
+def _get_translation_models(model):
+    for field in model._meta.get_fields():
+        if isinstance(field, models.ManyToOneRel):
+            if issubclass(field.related_model, TranslatedFieldsModel):
+                yield field.related_model
+
+
+def _process_model_field(field, lines, latelines, is_translation=False):
     if not hasattr(field, 'attname') or isinstance(field, models.ForeignKey):
         field.attname = field.name
 
-    _process_field_help_text_and_verbose_name(field, lines)
+    _process_field_help_text_and_verbose_name(field, lines, is_translation)
     _process_field_type(field, lines, latelines)
 
 
-def _process_field_help_text_and_verbose_name(field, lines):
-    # Decode and strip any html out of the field's help text
-    try:
-        help_text = strip_tags(force_text(field.help_text))
-    except:
-        help_text = ''
-
-    # Decode and capitalize the verbose name, for use if there isn't
-    # any help text
-    try:
-        verbose_name = force_text(field.verbose_name).capitalize()
-    except:
-        verbose_name = ''
-
+def _process_field_help_text_and_verbose_name(field, lines, is_translation=0):
+    help_text = (strip_tags(force_text(field.help_text))
+                 if hasattr(field, 'help_text') else None)
+    verbose_name = (force_text(field.verbose_name).capitalize()
+                    if hasattr(field, 'verbose_name') else None)
+    prefix = '(Translatable) ' if is_translation else ''
     if help_text:
-        # Add the model field to the end of the docstring as a param
-        # using the help text as the description
-        lines.append(':param %s: %s' % (field.attname, help_text))
+        lines.append(':param %s: %s' % (field.attname, prefix + help_text))
     elif verbose_name:
-        # Add the model field to the end of the docstring as a param
-        # using the verbose name as the description
-        lines.append(':param %s: %s' % (field.attname, verbose_name))
+        lines.append(':param %s: %s' % (field.attname, prefix + verbose_name))
 
 
 def _process_field_type(field, lines, latelines):
-    # Add the field's type to the docstring
     if isinstance(field, models.ForeignKey):
         to = _resolve_field_destination(field, field.rel.to)
         lines.append(':type %s: %s to :class:`%s.%s`' % (
