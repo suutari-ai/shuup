@@ -25,13 +25,22 @@ def test_sales_unit_decimals():
     assert SalesUnit(decimals=0).round("1.5") == Decimal("2")
 
 
+@pytest.mark.django_db
 def test_sales_unit_short_name():
     # test the deprecated compatibility property
-    assert SalesUnit(symbol='g').short_name == 'g'
-    assert SalesUnit(short_name='g').symbol == 'g'
+    assert SalesUnit(symbol="kg").short_name == "kg"
+    assert SalesUnit(short_name="kg").symbol == "kg"
     unit = SalesUnit()
-    unit.short_name = 'g'
-    assert unit.symbol == 'g'
+    unit.short_name = "oz"
+    assert unit.symbol == "oz"
+    en_sales_units = SalesUnit.objects.language("en")
+    unit2 = en_sales_units.create(decimals=1, name="Gram", short_name="g")
+    assert unit2.name == "Gram"
+    assert unit2.symbol == "g"
+    unit3 = en_sales_units.get(pk=unit2.pk)
+    unit3.set_current_language('en')
+    assert unit3.name == "Gram"
+    assert unit3.symbol == "g"
 
 
 @pytest.mark.django_db

@@ -47,12 +47,12 @@ class SalesUnit(TranslatableShuupModel):
         verbose_name = _('sales unit')
         verbose_name_plural = _('sales units')
 
-    def __init__(self, short_name=None, *args, **kwargs):
-        if short_name is not None:
+    def __init__(self, *args, **kwargs):
+        if 'short_name' in kwargs:
             warnings.warn(
                 "unit.short_name is deprecated, use unit.symbol instead",
                 DeprecationWarning)
-            kwargs.setdefault('symbol', short_name)
+            kwargs.setdefault('symbol', kwargs.pop('short_name'))
         super(SalesUnit, self).__init__(*args, **kwargs)
 
     def __str__(self):
