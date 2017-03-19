@@ -246,7 +246,7 @@ class BaseBasket(OrderSource):
             else:
                 product = line.product
                 quantity = line.quantity + orderable_counter[product.id]
-                if line.shop_product.is_orderable(line.supplier, self.request.customer, quantity, allow_cache=False):
+                if line.shop_product.is_orderable(line.supplier, self.customer, quantity, allow_cache=False):
                     if product.is_package_parent():
                         quantity_map = product.get_package_child_to_quantity_map()
                         orderable = True
@@ -255,7 +255,7 @@ class BaseBasket(OrderSource):
                             in_basket_child_qty = orderable_counter[child_product.id]
                             total_child_qty = ((quantity * child_quantity) + in_basket_child_qty)
                             if not sp.is_orderable(
-                                    line.supplier, self.request.customer, total_child_qty, allow_cache=False):
+                                    line.supplier, self.customer, total_child_qty, allow_cache=False):
                                 orderable = False
                                 break
                         if orderable:
