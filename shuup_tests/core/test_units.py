@@ -53,6 +53,22 @@ def test_unit_interface_init_from_display_unit():
     assert unit.internal_unit == sales_unit
 
 
+def test_unit_interface_display_precision():
+    sales_unit = SalesUnit(symbol="t")
+    assert UnitInterface(display_unit=DisplayUnit(
+        internal_unit=sales_unit,
+        decimals=9)).display_precision == Decimal('0.000000001')
+    assert UnitInterface(display_unit=DisplayUnit(
+        internal_unit=sales_unit,
+        decimals=4)).display_precision == Decimal('0.0001')
+    assert UnitInterface(display_unit=DisplayUnit(
+        internal_unit=sales_unit,
+        decimals=2)).display_precision == Decimal('0.01')
+    assert UnitInterface(display_unit=DisplayUnit(
+        internal_unit=sales_unit,
+        decimals=0)).display_precision == Decimal('1')
+
+
 def test_unit_interface_to_display():
     gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
     assert gram3.to_display(Decimal('0.01')) == 10

@@ -440,11 +440,25 @@ class ShopProduct(MoneyPropped, models.Model):
 
     @property
     def display_quantity_step(self):
-        return self.unit.to_display(self.quantity_step)
+        """
+        Quantity step of this shop product in the display unit.
+
+        Note: This can never be smaller than the display precision.
+        """
+        return max(
+            self.unit.to_display(self.quantity_step),
+            self.unit.display_precision)
 
     @property
     def display_quantity_minimum(self):
-        return self.unit.to_display(self.minimum_purchase_quantity)
+        """
+        Quantity minimum of this shop product in the display unit.
+
+        Note: This can never be smaller than the display precision.
+        """
+        return max(
+            self.unit.to_display(self.minimum_purchase_quantity),
+            self.unit.display_precision)
 
     @property
     def unit(self):

@@ -276,6 +276,13 @@ class UnitInterface(object):
         """
         return self.display_unit.allow_bare_number
 
+    @property
+    def display_precision(self):
+        """
+        Smallest possible non-zero quantity in the display unit.
+        """
+        return Decimal('0.1') ** self.display_unit.decimals
+
     def render_quantity(self, quantity, force_symbol=False):
         """
         Render (internal unit) quantity in the display unit.
