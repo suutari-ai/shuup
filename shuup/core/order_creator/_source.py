@@ -626,7 +626,6 @@ class SourceLine(TaxableItem, Priceful, LineWithUnit):
     _FIELDS = [
         "line_id", "parent_line_id", "type",
         "shop", "product", "supplier", "tax_class",
-#XXX        "sales_unit", "display_unit",
         "quantity", "base_unit_price", "discount_amount",
         "sku", "text",
         "require_verification", "accounting_identifier",
@@ -637,8 +636,6 @@ class SourceLine(TaxableItem, Priceful, LineWithUnit):
         "product": Product,
         "supplier": Supplier,
         "tax_class": TaxClass,
-#XXX        "sales_unit": SalesUnit,
-#XXX        "display_unit": DisplayUnit,
     }
     _PRICE_FIELDS = set(["base_unit_price", "discount_amount"])
 
