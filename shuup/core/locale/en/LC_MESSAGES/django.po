@@ -2089,6 +2089,9 @@ msgid ""
 "quantities"
 msgstr ""
 
+msgid "sales units"
+msgstr ""
+
 msgid ""
 "The sales unit name to use for products (For example, 'pieces' or 'units'). "
 "Sales units can be set for each product through the product editor view."
@@ -2100,9 +2103,6 @@ msgstr ""
 msgid ""
 "An abbreviated name for this sales unit that is shown throughout admin and "
 "order invoices."
-msgstr ""
-
-msgid "sales units"
 msgstr ""
 
 msgid "Value must be positive and non-zero"
