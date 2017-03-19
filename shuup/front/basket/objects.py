@@ -8,6 +8,7 @@
 from __future__ import unicode_literals
 
 import random
+import warnings
 from collections import Counter
 from decimal import Decimal
 
@@ -447,6 +448,9 @@ class BaseBasket(OrderSource):
                 yield line
 
     def _get_orderable(self):
+        warnings.warn(
+            "basket.orderable is deprecated, use basket.is_empty instead",
+            DeprecationWarning)
         return (sum(l.quantity for l in self.get_lines()) > 0)
 
     orderable = property(_get_orderable)
