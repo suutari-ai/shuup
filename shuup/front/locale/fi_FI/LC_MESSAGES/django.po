@@ -756,9 +756,6 @@ msgstr "Virhe lisättäessä tuotetta koriin"
 msgid "Qty"
 msgstr "Määrä"
 
-msgid "Quantity"
-msgstr "Määrä"
-
 msgid "Remove product from basket"
 msgstr "Poista tuote ostoskorista"
 
@@ -952,6 +949,9 @@ msgstr "Tiedostot"
 
 msgid "Product"
 msgstr "Tuote"
+
+msgid "Quantity"
+msgstr "Määrä"
 
 msgid "excl. tax"
 msgstr "ei sis. veroja"
