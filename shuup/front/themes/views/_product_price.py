@@ -5,6 +5,8 @@
 #
 # This source code is licensed under the OSL-3.0 license found in the
 # LICENSE file in the root directory of this source tree.
+import decimal
+
 from shuup.core.models import ProductVariationResult
 from shuup.front.views.product import ProductDetailView
 
@@ -25,7 +27,7 @@ class ProductPriceView(ProductDetailView):
         if not product:
             return False
         shop_product = product.get_shop_instance(self.request.shop)
-        qty = int(self.request.GET.get("quantity", 1))
+        qty = self._get_quantity()
         if not shop_product.is_orderable(None, self.request.customer, qty):
             return False
         return True
@@ -35,8 +37,18 @@ class ProductPriceView(ProductDetailView):
         if not context["product"] or not self.is_orderable():
             self.template_name = "shuup/front/product/detail_order_section_no_product.jinja"
             return context
-        context["quantity"] = context["product"].sales_unit.round(self.request.GET.get("quantity"))
+        context["quantity"] = context["product"].sales_unit.round(self._get_quantity())
         return context
+
+    def _get_quantity(self):
+        qty = self.request.GET.get("quantity")
+        unit_type = self.request.GET.get('unitType', 'internal')
+        print(unit_type)
+        if unit_type == 'internal' or qty is None:
+            return decimal.Decimal(qty or 0)
+        else:
+            shop_product = self.object.get_shop_instance(self.request.shop)
+            return shop_product.unit.from_display(decimal.Decimal(qty))
 
     def get_variation_variables(self):
         return dict(

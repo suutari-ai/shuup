@@ -26,6 +26,7 @@ from shuup.utils.properties import MoneyPropped, PriceProperty
 
 from ._product_media import ProductMediaKind
 from ._products import ProductMode, ProductVisibility, StockBehavior
+from ._units import DisplayUnit, PiecesSalesUnit, UnitInterface
 
 mark_safe_lazy = lazy(mark_safe, six.text_type)
 
@@ -160,13 +161,28 @@ class ShopProduct(MoneyPropped, models.Model):
         )
     )
 
+    display_unit = models.ForeignKey(
+        DisplayUnit, null=True, blank=True,
+        verbose_name=_("display unit"),
+        help_text=_("Unit for displaying quantities of this product"))
+
     class Meta:
         unique_together = (("shop", "product",),)
 
     def save(self, *args, **kwargs):
+        self.clean()
         super(ShopProduct, self).save(*args, **kwargs)
         for supplier in self.suppliers.all():
             supplier.module.update_stock(product_id=self.product.id)
+
+    def clean(self):
+        super(ShopProduct, self).clean()
+        if self.display_unit:
+            if self.display_unit.internal_unit != self.product.sales_unit:
+                raise ValidationError({'display_unit': _(
+                    "Invalid display unit: Internal unit of "
+                    "the selected display unit does not match "
+                    "with the sales unit of the product")})
 
     def is_list_visible(self):
         """
@@ -402,9 +418,8 @@ class ShopProduct(MoneyPropped, models.Model):
         Example:
             <input type="number" step="{{ shop_product.quantity_step }}">
         """
-        if self.purchase_multiple:
-            return self.purchase_multiple
-        return self.product.sales_unit.quantity_step
+        step = self.purchase_multiple or self._sales_unit.quantity_step
+        return self._sales_unit.round(step)
 
     @property
     def rounded_minimum_purchase_quantity(self):
@@ -419,7 +434,42 @@ class ShopProduct(MoneyPropped, models.Model):
                 value="{{ shop_product.rounded_minimum_purchase_quantity }}">
 
         """
-        return self.product.sales_unit.round(self.minimum_purchase_quantity)
+        return self._sales_unit.round(self.minimum_purchase_quantity)
+
+    @property
+    def display_quantity_step(self):
+        """
+        Quantity step of this shop product in the display unit.
+
+        Note: This can never be smaller than the display precision.
+        """
+        return max(
+            self.unit.to_display(self.quantity_step),
+            self.unit.display_precision)
+
+    @property
+    def display_quantity_minimum(self):
+        """
+        Quantity minimum of this shop product in the display unit.
+
+        Note: This can never be smaller than the display precision.
+        """
+        return max(
+            self.unit.to_display(self.minimum_purchase_quantity),
+            self.unit.display_precision)
+
+    @property
+    def unit(self):
+        """
+        Unit of this product.
+
+        :rtype: shuup.core.models.UnitInterface
+        """
+        return UnitInterface(self._sales_unit, self.display_unit)
+
+    @property
+    def _sales_unit(self):
+        return self.product.sales_unit or PiecesSalesUnit()
 
     @property
     def images(self):
