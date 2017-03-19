@@ -93,13 +93,21 @@ class BaseBasket(OrderSource):
             self.ip_address = request.META.get("REMOTE_ADDR")
         self.storage = get_storage()
         self._data = None
-        self.dirty = False
-        self._orderable_lines_cache = None
-        self._unorderable_lines_cache = None
-        self._lines_cached = False
         self.customer = getattr(request, "customer", None)
         self.orderer = getattr(request, "person", None)
         self.creator = getattr(request, "user", None)
+
+        # Note: Being "dirty" means "not saved".  It's independent of
+        # the caching status (which is cleared with self.uncache()).
+        # I.e. it's possible to be not saved but cached, or saved but
+        # not cached.
+        self.dirty = False
+        self.uncache()  # Set empty values for cache variables
+
+    def uncache(self):
+        super(BaseBasket, self).uncache()
+        self._orderable_lines_cache = None
+        self._unorderable_lines_cache = None
 
     def _load(self):
         """
@@ -120,6 +128,7 @@ class BaseBasket(OrderSource):
                 self.storage.delete(basket=self)
                 self._data = self.storage.load(basket=self)
             self.dirty = False
+            self.uncache()
         return self._data
 
     def save(self):
@@ -256,19 +265,18 @@ class BaseBasket(OrderSource):
                         orderable_counter[product.id] += line.quantity
         self._orderable_lines_cache = orderable_lines
         self._unorderable_lines_cache = [line for line in lines if line not in orderable_lines]
-        self._lines_cached = True
 
     @property
     def is_empty(self):
         return not bool(self.get_lines())
 
     def get_unorderable_lines(self):
-        if self.dirty or not self._lines_cached:
+        if self._unorderable_lines_cache is None:
             self._cache_lines()
         return self._unorderable_lines_cache
 
     def get_lines(self):
-        if self.dirty or not self._lines_cached:
+        if self._orderable_lines_cache is None:
             self._cache_lines()
         return self._orderable_lines_cache
 
