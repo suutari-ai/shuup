@@ -79,13 +79,13 @@ class BasketUpdateMethods(object):
             new_quantity = unit.from_display(new_display_quantity)
         else:
             new_quantity = new_display_quantity
-        self._update_quantity(line, new_quantity)
+        return self._update_quantity(line, new_quantity)
 
     def update_quantity(self, line, value, **kwargs):
         new_quantity = parse_decimal_string(value)
         if new_quantity is None:
             return False
-        self._update_quantity(line, new_quantity)
+        return self._update_quantity(line, new_quantity)
 
     def _update_quantity(self, line, new_quantity):
         if not (line and line["quantity"] != new_quantity):
