@@ -29,6 +29,30 @@ def test_unit_interface_smoke():
     assert gram.comparison_quantity == Decimal('0.1')
 
 
+def test_unit_interface_init_without_args():
+    unit = UnitInterface()
+    assert isinstance(unit.internal_unit, PiecesSalesUnit)
+    assert isinstance(unit.display_unit, SalesUnitAsDisplayUnit)
+    assert unit.display_unit.internal_unit == unit.internal_unit
+
+
+def test_unit_interface_init_from_internal_unit():
+    sales_unit = SalesUnit(name="Test", symbol="tst")
+    unit = UnitInterface(sales_unit)
+    assert unit.internal_unit == sales_unit
+    assert isinstance(unit.display_unit, SalesUnitAsDisplayUnit)
+    assert unit.display_unit.internal_unit == sales_unit
+
+
+def test_unit_interface_init_from_display_unit():
+    sales_unit = SalesUnit(name="Test", symbol="tst")
+    display_unit = DisplayUnit(name="Test2", symbol="t2",
+                               internal_unit=sales_unit)
+    unit = UnitInterface(display_unit=display_unit)
+    assert unit.display_unit == display_unit
+    assert unit.internal_unit == sales_unit
+
+
 def test_unit_interface_to_display():
     gram3 = get_g_in_kg_unit(decimals=3, display_decimals=0)
     assert gram3.to_display(Decimal('0.01')) == 10
@@ -220,11 +244,13 @@ def test_sales_unit_as_display_unit():
     sales_unit.name = "Kilogram"
     assert display_unit.name == sales_unit.name
     assert display_unit.symbol == sales_unit.symbol
+    assert '{}'.format(display_unit) == sales_unit.name
     sales_unit.set_current_language('fi')
     sales_unit.name = "kilogramma"
     sales_unit.symbol = "kg"
     assert display_unit.name == sales_unit.name
     assert display_unit.symbol == sales_unit.symbol
+    assert '{}'.format(display_unit) == sales_unit.name
 
 
 def test_sales_unit_as_display_unit_allow_bare_number():
@@ -232,6 +258,17 @@ def test_sales_unit_as_display_unit_allow_bare_number():
     kg = SalesUnit(decimals=3, symbol='kg')
     assert SalesUnitAsDisplayUnit(each).allow_bare_number is True
     assert SalesUnitAsDisplayUnit(kg).allow_bare_number is False
+
+
+def test_pieces_sales_unit():
+    pcs = PiecesSalesUnit()
+    assert pcs.identifier == '_internal_pieces_unit'
+    with translation.override(None):
+        assert pcs.name == "Pieces"
+        assert pcs.symbol == "pc."
+        assert '{}'.format(pcs) == "Pieces"
+    assert isinstance(pcs.display_unit, SalesUnitAsDisplayUnit)
+    assert pcs.display_unit.internal_unit == pcs
 
 
 def test_kg_in_oz():
