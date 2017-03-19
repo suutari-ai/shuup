@@ -108,6 +108,7 @@ class BaseBasket(OrderSource):
         super(BaseBasket, self).uncache()
         self._orderable_lines_cache = None
         self._unorderable_lines_cache = None
+        self._lines_by_line_id_cache = None
 
     def _load(self):
         """
@@ -235,9 +236,11 @@ class BaseBasket(OrderSource):
 
     def _cache_lines(self):
         lines = [BasketLine.from_dict(self, line) for line in self._data_lines]
+        lines_by_line_id = {}
         orderable_counter = Counter()
         orderable_lines = []
         for line in lines:
+            lines_by_line_id[line.line_id] = line
             if line.type != OrderLineType.PRODUCT:
                 orderable_lines.append(line)
             else:
@@ -265,6 +268,7 @@ class BaseBasket(OrderSource):
                         orderable_counter[product.id] += line.quantity
         self._orderable_lines_cache = orderable_lines
         self._unorderable_lines_cache = [line for line in lines if line not in orderable_lines]
+        self._lines_by_line_id_cache = lines_by_line_id
 
     @property
     def is_empty(self):
@@ -411,13 +415,33 @@ class BaseBasket(OrderSource):
             return True
         return False
 
+    def get_basket_line(self, line_id):
+        """
+        Get basket line by line id.
+
+        :rtype: BasketLine
+        """
+        if self._lines_by_line_id_cache is None:
+            self._cache_lines()
+        return self._lines_by_line_id_cache.get(line_id)
+
     def find_line_by_line_id(self, line_id):
+        """
+        Find basket data line by line id.
+
+        :rtype: dict
+        """
         for line in self._data_lines:
             if six.text_type(line.get("line_id")) == six.text_type(line_id):
                 return line
         return None
 
     def find_lines_by_parent_line_id(self, parent_line_id):
+        """
+        Find basket data lines by parent line id.
+
+        :rtype: Iterable[dict]
+        """
         for line in self._data_lines:
             if six.text_type(line.get("parent_line_id")) == six.text_type(parent_line_id):
                 yield line
