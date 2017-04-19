@@ -11,6 +11,7 @@ var less = require("gulp-less");
 var concat = require("gulp-concat");
 var uglify = require("gulp-uglify");
 var plumber = require("gulp-plumber");
+var sourcemaps = require("gulp-sourcemaps");
 var minifycss = require("gulp-cssnano");
 var gutil = require("gulp-util");
 var PRODUCTION = gutil.env.production || process.env.NODE_ENV == "production";
@@ -21,12 +22,14 @@ gulp.task("less", function() {
         "static_src/less/style.less"
     ])
         .pipe(plumber({}))
+        .pipe(sourcemaps.init())
         .pipe(less().on("error", function(err) {
             console.log(err.message);
             this.emit("end");
         }))
         .pipe(concat("style.css"))
         .pipe((PRODUCTION ? minifycss() : gutil.noop()))
+        .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("static/shuup/front/css/"));
 });
 
@@ -51,8 +54,10 @@ gulp.task("js", function() {
         "static_src/js/custom.js"
     ])
         .pipe(plumber({}))
+        .pipe(sourcemaps.init())
         .pipe(concat("scripts.js"))
         .pipe((PRODUCTION ? uglify() : gutil.noop()))
+        .pipe(sourcemaps.write("."))
         .pipe(gulp.dest("static/shuup/front/js/"));
 });
 
