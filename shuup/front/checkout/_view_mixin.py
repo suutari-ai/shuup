@@ -6,11 +6,6 @@
 # LICENSE file in the root directory of this source tree.
 from __future__ import unicode_literals
 
-from django.core.urlresolvers import reverse
-
-from shuup.front.basket import get_basket
-from shuup.front.basket.objects import BaseBasket
-
 from ._storage import CheckoutPhaseStorage
 
 
@@ -26,9 +21,6 @@ class CheckoutPhaseViewMixin(object):
     next_phase = None  # set as an instance variable
     previous_phase = None  # set as an instance variable
     request = None  # exists via being a view
-
-    basket_class = BaseBasket
-    basket_name_attr = "basket"
 
     def is_visible_for_user(self):
         return bool(self.title)
@@ -47,21 +39,22 @@ class CheckoutPhaseViewMixin(object):
 
     def get_success_url(self, *args, **kwargs):
         if self.next_phase:
-            return reverse("shuup:checkout", kwargs={"phase": self.next_phase.identifier})
+            return self.checkout_process.get_phase_url(self.next_phase)
         next_obj = super(CheckoutPhaseViewMixin, self)
         if hasattr(next_obj, 'get_success_url'):
             return next_obj.get_success_url(*args, **kwargs)
 
-    def get_url(self, request):
-        return reverse("shuup:checkout", kwargs={"phase": self.identifier})
+    def get_url(self):
+        return self.checkout_process.get_phase_url(self)
 
     @property
     def basket(self):
         """
-        :rtype: BaseBasket
-        :return:
+        The basket used in this checkout phase.
+
+        :rtype: shuup.front.basket.objects.BaseBasket
         """
-        return self._get_basket_from_request(self.request)
+        return self.checkout_process.basket
 
     @property
     def storage(self):
@@ -69,27 +62,16 @@ class CheckoutPhaseViewMixin(object):
             self._storage = CheckoutPhaseStorage(request=self.request, phase_identifier=self.identifier)
         return self._storage
 
-    def _get_basket_from_request(self, request):
-
-        """
-        :rtype: BaseBasket
-        :return:
-        """
-        if not hasattr(request, self.basket_name_attr):
-            _basket = get_basket(request, basket_name=self.basket_name_attr, basket_class=self.basket_class)
-            setattr(request, self.basket_name_attr, _basket)
-        return getattr(request, self.basket_name_attr)
-
     def get_context_data(self, **kwargs):
         context = super(CheckoutPhaseViewMixin, self).get_context_data(**kwargs)
-        context["current_phase_url"] = self.get_url(self.request)
-        context["next_phase_url"] = self.next_phase.get_url(self.request) if self.next_phase else None
-        context["previous_phase_url"] = self.previous_phase.get_url(self.request) if self.previous_phase else None
-
-        # build phase urls
-        urls = {}
-        for phase in self.phases:
-            urls[phase.identifier] = phase.get_url(self.request)
-        context["phase_urls"] = urls
+        context["current_phase_url"] = self.get_url()
+        context["next_phase_url"] = (self.next_phase.get_url()
+                                     if self.next_phase else None)
+        context["previous_phase_url"] = (self.previous_phase.get_url()
+                                         if self.previous_phase else None)
+        context["phase_urls"] = {
+            phase.identifier: phase.get_url()
+            for phase in self.phases
+        }
 
         return context

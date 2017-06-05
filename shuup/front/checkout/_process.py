@@ -7,19 +7,29 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
-
-from django.core.exceptions import ImproperlyConfigured
 from django.http.response import Http404
 
+from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
+
+from shuup.front.basket import get_basket
 from shuup.utils.importing import load
 
 
 class CheckoutProcess(object):
     horizontal_template = True
 
-    def __init__(self, phase_specs, phase_kwargs):
+    def __init__(self, phase_specs, phase_kwargs, view=None):
+        """
+        Initialize this checkout process.
+
+        :type phase_specs: list[str]
+        :type phase_kwargs: dict
+        :type view: shuup.front.checkout.BaseCheckoutView|None
+        """
         self.phase_specs = phase_specs
         self.phase_kwargs = phase_kwargs
+        self.view = view
 
     @property
     def phases(self):
@@ -120,6 +130,21 @@ class CheckoutProcess(object):
         To be called from a phase (`self.checkout_process.complete()`) when the checkout process is complete.
         """
         self.reset()
+
+    def get_phase_url(self, phase):
+        # The self.view is optional for backward compatibility
+        if not self.view:
+            return reverse('shuup:checkout', {'phase': phase.identifier})
+        return self.view.get_phase_url(phase)
+
+    @property
+    def basket(self):
+        """
+        The basket used in this checkout process.
+
+        :rtype: shuup.front.basket.objects.BaseBasket
+        """
+        return get_basket(self.phase_kwargs['request'])
 
 
 class VerticalCheckoutProcess(CheckoutProcess):
